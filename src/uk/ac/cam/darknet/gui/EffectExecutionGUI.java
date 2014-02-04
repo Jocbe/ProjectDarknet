@@ -1,7 +1,7 @@
 /**
  * 
  */
-package uk.ac.cam.darknet.frontend;
+package uk.ac.cam.darknet.gui;
 
 /**
  * The main GUI for execution of effects - some king of Effect DJ system.

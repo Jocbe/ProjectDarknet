@@ -5,7 +5,11 @@ package uk.ac.cam.darknet.backend;
  * @author Augustin Zidek
  *
  */
-public class PlainInputDataCollector {
+public class PlainInputDataCollector extends PrimaryDataCollector {
 
-	// TODO
+	@Override
+	public void collectData() {
+		// TODO Auto-generated method stub
+
+	}
 }

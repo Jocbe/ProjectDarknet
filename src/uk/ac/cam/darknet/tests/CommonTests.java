@@ -1,4 +1,4 @@
-import java.util.logging.Level;
+package uk.ac.cam.darknet.tests;
 import java.util.logging.Logger;
 
 import org.junit.Test;

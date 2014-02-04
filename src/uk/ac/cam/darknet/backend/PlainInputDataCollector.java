@@ -7,9 +7,5 @@ package uk.ac.cam.darknet.backend;
  */
 public class PlainInputDataCollector extends PrimaryDataCollector {
 
-	@Override
-	public void collectData() {
-		// TODO Auto-generated method stub
-
-	}
+	// TODO
 }

@@ -1,0 +1,24 @@
+Individual
+    userID
+    name
+    email
+    other attributes that we obtain from PrimaryDC
+    create our own tuple (String : Object)
+
+
+DBManager
+    store(List<Individual>)
+    store(Individual)
+
+
+DataCollector implements Runnable
+    run()
+    setup(List<Individual>)
+    setup(Individual)
+
+
+DataCollectionManager
+    1. Creates global type table
+    2. Creates DatabaseManager, takes global type table as a parameter
+    3. Calls Data Collectors (primary, then secondary), they take DBManager as a parameter
+

@@ -7,25 +7,35 @@ import uk.ac.cam.darknet.common.Properties;
 import uk.ac.cam.darknet.database.DatabaseManager;
 
 /**
- * Primary data collectors collect 100% reliable data from ticket systems (such
- * as Spektrix) or manually inserted data.
+ * Primary data collectors collect reliable data from ticket booking systems
+ * (such as Spektrix) or manually inserted data. They are used to enter the
+ * basic details of individuals. The data entered serves as search parameters
+ * for secondary collectors.
  * 
  * @author Augustin Zidek
  * 
  */
 public abstract class PrimaryDataCollector implements DataCollector {
-	private Properties typeTable;
+	@SuppressWarnings("unused")
 	private DatabaseManager databaseManager;
+	private Properties typeTable;
 
 	@Override
-	public abstract void run();
+	public void setup(List<Individual> individuals) {
+		return;
+	}
 
 	@Override
-	public abstract void setup(List<Individual> individuals);
+	public Properties getTypeTable() {
+		return typeTable;
+	}
 
-	@Override
-	public abstract Properties getTypeTable();
-
+	/**
+	 * Create a new primary data collector with the specified database manager.
+	 * 
+	 * @param databaseManager The database manager to use to write to the
+	 *            database.
+	 */
 	public PrimaryDataCollector(DatabaseManager databaseManager) {
 		this.databaseManager = databaseManager;
 	}

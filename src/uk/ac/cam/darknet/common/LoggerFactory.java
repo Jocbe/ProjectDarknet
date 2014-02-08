@@ -8,6 +8,8 @@ import java.util.logging.SimpleFormatter;
 
 /**
  * Factory for a logger to ensure there is only one logger in the system.
+ * 
+ * @author Author
  */
 public class LoggerFactory {
 	private static Logger logger;
@@ -19,9 +21,7 @@ public class LoggerFactory {
 		if (logger == null) {
 			logger = Logger.getLogger(Strings.LOGGER_NAME);
 			logger.setLevel(Level.ALL);
-
 			final FileHandler fh;
-
 			try {
 				fh = new FileHandler(Strings.LOG_PATH, true);
 				fh.setFormatter(new SimpleFormatter());
@@ -31,7 +31,6 @@ public class LoggerFactory {
 			catch (IOException e) {
 				System.err.println(Strings.LOG_EXCEPTION + e.getMessage());
 			}
-
 		}
 		return logger;
 	}

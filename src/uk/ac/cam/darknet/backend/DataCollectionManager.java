@@ -5,10 +5,8 @@ package uk.ac.cam.darknet.backend;
  * collectors and then selected secondary data collectors.
  * 
  * @author Augustin Zidek
- * 
  */
 public class DataCollectionManager {
-
 	/**
 	 * 
 	 * @param args

@@ -1,17 +1,15 @@
-/**
- * 
- */
 package uk.ac.cam.darknet.common;
 
 /**
- * When getting individuals, it is useful to specify a set of preferences for
- * certain properties (i.e. nice to have properties) the individual should have.
- * The preferences could be something like "We prefer individuals with a photo
- * included" or "We prefer individuals with both Facebook and Twitter account
- * information".
+ * When an effect requests individuals, it may want to specify (in addition to
+ * strict requirements) a set of certain preferable attributes (i.e. nice to
+ * have properties) that each individual should have. The preferences can
+ * express something like "prefer individuals with a photo" or "prefer
+ * individuals with both Facebook and Twitter account information."
  * 
- * The preferences specify the ordering of individuals when querying the data
- * providers.
+ * When multiple individuals satisfy an effect's strict requirements, the
+ * individual who is more preferable is according to the preferences given will
+ * be selected.
  * 
  * @author Augustin Zidek
  * 

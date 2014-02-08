@@ -13,7 +13,12 @@ import uk.ac.cam.darknet.database.DatabaseManager;
  * 
  */
 public class FacebookDataCollector extends SecondaryDataCollector {
-
+	/**
+	 * Create a new Facebook data collector with the specified database manager.
+	 * 
+	 * @param databaseManager The database manager to use to write to the
+	 *            database.
+	 */
 	public FacebookDataCollector(DatabaseManager databaseManager) {
 		super(databaseManager);
 		// TODO Auto-generated constructor stub
@@ -22,17 +27,21 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public void setup(List<Individual> individuals) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public Properties getTypeTable() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getCollectorId() {
 		// TODO Auto-generated method stub
 		return null;
 	}

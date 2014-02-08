@@ -9,6 +9,5 @@ package uk.ac.cam.darknet.database;
  * 
  */
 public class DatabaseManager {
-
 	// TODO
 }

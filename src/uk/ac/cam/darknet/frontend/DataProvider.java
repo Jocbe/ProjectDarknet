@@ -3,7 +3,6 @@ package uk.ac.cam.darknet.frontend;
 import java.util.List;
 
 import uk.ac.cam.darknet.common.Individual;
-import uk.ac.cam.darknet.common.Policy;
 
 /**
  * Interface for all data providers, i.e. classes that get various data from
@@ -42,7 +41,7 @@ public interface DataProvider {
 	 * @param p The policy specifying what data should be get.
 	 * 
 	 */
-	public void getAllData(final Individual i, final Policy p);
+	public void getAllData(final Individual i);
 
 	/**
 	 * Returns all data associated with each individual in the given list of
@@ -52,7 +51,7 @@ public interface DataProvider {
 	 * @param p The policy specifying what data should be get.
 	 * 
 	 */
-	public void getAllData(final List<Individual> individualList, final Policy p);
+	public void getAllData(final List<Individual> individualList);
 
 	/**
 	 * Returns the first name of each individual in the given list of

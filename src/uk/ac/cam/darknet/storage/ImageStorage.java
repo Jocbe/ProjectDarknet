@@ -12,7 +12,7 @@ import javax.imageio.ImageIO;
 import uk.ac.cam.darknet.common.Strings;
 
 /**
- * Stores a image given as an URL, file or a awt.Image and returns its
+ * Stores an image given as an URL, file or a awt.Image and returns its
  * universally unique ID (UUID) which can be later used to obtain the photo from
  * the storage. The images are stored in one folder with the unique ID being
  * their name.

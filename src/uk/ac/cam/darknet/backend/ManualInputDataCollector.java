@@ -7,14 +7,13 @@ import uk.ac.cam.darknet.common.Properties;
 import uk.ac.cam.darknet.database.DatabaseManager;
 
 /**
- * Secondary data collector which gets data from Facebook's public API.
+ * Collects data inputed by the user of the system.
  * 
  * @author Augustin Zidek
  * 
  */
-public class FacebookDataCollector extends SecondaryDataCollector {
-
-	public FacebookDataCollector(DatabaseManager databaseManager) {
+public class ManualInputDataCollector extends PrimaryDataCollector {
+	public ManualInputDataCollector(DatabaseManager databaseManager) {
 		super(databaseManager);
 		// TODO Auto-generated constructor stub
 	}
@@ -22,13 +21,13 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void setup(List<Individual> individuals) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override

@@ -1,12 +1,17 @@
+Classes that should be thread safe are indicated with an asterisk (*).
+
 Individual
     userID
     name
     email
     other attributes that we obtain from PrimaryDC
+    -- a note on terminology: let's refer to the different 'data items,' or kinds of fruit in Josh's
+       terminology, as 'attributes' from now on (in the code as well). This should keep confusion to
+       a minimum (hopefully).
     create our own tuple (String : Object)
 
 
-DBManager
+DBManager *
     store(List<Individual>)
     store(Individual)
 

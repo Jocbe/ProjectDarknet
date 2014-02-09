@@ -9,7 +9,7 @@ Individual
        terminology, as 'attributes' from now on (in the code as well). This should keep confusion to
        a minimum (hopefully). Also, the different categories of attributes should be called, well,
        attribute categories. I have tried to be consistent with the terminology. (Ibby)
-    create our own tuple (String : Object)
+    create our own tuple (String : Object) -- done.
 
 
 DBManager *
@@ -17,7 +17,7 @@ DBManager *
     store(Individual)
 
 
-DataCollector implements Runnable
+DataCollector implements Runnable -- done
     run()
     setup(List<Individual>)
     setup(Individual)
@@ -27,4 +27,3 @@ DataCollectionManager
     1. Creates global type table
     2. Creates DatabaseManager, takes global type table as a parameter
     3. Calls Data Collectors (primary, then secondary), they take DBManager as a parameter
-

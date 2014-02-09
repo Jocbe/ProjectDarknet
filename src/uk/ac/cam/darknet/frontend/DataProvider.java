@@ -3,79 +3,59 @@ package uk.ac.cam.darknet.frontend;
 import java.util.List;
 
 import uk.ac.cam.darknet.common.Individual;
-import uk.ac.cam.darknet.common.Policy;
 
 /**
- * Interface for all data providers, i.e. classes that get various data from
- * according tables in the database.
+ * This class queries the database via a database manager to find the most
+ * suitable individuals for an effect. All the data requested is added to the
+ * respective individual's <code>Properties</code> object.
+ * 
+ * This class contains overloaded methods suitable for working either with one
+ * individual at a time, or with a list of individuals.
  * 
  * @author Augustin Zidek
  * 
  */
-public interface DataProvider {
+public class DataProvider {
+	// TODO: Need to add methods for each global attribute type.
+	/**
+	 * Add all the data held in the database associated with the given
+	 * individual. This includes data from each secondary data collector.
+	 * 
+	 * @param individual The individual to look up.
+	 */
+	public void getAllData(final Individual individual) {
+		// TODO
+	}
 
 	/**
-	 * Returns the first name of the given individual.
+	 * Add all the data held in the database associated with each individual in
+	 * the list. This includes data from each secondary data collector.
 	 * 
-	 * @param i The individual.
+	 * @param individuals The individuals to look up.
 	 */
-	public void getFirstName(final Individual i);
+	public void getAllData(final List<Individual> individuals) {
+		// TODO
+	}
 
 	/**
-	 * Returns the date of birth of the given individual.
+	 * Add one specific attribute to the individual.
 	 * 
-	 * @param i The individual.
+	 * @param individual The individual to look up.
+	 * @param attributeName The name of the attribute to add to the properties.
 	 */
-	public void getDoB(final Individual i);
+	public void getSpecificAttribute(final Individual individual,
+			String attributeName) {
+		// TODO
+	}
 
 	/**
-	 * Returns the last name of the given individual.
+	 * Add one specific attribute to each individual.
 	 * 
-	 * @param i The individual.
+	 * @param individuals The individuals to look up.
+	 * @param attributeName The name of the attribute to add to the properties.
 	 */
-	public void getLastName(final Individual i);
-
-	/**
-	 * Returns all data associated with the given individual.
-	 * 
-	 * @param i The individual.
-	 * @param p The policy specifying what data should be get.
-	 * 
-	 */
-	public void getAllData(final Individual i, final Policy p);
-
-	/**
-	 * Returns all data associated with each individual in the given list of
-	 * individuals.
-	 * 
-	 * @param individualList The list of individuals.
-	 * @param p The policy specifying what data should be get.
-	 * 
-	 */
-	public void getAllData(final List<Individual> individualList, final Policy p);
-
-	/**
-	 * Returns the first name of each individual in the given list of
-	 * individuals.
-	 * 
-	 * @param individualList The list of individuals.
-	 */
-	public void getFirstName(final List<Individual> individualList);
-
-	/**
-	 * Returns the last name of each individual in the given list of
-	 * individuals.
-	 * 
-	 * @param individualList The list of individuals.
-	 */
-	public void getLastName(final List<Individual> individualList);
-
-	/**
-	 * Returns the date of birth of each individual in the given list of
-	 * individuals.
-	 * 
-	 * @param individualList The list of individuals.
-	 */
-	public void getDoB(final List<Individual> individualList);
-
+	public void getSpecificAttribute(final List<Individual> individuals,
+			String attributeName) {
+		// TODO
+	}
 }

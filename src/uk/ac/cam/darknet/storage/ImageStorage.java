@@ -12,7 +12,7 @@ import javax.imageio.ImageIO;
 import uk.ac.cam.darknet.common.Strings;
 
 /**
- * Stores a image given as an URL, file or a awt.Image and returns its
+ * Stores an image given as an URL, file or a awt.Image and returns its
  * universally unique ID (UUID) which can be later used to obtain the photo from
  * the storage. The images are stored in one folder with the unique ID being
  * their name.
@@ -55,7 +55,7 @@ public class ImageStorage {
 	/**
 	 * Parse the URL and determine the format of the image.
 	 */
-	private String getFormat(final URL imageURL) {
+	private String determineFormat(final URL imageURL) {
 		final String url = imageURL.toString();
 		if (url.endsWith(".jpg")) {
 			return "jpg";
@@ -66,7 +66,7 @@ public class ImageStorage {
 		else if (url.endsWith(".gif")) {
 			return "gif";
 		}
-		// Default: jpg
+		// Default: Pretend it's jpg
 		else {
 			return "jpg";
 		}
@@ -93,7 +93,7 @@ public class ImageStorage {
 		// Read the image from the given URL, throws IOException if error
 		final BufferedImage image = ImageIO.read(imageURL);
 		// Get the format of the image (jpg/png/gif otherwise jpg)
-		final String format = getFormat(imageURL);
+		final String format = determineFormat(imageURL);
 		// Generate unique name for the image and append also the format
 		final String imageUUID = UUID.randomUUID().toString() + "-" + format;
 		// Create the new file that will contain the image

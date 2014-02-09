@@ -1,8 +1,8 @@
 package uk.ac.cam.darknet.frontend;
 
 /**
- * An interface for effects. An effect is something that processes the data in a
- * certain way and returns them.
+ * An interface for effects. An effect is something that queries and makes use
+ * of the data in the system.
  * 
  * @author Augustin Zidek
  * 
@@ -10,8 +10,8 @@ package uk.ac.cam.darknet.frontend;
 public interface Effect {
 
 	/**
-	 * Executes the given effect, which involves fetching data, processing them
-	 * and returning them in a certain format.
+	 * Executes the given effect, which involves fetching data, processing it
+	 * and displaying it in some format.
 	 */
 	public void execute();
 

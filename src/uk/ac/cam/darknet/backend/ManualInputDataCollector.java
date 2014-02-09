@@ -1,5 +1,6 @@
 package uk.ac.cam.darknet.backend;
 
+import java.io.File;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -22,8 +23,9 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 	 * 
 	 * @param databaseManager The database manager to use to write to the
 	 *            database.
+	 *            
 	 */
-	public ManualInputDataCollector(DatabaseManager databaseManager) {
+	public ManualInputDataCollector(DatabaseManager databaseManager,File dataInput) {
 		super(databaseManager);
 		// TODO Auto-generated constructor stub
 	}
@@ -31,12 +33,9 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
+		//note will create Individuals and store them using database manager
 	}
 
-	@Override
-	public void setup(List<Individual> individuals) {
-		// TODO Auto-generated method stub
-	}
 
 	@Override
 	public Hashtable<String, AttributeCategories> getTypeTable() {

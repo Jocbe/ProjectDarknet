@@ -1,6 +1,8 @@
 package uk.ac.cam.darknet.backend;
 
-import uk.ac.cam.darknet.common.Properties;
+import java.util.Hashtable;
+
+import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.database.DatabaseManager;
 
 /**
@@ -13,10 +15,10 @@ import uk.ac.cam.darknet.database.DatabaseManager;
 public abstract class SecondaryDataCollector implements DataCollector {
 	@SuppressWarnings("unused")
 	private DatabaseManager databaseManager;
-	private Properties typeTable;
+	private Hashtable<String, AttributeCategories> typeTable;
 
 	@Override
-	public Properties getTypeTable() {
+	public Hashtable<String, AttributeCategories> getTypeTable() {
 		return typeTable;
 	}
 

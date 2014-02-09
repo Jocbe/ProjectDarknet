@@ -1,9 +1,10 @@
 package uk.ac.cam.darknet.backend;
 
+import java.util.Hashtable;
 import java.util.List;
 
+import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
-import uk.ac.cam.darknet.common.Properties;
 import uk.ac.cam.darknet.database.DatabaseManager;
 
 /**
@@ -38,7 +39,7 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 	}
 
 	@Override
-	public Properties getTypeTable() {
+	public Hashtable<String, AttributeCategories> getTypeTable() {
 		// TODO Auto-generated method stub
 		return null;
 	}

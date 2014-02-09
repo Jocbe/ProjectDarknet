@@ -1,9 +1,10 @@
 package uk.ac.cam.darknet.backend;
 
+import java.util.Hashtable;
 import java.util.List;
 
+import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
-import uk.ac.cam.darknet.common.Properties;
 
 /**
  * An interface for data collectors. Data collectors harvest data from the
@@ -24,9 +25,9 @@ public interface DataCollector extends Runnable {
 
 	/**
 	 * This method returns a table of the attributes that this collector
-	 * supports. The table is a set of key-value pairs, which each key being a
-	 * string equal to the name of the attribute, and each value being a
-	 * <code>GlobalAttributeType</code>. The returned <code>Properties</code>
+	 * supports. The table is a set of key-value pairs, with each key being a
+	 * string equal to the name of the attribute, and each value being an
+	 * <code>AttributeCategory</code>. The returned <code>Hashtable</code>
 	 * object may for example contain the following key-value pairs:
 	 * 
 	 * <table>
@@ -51,10 +52,13 @@ public interface DataCollector extends Runnable {
 	 * </tbody>
 	 * </table>
 	 * 
+	 * The data collection manager will build the global attribute table by
+	 * combining the attribute tables returned by each collector.
+	 * 
 	 * @return A <code>Properties</code> object containing all the attributes
 	 *         supported with their global types.
 	 */
-	public Properties getTypeTable();
+	public Hashtable<String, AttributeCategories> getTypeTable();
 
 	/**
 	 * Each collector must have a unique ID across the system. The IDs should

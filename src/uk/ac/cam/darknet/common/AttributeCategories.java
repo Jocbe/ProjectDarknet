@@ -3,14 +3,13 @@ package uk.ac.cam.darknet.common;
 import java.util.UUID;
 
 /**
- * The set of attribute types supported by the system. Each data collector
+ * The set of attribute categories supported by the system. Each data collector
  * provides a list of attributes it supports, indicating for each one which
- * global attribute type it falls into. This enumeration includes some generic
- * types for uncommon attributes.
+ * category it falls into.
  * 
  * @author Ibtehaj Nadeem
  */
-public enum GlobalAttributeType {
+public enum AttributeCategories {
 	/**
 	 * First names of individuals (<code>String</code>)
 	 */
@@ -35,7 +34,7 @@ public enum GlobalAttributeType {
 
 	private Class<?> attributeType;
 
-	GlobalAttributeType(Class<?> attributeType) {
+	AttributeCategories(Class<?> attributeType) {
 		this.attributeType = attributeType;
 	}
 
@@ -48,5 +47,26 @@ public enum GlobalAttributeType {
 	 */
 	public Class<?> getAttributeType() {
 		return attributeType;
+	}
+
+	/**
+	 * Checks whether a given object can be cast to an object suitable for
+	 * representing this attribute type.
+	 * 
+	 * @param toCheck The object whose compatibility must be verified.
+	 * @return True if the object is valid, false otherwise.
+	 */
+	public boolean isObjectCompatible(Object toCheck) {
+		return attributeType.isInstance(toCheck);
+	}
+
+	/**
+	 * Get the name of the class used to store attributes of this category.
+	 * 
+	 * @return Name of the class that should be used to represent this attribute
+	 *         category.
+	 */
+	public String getClassName() {
+		return attributeType.getSimpleName();
 	}
 }

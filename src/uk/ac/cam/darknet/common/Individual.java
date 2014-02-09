@@ -1,5 +1,7 @@
 package uk.ac.cam.darknet.common;
 
+import java.util.Hashtable;
+
 /**
  * A class for storing a person with their data. The common attribute types that
  * are provided by the primary data collectors are available as getters. All the
@@ -18,15 +20,18 @@ public class Individual {
 	private final String lastName;
 
 	/**
-	 * Creates a new individual. The attributes of the individual should match
-	 * their corresponding fields in the primary table in the database.
+	 * Creates a new individual. The parameters should match the corresponding
+	 * fields in the primary table of the database.
 	 * 
 	 * @param id The unique ID for the individual. This should be equal to the
 	 *            individual's primary key in the database.
 	 * @param firstName The individual's first name.
 	 * @param lastName The individual's last name.
+	 * @param globalAttributeTable The global table mapping all available
+	 *            attribute names to their global attribute types.
 	 */
-	public Individual(int id, String firstName, String lastName) {
+	public Individual(int id, String firstName, String lastName,
+			Hashtable<String, AttributeCategories> globalAttributeTable) {
 		// TODO: Add all the primary attributes.
 		// Possible list (to be confirmed):
 		// Email
@@ -37,7 +42,7 @@ public class Individual {
 		this.id = id;
 		this.firstName = firstName;
 		this.lastName = lastName;
-		this.properties = new Properties();
+		this.properties = new Properties(globalAttributeTable);
 	}
 
 	/**

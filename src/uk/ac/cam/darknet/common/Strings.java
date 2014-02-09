@@ -16,4 +16,8 @@ public class Strings {
 	// Storage
 	public static final String STORAGE_CLASS_REL_URL = "bin/uk/ac/cam/darknet/storage/";
 	public static final String STORAGE_REL_URL = "storage/";
+
+	// Properties
+	public static final String PROP_UNKNOWN_ATTR_EXN = "Cannot add the unknown attribute '%1$s' to the properties of an individual.";
+	public static final String PROP_INVALID_TYPE_EXN = "Cannot add the specified object as a '%1$s' attribute. The required type is %2$s.";
 }

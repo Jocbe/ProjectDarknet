@@ -10,17 +10,23 @@ Individual
        a minimum (hopefully). Also, the different categories of attributes should be called, well,
        attribute categories. I have tried to be consistent with the terminology. (Ibby)
     create our own tuple (String : Object) -- done.
+    update()? (how does the information a secondarydatacollector stores get merged? because we only have a
+        store(Individual) method not Properties. or do updates to an Individual object automatically get stored somehow?) (Farah)
 
 
 DBManager *
     store(List<Individual>)
     store(Individual)
+    getNextIndividualId() - return a unique id so Primary Data Collector can use it to make individual (Farah)
+    
 
 
 DataCollector implements Runnable -- done
     run()
     setup(List<Individual>)
     setup(Individual)
+    
+ManualDataColletor - needs csv file as input. where will it be passed from? DataCollection
 
 
 DataCollectionManager

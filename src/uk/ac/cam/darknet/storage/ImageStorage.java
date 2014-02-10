@@ -6,19 +6,15 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.UUID;
-
 import javax.imageio.ImageIO;
-
 import uk.ac.cam.darknet.common.Strings;
 
 /**
- * Stores an image given as an URL, file or a awt.Image and returns its
- * universally unique ID (UUID) which can be later used to obtain the photo from
- * the storage. The images are stored in one folder with the unique ID being
- * their name.
+ * Stores an image given as an URL, file or a awt.Image and returns its universally unique ID (UUID)
+ * which can be later used to obtain the photo from the storage. The images are stored in one folder
+ * with the unique ID being their name.
  * 
- * The UUID is generated using java.util.UUID. For convenience, all images are
- * stored as jpg files.
+ * The UUID is generated using java.util.UUID. For convenience, all images are stored as jpg files.
  * 
  * The class is thread-safe.
  * 
@@ -27,29 +23,27 @@ import uk.ac.cam.darknet.common.Strings;
  */
 public class ImageStorage {
 	// The path to the folder which stores all the images
-	private final String storagePath;
+	private final String	storagePath;
 
 	/**
 	 * Creates a new image storage located at the given path.
 	 * 
-	 * @param storagePath The path of the image storage folder.
+	 * @param storagePath
+	 *            The path of the image storage folder.
 	 */
 	public ImageStorage(final String storagePath) {
 		this.storagePath = storagePath;
 	}
 
 	/**
-	 * Creates a new image storage with default path of the storage being the
-	 * folder <code>storage/</code> on the same level as the folder
-	 * <code>bin/</code> is.
+	 * Creates a new image storage with default path of the storage being the folder
+	 * <code>storage/</code> on the same level as the folder <code>bin/</code> is.
 	 */
 	public ImageStorage() {
 		// Get URL of this class and get rid of the file:/ at the beginning
-		final String classURL = this.getClass().getResource("").toString()
-				.replaceAll("file:/", "");
+		final String classURL = this.getClass().getResource("").toString().replaceAll("file:/", "");
 		// Get out of the project and bin class and go into storage/
-		this.storagePath = classURL.replaceAll(Strings.STORAGE_CLASS_REL_URL,
-				Strings.STORAGE_REL_URL);
+		this.storagePath = classURL.replaceAll(Strings.STORAGE_CLASS_REL_URL, Strings.STORAGE_REL_URL);
 	}
 
 	/**
@@ -59,11 +53,9 @@ public class ImageStorage {
 		final String url = imageURL.toString();
 		if (url.endsWith(".jpg")) {
 			return "jpg";
-		}
-		else if (url.endsWith(".png")) {
+		} else if (url.endsWith(".png")) {
 			return "png";
-		}
-		else if (url.endsWith(".gif")) {
+		} else if (url.endsWith(".gif")) {
 			return "gif";
 		}
 		// Default: Pretend it's jpg
@@ -80,14 +72,16 @@ public class ImageStorage {
 	}
 
 	/**
-	 * Retrieves image from the given URL, generates a unique name for it,
-	 * converts it into a jpg and saves it in the storage. The image can be
-	 * retrieved from the storage using the <code>retrieveImage()</code> method.
+	 * Retrieves image from the given URL, generates a unique name for it, converts it into a jpg
+	 * and saves it in the storage. The image can be retrieved from the storage using the
+	 * <code>retrieveImage()</code> method.
 	 * 
-	 * @param imageURL The URL where the image is.
+	 * @param imageURL
+	 *            The URL where the image is.
 	 * @return The unique identifier of the image
-	 * @throws IOException If the image can't be read from the URL or there was
-	 *             error saving it into the storage.
+	 * @throws IOException
+	 *             If the image can't be read from the URL or there was error saving it into the
+	 *             storage.
 	 */
 	public String saveImage(final URL imageURL) throws IOException {
 		// Read the image from the given URL, throws IOException if error
@@ -107,11 +101,12 @@ public class ImageStorage {
 	/**
 	 * Retrieves an image with the given UUID from the storage
 	 * 
-	 * @param UUID The UUID of the image
+	 * @param UUID
+	 *            The UUID of the image
 	 * @return The Image with such UUID, throws exception otherwise.
-	 * @throws IOException If the file with such UUID doesn't exist or there has
-	 *             been some other error while reading from the storage (i.e.
-	 *             the path of the storage might be corrupted).
+	 * @throws IOException
+	 *             If the file with such UUID doesn't exist or there has been some other error while
+	 *             reading from the storage (i.e. the path of the storage might be corrupted).
 	 */
 	public Image retreiveImage(final String UUID) throws IOException {
 		// Determine the format

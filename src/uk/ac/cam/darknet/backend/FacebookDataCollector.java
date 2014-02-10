@@ -2,7 +2,6 @@ package uk.ac.cam.darknet.backend;
 
 import java.util.Hashtable;
 import java.util.List;
-
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
 import uk.ac.cam.darknet.database.DatabaseManager;
@@ -17,8 +16,8 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 	/**
 	 * Create a new Facebook data collector with the specified database manager.
 	 * 
-	 * @param databaseManager The database manager to use to write to the
-	 *            database.
+	 * @param databaseManager
+	 *            The database manager to use to write to the database.
 	 */
 	public FacebookDataCollector(DatabaseManager databaseManager) {
 		super(databaseManager);

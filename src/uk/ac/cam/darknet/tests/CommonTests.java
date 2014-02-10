@@ -1,9 +1,7 @@
 package uk.ac.cam.darknet.tests;
 
 import java.util.logging.Logger;
-
 import org.junit.Test;
-
 import uk.ac.cam.darknet.common.LoggerFactory;
 
 @SuppressWarnings("javadoc")

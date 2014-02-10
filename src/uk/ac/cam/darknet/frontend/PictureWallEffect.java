@@ -1,8 +1,8 @@
 package uk.ac.cam.darknet.frontend;
 
 /**
- * An effect for generating a wall of pictures of all the people in the theatre
- * (i.e. all individuals in the database for the given performance).
+ * An effect for generating a wall of pictures of all the people in the theatre (i.e. all
+ * individuals in the database for the given performance).
  * 
  * @author Augustin Zidek
  * 

@@ -1,10 +1,5 @@
 package uk.ac.cam.darknet.backend;
 
-import java.util.Hashtable;
-import java.util.List;
-
-import uk.ac.cam.darknet.common.AttributeCategories;
-import uk.ac.cam.darknet.common.Individual;
 import uk.ac.cam.darknet.database.DatabaseManager;
 
 /**
@@ -19,18 +14,12 @@ import uk.ac.cam.darknet.database.DatabaseManager;
 public abstract class PrimaryDataCollector implements DataCollector {
 	@SuppressWarnings("unused")
 	private DatabaseManager databaseManager;
-	private Hashtable<String, AttributeCategories> typeTable;
 
 	@Override
-	public void setup(List<Individual> individuals) {
-		return;
+	public String getCollectorId() {
+		return this.getClass().getSimpleName();
 	}
-
-	@Override
-	public Hashtable<String, AttributeCategories> getTypeTable() {
-		return typeTable;
-	}
-
+	
 	/**
 	 * Create a new primary data collector with the specified database manager.
 	 * 

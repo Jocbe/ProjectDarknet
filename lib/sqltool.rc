@@ -1,0 +1,5 @@
+# Default connection to the Project Darknet database.
+urlid darknetdb
+url jdbc:hsqldb:hsql://131.111.131.26:5000/darknetdb
+username SA
+password L5EpWNr2HW

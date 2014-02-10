@@ -10,14 +10,13 @@ import java.util.Hashtable;
  * available is prefixed with the unique ID of the corresponding collector to
  * avoid name clashes.
  * 
- * @author Augustin Zidek
- * 
  */
 public class Individual {
 	private final Properties properties;
 	private final int id;
 	private final String firstName;
 	private final String lastName;
+	private final String email;
 
 	/**
 	 * Creates a new individual. The parameters should match the corresponding
@@ -27,21 +26,22 @@ public class Individual {
 	 *            individual's primary key in the database.
 	 * @param firstName The individual's first name.
 	 * @param lastName The individual's last name.
+	 * @param email The individual's email.
 	 * @param globalAttributeTable The global table mapping all available
 	 *            attribute names to their global attribute types.
 	 */
-	public Individual(int id, String firstName, String lastName,
+	public Individual(final int id, final String firstName,
+			final String lastName, final String email,
 			Hashtable<String, AttributeCategories> globalAttributeTable) {
 		// TODO: Add all the primary attributes.
-		// Possible list (to be confirmed):
-		// Email
-		// Date booked
-		// Tickets booked
-		// Phone number
-		// Etc.
+		/*
+		 * Event Name, Event Date/Time, Seat, Price, Ticket Type, Date
+		 * Confirmed, Sales Channel
+		 */
 		this.id = id;
 		this.firstName = firstName;
 		this.lastName = lastName;
+		this.email = email;
 		this.properties = new Properties(globalAttributeTable);
 	}
 
@@ -71,6 +71,16 @@ public class Individual {
 	 */
 	public String getLastName() {
 		return lastName;
+	}
+
+	/**
+	 * Get the individual's email address.
+	 * 
+	 * @return The individual's email address (in the standard form, i.e.
+	 *         user@example.org)
+	 */
+	public String getEmail() {
+		return email;
 	}
 
 	/**

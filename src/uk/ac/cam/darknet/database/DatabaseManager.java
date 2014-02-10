@@ -6,9 +6,17 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.Hashtable;
+import java.util.List;
 import uk.ac.cam.darknet.common.AttributeCategories;
+import uk.ac.cam.darknet.common.Individual;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 
 /**
@@ -19,8 +27,16 @@ import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
  * @author Ibtehaj Nadeem
  */
 public abstract class DatabaseManager {
+	private static String									GET_BY_ID			= "SELECT * FROM individuals WHERE id = ?";
+	private static String									GET_BY_EVENT_DATE	= "SELECT * FROM individuals WHERE event = ?";
 	protected final Connection								connection;
 	protected final Hashtable<String, AttributeCategories>	globalAttributeTable;
+	private long											id;
+	private String											fname;
+	private String											lname;
+	private String											email;
+	private Date											event;
+	private String											seat;
 
 	/**
 	 * Creates a new <code>DatabaseManager</code> with the specified global attribute table and sets
@@ -77,5 +93,94 @@ public abstract class DatabaseManager {
 		connectionUrl = prefix + "//" + host + ":" + port + "/" + alias;
 		Class.forName("org.hsqldb.jdbc.JDBCDriver");
 		return DriverManager.getConnection(connectionUrl, username, password);
+	}
+
+	/**
+	 * Attempts to find and return an individual by their ID.
+	 * 
+	 * @param id
+	 *            The unique ID of the individual to return.
+	 * @return The individual with the given ID, or null if such an individual could not be found.
+	 * @throws SQLException
+	 */
+	public synchronized Individual getById(long id) throws SQLException {
+		Individual toReturn;
+		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_ID);) {
+			stmt.setLong(1, id);
+			try (ResultSet result = stmt.executeQuery();) {
+				toReturn = createIndividual(result);
+			}
+		}
+		return toReturn;
+	}
+
+	/**
+	 * Return a list of individuals by the date of an event.
+	 * 
+	 * @param eventDate
+	 *            The date of the event of which all individuals are to be fetched.
+	 * @return A list of individuals, each of which has booked a ticket for the given date.
+	 * @throws SQLException
+	 */
+	public synchronized List<Individual> getByEventDate(Date eventDate) throws SQLException {
+		ArrayList<Individual> toReturn = new ArrayList<Individual>();
+		Individual next;
+		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_EVENT_DATE);) {
+			stmt.setTimestamp(1, dateToSQLTimestamp(eventDate));
+			try (ResultSet result = stmt.executeQuery();) {
+				next = createIndividual(result);
+				while (next != null) {
+					toReturn.add(next);
+					next = createIndividual(result);
+				}
+			}
+		}
+		return toReturn;
+	}
+
+	private Individual createIndividual(ResultSet result) throws SQLException {
+		if (result.next()) {
+			id = result.getLong(1);
+			fname = result.getString(2);
+			lname = result.getString(3);
+			email = result.getString(4);
+			event = result.getDate(5);
+			seat = result.getString(6);
+			return new Individual(id, fname, lname, email, event, seat, globalAttributeTable);
+		} else {
+			return null;
+		}
+	}
+
+	protected static String formatDate(Date date) {
+		if (date != null) {
+			return new SimpleDateFormat("yyyy-MM-dd HH-mm-ss").format(date);
+		} else {
+			return null;
+		}
+	}
+
+	protected static String formatDate(java.sql.Date date) {
+		if (date != null) {
+			return date.toString();
+		} else {
+			return null;
+		}
+	}
+
+	protected static java.sql.Date parseDate(String date) {
+		if (date != null) {
+			return java.sql.Date.valueOf(date);
+		} else {
+			return null;
+		}
+	}
+
+	protected static Timestamp dateToSQLTimestamp(Date date) {
+		if (date != null) {
+			return new Timestamp(date.getTime());
+		} else {
+			return null;
+		}
 	}
 }

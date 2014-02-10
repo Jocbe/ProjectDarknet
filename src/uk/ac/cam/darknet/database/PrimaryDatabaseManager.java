@@ -4,10 +4,11 @@ import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.SimpleDateFormat;
+import java.sql.Timestamp;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
@@ -20,11 +21,13 @@ import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 public class PrimaryDatabaseManager extends DatabaseManager {
 	private static final String	CREATE_PRIMARY_TABLE	= "CREATE CACHED TABLE individuals (id BIGINT GENERATED ALWAYS AS IDENTITY(START WITH 1000000) PRIMARY KEY, fname VARCHAR(25) NOT NULL, lname VARCHAR(25) NOT NULL, email VARCHAR(254), event TIMESTAMP WITHOUT TIME ZONE, seat VARCHAR(10))";
 	private static final String	INSERT_INDIVIDUAL		= "INSERT INTO individuals (id, fname, lname, email, event, seat) VALUES (DEFAULT, ?, ?, ?, ?, ?)";
+	private static final String	EMAIL_PATTERN			= "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@" + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
 	private String				fname;
 	private String				lname;
 	private String				email;
-	private String				event;
+	private Timestamp			event;
 	private String				seat;
+	private Pattern				pattern					= Pattern.compile(EMAIL_PATTERN);
 
 	/**
 	 * Creates a new <code>PrimaryDatabaseManager</code> with the specified global attribute table
@@ -56,12 +59,12 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 		}
 	}
 
-	private void setupStrings(Individual toStore) {
-		fname = toStore.getFirstName() == null ? "NULL" : toStore.getFirstName();
-		lname = toStore.getLastName() == null ? "NULL" : toStore.getLastName();
-		email = toStore.getEmail() == null ? "NULL" : toStore.getEmail();
-		event = toStore.getEventDate() == null ? "NULL" : new SimpleDateFormat("yyyy-MM-dd HH-mm-ss").format(toStore.getEventDate());
-		seat = toStore.getSeat() == null ? "NULL" : toStore.getSeat();
+	private void setupParameters(Individual toStore) {
+		fname = toStore.getFirstName().trim().equals("") ? null : toStore.getFirstName().trim();
+		lname = toStore.getLastName().trim().equals("") ? null : toStore.getLastName().trim();
+		email = toStore.getEmail().trim().equals("") ? null : toStore.getEmail().trim().toLowerCase();
+		event = dateToSQLTimestamp(toStore.getEventDate());
+		seat = toStore.getSeat().trim().equals("") ? null : toStore.getSeat().trim();
 	}
 
 	/**
@@ -80,15 +83,15 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 		try (PreparedStatement stmt = connection.prepareStatement(INSERT_INDIVIDUAL);) {
 			while (iterator.hasNext()) {
 				current = iterator.next();
-				setupStrings(current);
-				if (fname.equals("NULL") || lname.equals("NULL") || fname.length() > 25 || lname.length() > 25 || email.length() > 254 || seat.length() > 10)
-					continue;
-				stmt.setString(1, fname);
-				stmt.setString(2, lname);
-				stmt.setString(3, email);
-				stmt.setString(4, event);
-				stmt.setString(5, seat);
-				stmt.executeUpdate();
+				setupParameters(current);
+				if (parametersValid()) {
+					stmt.setString(1, fname);
+					stmt.setString(2, lname);
+					stmt.setString(3, email);
+					stmt.setTimestamp(4, event);
+					stmt.setString(5, seat);
+					stmt.executeUpdate();
+				}
 				numOfIndividualsInserted++;
 			}
 		}
@@ -106,40 +109,56 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 	 */
 	public synchronized boolean store(Individual individual) throws SQLException {
 		try (PreparedStatement stmt = connection.prepareStatement(INSERT_INDIVIDUAL);) {
-			setupStrings(individual);
-			if (fname.equals("NULL") || lname.equals("NULL") || fname.length() > 25 || lname.length() > 25 || email.length() > 254 || seat.length() > 10)
-				return false;
-			stmt.setString(1, fname);
-			stmt.setString(2, lname);
-			stmt.setString(3, email);
-			stmt.setString(4, event);
-			stmt.setString(5, seat);
-			stmt.executeUpdate();
+			setupParameters(individual);
+			if (parametersValid()) {
+				stmt.setString(1, fname);
+				stmt.setString(2, lname);
+				stmt.setString(3, email);
+				stmt.setTimestamp(4, event);
+				stmt.setString(5, seat);
+				stmt.executeUpdate();
+			}
 		}
 		connection.commit();
 		return true;
 	}
 
-	/**
-	 * Attempts to find and return an individual by their ID.
-	 * 
-	 * @param id
-	 *            The unique ID of the individual to return.
-	 * @return The individual with the given ID, or null if such an individual could not be found.
-	 */
-	public synchronized Individual getById(long id) {
-		// TODO
-		return null;
+	private boolean parametersValid() {
+		if (fname == null || lname == null)
+			return false;
+		if (fname.length() > 25 || lname.length() > 25)
+			return false;
+		if (email != null && email.length() > 254)
+			return false;
+		if (email != null && (!pattern.matcher(email).matches()))
+			return false;
+		if (seat != null && seat.length() > 10)
+			return false;
+		return true;
 	}
 
-	private Individual createIndividual() {
-		// TODO
-		return null;
-	}
-
+	// @SuppressWarnings({"javadoc", "deprecation"})
 	// public static void main(String args[]) throws ClassNotFoundException,
 	// ConfigFileNotFoundException, IOException, SQLException {
-	// PrimaryDatabaseManager instance = new PrimaryDatabaseManager(null,
-	// args[0]);
+	// PrimaryDatabaseManager instance = new PrimaryDatabaseManager(null, args[0]);
+	// Individual individual;
+	// String[] fnames = {"Claire", "Denise", "Richard", "Travis", "Sheila"};
+	// String[] lnames = {"Manzella", "Salazar", "Connally", "Briggs", "Brewer"};
+	// String[] emails = {"c.manzella241@gmail.com", "", "", "", "sheilambrewer@teleworm.us"};
+	// String[] seats = {"A01", "B52", "", "C04", "D14"};
+	// for (int i = 0; i < 5; i++) {
+	// individual = Individual.getNewIndividual(fnames[i], lnames[i], emails[i], new
+	// java.util.Date(2014, 2, 10, 23, 0, 0), seats[i], null);
+	// instance.store(individual);
+	// }
+	// List<Individual> li = instance.getByEventDate(new java.util.Date(2014, 2, 10, 23, 0, 0));
+	// for (Individual i : li) {
+	// System.out.println(i.getFirstName());
+	// System.out.println(i.getLastName());
+	// System.out.println(i.getEmail());
+	// System.out.println(formatDate(i.getEventDate()));
+	// System.out.println(i.getSeat());
+	// System.out.println();
+	// }
 	// }
 }

@@ -10,17 +10,19 @@ import java.util.Hashtable;
  * 
  * @author Ibtehaj Nadeem
  */
-public class NewIndividual extends Individual {
+public class IndividualFactory extends Individual {
 
 	/**
 	 * @param firstName
 	 * @param lastName
+	 * @param email
 	 * @param globalAttributeTable
 	 */
-	public NewIndividual(String firstName, String lastName,
+	public IndividualFactory(String firstName, String lastName, String email,
 			Hashtable<String, AttributeCategories> globalAttributeTable) {
-		super(0, firstName, lastName, globalAttributeTable);
-		// TODO Auto-generated constructor stub
+		super(0, firstName, lastName, email, globalAttributeTable);
+
+		// TODO: Shouldn't this be a method rather than a constructor?
 	}
 
 }

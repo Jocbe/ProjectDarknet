@@ -8,10 +8,11 @@ package uk.ac.cam.darknet.common;
  */
 @SuppressWarnings("javadoc")
 public class Strings {
-	// Logger
+	// LoggerFactory
 	public static final String LOGGER_NAME = "DarkLogger";
 	public static final String LOG_PATH = "log/main.log";
 	public static final String LOG_EXCEPTION = "IOException opening log file! ";
+	public static final String LOG_FORMAT_EXCEPTION = "Exception occurred in conditional block of log formatter while trying to format a log entry! Check. Exception type: ";
 
 	// Storage
 	public static final String STORAGE_CLASS_REL_URL = "bin/uk/ac/cam/darknet/storage/";

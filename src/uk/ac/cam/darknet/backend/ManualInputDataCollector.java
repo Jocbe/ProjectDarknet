@@ -18,6 +18,7 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 	 * 
 	 * @param databaseManager The database manager to use to write to the
 	 *            database.
+	 * @param dataInput The file which has the input data.
 	 */
 	public ManualInputDataCollector(DatabaseManager databaseManager,
 			File dataInput) {

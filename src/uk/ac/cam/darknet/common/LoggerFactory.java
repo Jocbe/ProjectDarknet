@@ -31,52 +31,49 @@ public class LoggerFactory {
 			final ConsoleHandler ch;
 
 			try {
-				
+
 				fh = new FileHandler(Strings.LOG_PATH, true);
 				ch = new ConsoleHandler();
-				
-				
+
 				class LogFormatter extends Formatter {
-					
+
 					@Override
 					public String format(LogRecord r) {
 
-						StringBuilder sb = new StringBuilder();
-						
-						String d = (new SimpleDateFormat("yyyy-mm-dd_hh:mm:ss")).format(new Date(r.getMillis()));
-						
-						sb.append(d)
-							.append(" [")
-							.append(r.getLevel().getLocalizedName())
-							.append("] - ")
-							.append(r.getSourceMethodName())
-							.append(" (")
-							.append(r.getSourceClassName())
-							.append("): ")
-							.append(formatMessage(r))
-							.append("\n");
-						
-						if(r.getThrown() != null) {
-							try{
+						final StringBuilder sb = new StringBuilder();
+
+						final String d = (new SimpleDateFormat("yyyy-mm-dd_hh:mm:ss"))
+								.format(new Date(r.getMillis()));
+
+						sb.append(d).append(" [")
+								.append(r.getLevel().getLocalizedName())
+								.append("] - ").append(r.getSourceMethodName())
+								.append(" (").append(r.getSourceClassName())
+								.append("): ").append(formatMessage(r))
+								.append("\n");
+
+						if (r.getThrown() != null) {
+							try {
 								StringWriter sw = new StringWriter();
-								try(PrintWriter pw = new PrintWriter(sw)) {
+								try (PrintWriter pw = new PrintWriter(sw)) {
 									r.getThrown().printStackTrace(pw);
 								}
 								sb.append(sw.toString());
-							} catch(Exception e) {
-								System.err.println("Exception occurred in conditional block of log formatter "
-										+ "while trying to format a log entry! Check. Exception type: "
-										+ e.getClass().toString() + ". Message: " + e.getMessage());
+							}
+							catch (Exception e) {
+								System.err.println(Strings.LOG_FORMAT_EXCEPTION
+										+ e.getClass().toString()
+										+ ". Message: " + e.getMessage());
 							}
 						}
-						
+
 						return sb.toString();
-						
+
 					}
 				}
-				
-				LogFormatter lf = new LogFormatter();
-				
+
+				final LogFormatter lf = new LogFormatter();
+
 				fh.setFormatter(lf);
 				ch.setFormatter(lf);
 
@@ -84,7 +81,7 @@ public class LoggerFactory {
 
 				logger.addHandler(fh);
 				logger.addHandler(ch);
-				
+
 			}
 			catch (IOException e) {
 				System.err.println(Strings.LOG_EXCEPTION + e.getMessage());

@@ -36,7 +36,7 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 	}
 
 	@Override
-	public Hashtable<String, AttributeCategories> getTypeTable() {
+	public Hashtable<String, AttributeCategories> getAttributeTable() {
 		// TODO Auto-generated method stub
 		return null;
 	}

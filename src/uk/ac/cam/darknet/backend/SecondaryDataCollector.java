@@ -17,7 +17,7 @@ import uk.ac.cam.darknet.database.DatabaseManager;
 public abstract class SecondaryDataCollector implements DataCollector {
 	@SuppressWarnings("unused")
 	private DatabaseManager databaseManager;
-	private Hashtable<String, AttributeCategories> typeTable;
+	private Hashtable<String, AttributeCategories> attributeTable;
 
 	/**
 	 * This method returns a table of the attributes that this collector
@@ -54,8 +54,17 @@ public abstract class SecondaryDataCollector implements DataCollector {
 	 * @return A <code>Properties</code> object containing all the attributes
 	 *         supported with their global types.
 	 */
-	public Hashtable<String, AttributeCategories> getTypeTable() {
-		return typeTable;
+	public Hashtable<String, AttributeCategories> getAttributeTable() {
+		// NOTE: It is impossible to make this method static and abstract at the
+		// same time. That is why we have to have an implementation that is not
+		// static. This means that the DataCollectionManager will operate as
+		// follows:
+		// 0) Create the DatabaseManager(s) with an empty global attribute
+		// table.
+		// 1) Create all the secondary data collectors.
+		// 2) By calling the getTypeTable() method on each one, add all the
+		// attributes to the global attribute table.
+		return attributeTable;
 	}
 
 	/**

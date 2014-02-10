@@ -1,5 +1,6 @@
 package uk.ac.cam.darknet.common;
 
+import java.util.Date;
 import java.util.Hashtable;
 
 /**
@@ -13,14 +14,20 @@ import java.util.Hashtable;
  */
 public class Individual {
 	private final Properties properties;
-	private final int id;
+	private final long id;
 	private final String firstName;
 	private final String lastName;
 	private final String email;
+	private final Date eventDate;
+	private final String seat;
 
 	/**
 	 * Creates a new individual. The parameters should match the corresponding
-	 * fields in the primary table of the database.
+	 * fields in the primary table of the database. This constructor should only
+	 * be used by the database manager.
+	 * 
+	 * Only the first and last names are required. The remaining fields may be
+	 * <code>null</code>.
 	 * 
 	 * @param id The unique ID for the individual. This should be equal to the
 	 *            individual's primary key in the database.
@@ -30,8 +37,9 @@ public class Individual {
 	 * @param globalAttributeTable The global table mapping all available
 	 *            attribute names to their global attribute types.
 	 */
-	public Individual(final int id, final String firstName,
-			final String lastName, final String email,
+	public Individual(final long id, final String firstName,
+			final String lastName, final String email, final Date eventDate,
+			final String seat,
 			Hashtable<String, AttributeCategories> globalAttributeTable) {
 		// TODO: Add all the primary attributes.
 		/*
@@ -42,7 +50,35 @@ public class Individual {
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.email = email;
+		this.eventDate = eventDate;
+		this.seat = seat;
 		this.properties = new Properties(globalAttributeTable);
+	}
+
+	/**
+	 * This method should be used by primary data collectors to obtain a new
+	 * individual (with a default ID) that has to be added to the database. They
+	 * should not use the constructor for this purpose. The database manager
+	 * will automatically assign an ID to the new individual when storing it in
+	 * the database.
+	 * 
+	 * Only the first and last names are required. The remaining fields may be
+	 * <code>null</code>.
+	 * 
+	 * @param firstName The first name of the new individual.
+	 * @param lastName The last name of the new individual.
+	 * @param email The email address of the new individual, expressed as a
+	 *            string.
+	 * @param eventDate The date and time of the event the individual booked.
+	 * @param seat The seat number of the individual booked, if any.
+	 * @param globalAttributeTable The global attribute table in the system.
+	 * @return
+	 */
+	public static Individual getNewIndividual(String firstName,
+			String lastName, String email, Date eventDate, String seat,
+			Hashtable<String, AttributeCategories> globalAttributeTable) {
+		return new Individual(0, firstName, lastName, email, eventDate, seat,
+				globalAttributeTable);
 	}
 
 	/**
@@ -51,7 +87,7 @@ public class Individual {
 	 * 
 	 * @return Returns the unique user ID of the individual.
 	 */
-	public int getId() {
+	public long getId() {
 		return id;
 	}
 
@@ -81,6 +117,25 @@ public class Individual {
 	 */
 	public String getEmail() {
 		return email;
+	}
+
+	/**
+	 * Get the date of the show the individual is attending.
+	 * 
+	 * @return The date of the event for which this individual is bought a
+	 *         ticket.
+	 */
+	public Date getEventDate() {
+		return eventDate;
+	}
+
+	/**
+	 * Get the reserved seat of the individual's booking, if any.
+	 * 
+	 * @return The booked seat, if any, as a string. Null otherwise.
+	 */
+	public String getSeat() {
+		return seat;
 	}
 
 	/**

@@ -47,8 +47,8 @@ public class Properties {
 	 * @throws UnknownAttributeException
 	 * @throws InvalidAttributeTypeException
 	 */
-	public void put(String key, Object value) throws UnknownAttributeException,
-			InvalidAttributeTypeException {
+	public synchronized void put(String key, Object value)
+			throws UnknownAttributeException, InvalidAttributeTypeException {
 		AttributeCategories attributeCategory = globalAttributeTable.get(key);
 		// Check if the key is a valid attribute.
 		if (attributeCategory == null)
@@ -71,7 +71,7 @@ public class Properties {
 	 * @return The value to which the specified attribute name is mapped, or
 	 *         null if this map contains no mapping for the attribute.
 	 */
-	public Object get(String key) {
+	public synchronized Object get(String key) {
 		return properties.get(key);
 	}
 
@@ -82,7 +82,7 @@ public class Properties {
 	 * 
 	 * @param key The key of the key-value pair to remove.
 	 */
-	public void remove(String key) {
+	public synchronized void remove(String key) {
 		properties.remove(key);
 	}
 
@@ -90,7 +90,7 @@ public class Properties {
 	 * Clears this <code>Properties</code> object so that it contains no more
 	 * key-value pairs.
 	 */
-	public void clear() {
+	public synchronized void clear() {
 		properties.clear();
 	}
 
@@ -101,7 +101,7 @@ public class Properties {
 	 * @param key The name of the attribute whose presence should be checked.
 	 * @return True if the key is contained, false otherwise.
 	 */
-	public boolean containsAttribute(String key) {
+	public synchronized boolean containsAttribute(String key) {
 		return properties.contains(key);
 	}
 
@@ -112,7 +112,7 @@ public class Properties {
 	 * @return an enumeration of the values in this <code>Properties</code>
 	 *         object.
 	 */
-	public Enumeration<Object> elements() {
+	public synchronized Enumeration<Object> elements() {
 		return properties.elements();
 	}
 
@@ -123,7 +123,7 @@ public class Properties {
 	 * @return an enumeration of the keys in this <code>Properties</code>
 	 *         object.
 	 */
-	public Enumeration<String> keys() {
+	public synchronized Enumeration<String> keys() {
 		return properties.keys();
 	}
 }

@@ -18,6 +18,8 @@ DBManager *
     store(List<Individual>)
     store(Individual)
     getNextIndividualId() - return a unique id so Primary Data Collector can use it to make individual (Farah)
+    (Resolved by adding NewIndividual class that extends Individual and has a default value for the ID field which is ignored by the database manager.
+    Did it this way because it's difficult to find the next available ID, as SQL generates them automatically.)
     
 
 

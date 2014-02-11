@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
-
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
 import uk.ac.cam.darknet.common.Strings;
@@ -122,78 +121,6 @@ public abstract class DatabaseManager {
 	}
 
 	/**
-	 * Return a list of individuals by the date of an event.
-	 * 
-	 * @param eventDate
-	 *            The date of the event of which all individuals are to be fetched.
-	 * @return A list of individuals, each of which has booked a ticket for the given date.
-	 * @throws SQLException
-	 */
-	public synchronized List<Individual> getByEventDate(Date eventDate) throws SQLException {
-		ArrayList<Individual> toReturn = new ArrayList<Individual>();
-		Individual next;
-		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_EVENT_DATE);) {
-			stmt.setTimestamp(1, dateToSQLTimestamp(eventDate));
-			try (ResultSet result = stmt.executeQuery();) {
-				next = createIndividual(result);
-				while (next != null) {
-					toReturn.add(next);
-					next = createIndividual(result);
-				}
-			}
-		}
-		return toReturn;
-	}
-
-	/**
-	 * Return a list of individuals who are sitting on the specified seat.
-	 * 
-	 * @param seat
-	 *            The seat, expressed as a string.
-	 * @return A list of individuals who have booked the specified seat.
-	 * @throws SQLException
-	 */
-	public synchronized List<Individual> getBySeat(String seat) throws SQLException {
-		ArrayList<Individual> toReturn = new ArrayList<Individual>();
-		Individual next;
-		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_SEAT);) {
-			stmt.setString(1, seat);
-			try (ResultSet result = stmt.executeQuery();) {
-				next = createIndividual(result);
-				while (next != null) {
-					toReturn.add(next);
-					next = createIndividual(result);
-				}
-			}
-		}
-		return toReturn;
-	}
-
-	/**
-	 * Return a list of individuals with the specified email address.
-	 * 
-	 * @param email
-	 *            The email address of the individual.
-	 * @return A list of individuals who have the specified email address.
-	 * @throws SQLException
-	 */
-	public synchronized List<Individual> getByEmail(String email) throws SQLException {
-		ArrayList<Individual> toReturn = new ArrayList<Individual>();
-		Individual next;
-		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_EMAIL);) {
-			stmt.setString(1, email);
-			try (ResultSet result = stmt.executeQuery();) {
-				next = createIndividual(result);
-				while (next != null) {
-					toReturn.add(next);
-					next = createIndividual(result);
-				}
-			}
-		}
-		return toReturn;
-	}
-
-	/**
 	 * Return a list of individuals with the given first name.
 	 * 
 	 * @param fname
@@ -203,16 +130,9 @@ public abstract class DatabaseManager {
 	 */
 	public synchronized List<Individual> getByFirstName(String fname) throws SQLException {
 		ArrayList<Individual> toReturn = new ArrayList<Individual>();
-		Individual next;
 		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_FNAME);) {
 			stmt.setString(1, fname);
-			try (ResultSet result = stmt.executeQuery();) {
-				next = createIndividual(result);
-				while (next != null) {
-					toReturn.add(next);
-					next = createIndividual(result);
-				}
-			}
+			toReturn = getQueryResults(stmt);
 		}
 		return toReturn;
 	}
@@ -227,16 +147,60 @@ public abstract class DatabaseManager {
 	 */
 	public synchronized List<Individual> getByLastName(String lname) throws SQLException {
 		ArrayList<Individual> toReturn = new ArrayList<Individual>();
-		Individual next;
 		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_LNAME);) {
 			stmt.setString(1, lname);
-			try (ResultSet result = stmt.executeQuery();) {
-				next = createIndividual(result);
-				while (next != null) {
-					toReturn.add(next);
-					next = createIndividual(result);
-				}
-			}
+			toReturn = getQueryResults(stmt);
+		}
+		return toReturn;
+	}
+
+	/**
+	 * Return a list of individuals with the specified email address.
+	 * 
+	 * @param email
+	 *            The email address of the individual.
+	 * @return A list of individuals who have the specified email address.
+	 * @throws SQLException
+	 */
+	public synchronized List<Individual> getByEmail(String email) throws SQLException {
+		ArrayList<Individual> toReturn = new ArrayList<Individual>();
+		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_EMAIL);) {
+			stmt.setString(1, email);
+			toReturn = getQueryResults(stmt);
+		}
+		return toReturn;
+	}
+
+	/**
+	 * Return a list of individuals who are sitting on the specified seat.
+	 * 
+	 * @param seat
+	 *            The seat, expressed as a string.
+	 * @return A list of individuals who have booked the specified seat.
+	 * @throws SQLException
+	 */
+	public synchronized List<Individual> getBySeat(String seat) throws SQLException {
+		ArrayList<Individual> toReturn = new ArrayList<Individual>();
+		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_SEAT);) {
+			stmt.setString(1, seat);
+			toReturn = getQueryResults(stmt);
+		}
+		return toReturn;
+	}
+
+	/**
+	 * Return a list of individuals by the date of an event.
+	 * 
+	 * @param eventDate
+	 *            The date of the event of which all individuals are to be fetched.
+	 * @return A list of individuals, each of which has booked a ticket for the given date.
+	 * @throws SQLException
+	 */
+	public synchronized List<Individual> getByEventDate(Date eventDate) throws SQLException {
+		ArrayList<Individual> toReturn = new ArrayList<Individual>();
+		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_EVENT_DATE);) {
+			stmt.setTimestamp(1, dateToSQLTimestamp(eventDate));
+			toReturn = getQueryResults(stmt);
 		}
 		return toReturn;
 	}
@@ -255,16 +219,22 @@ public abstract class DatabaseManager {
 	 */
 	public synchronized List<Individual> getBetweenDates(Date firstDate, Date secondDate) throws SQLException {
 		ArrayList<Individual> toReturn = new ArrayList<Individual>();
-		Individual next;
 		try (PreparedStatement stmt = connection.prepareStatement(GET_BETWEEN_DATES);) {
 			stmt.setTimestamp(1, dateToSQLTimestamp(firstDate));
 			stmt.setTimestamp(2, dateToSQLTimestamp(secondDate));
-			try (ResultSet result = stmt.executeQuery();) {
-				next = createIndividual(result);
-				while (next != null) {
-					toReturn.add(next);
-					next = createIndividual(result);
-				}
+			toReturn = getQueryResults(stmt);
+		}
+		return toReturn;
+	}
+
+	private ArrayList<Individual> getQueryResults(PreparedStatement stmt) throws SQLException {
+		ArrayList<Individual> toReturn = new ArrayList<Individual>();
+		Individual next;
+		try (ResultSet resultSet = stmt.executeQuery();) {
+			next = createIndividual(resultSet);
+			while (next != null) {
+				toReturn.add(next);
+				next = createIndividual(resultSet);
 			}
 		}
 		return toReturn;

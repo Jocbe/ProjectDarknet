@@ -148,4 +148,17 @@ public class Individual {
 	public Properties getProperties() {
 		return properties;
 	}
+
+	@Override
+	public boolean equals(Object otherIndividual) {
+		if (otherIndividual != null && otherIndividual instanceof Individual) {
+			if (((Individual) otherIndividual).getId() == this.id) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
 }

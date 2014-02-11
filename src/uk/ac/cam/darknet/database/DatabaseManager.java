@@ -168,6 +168,30 @@ public abstract class DatabaseManager {
 	}
 
 	/**
+	 * Return a list of individuals with the specified email address.
+	 * 
+	 * @param email
+	 *            The email address of the individual.
+	 * @return A list of individuals who have the specified email address.
+	 * @throws SQLException
+	 */
+	public synchronized List<Individual> getByEmail(String email) throws SQLException {
+		ArrayList<Individual> toReturn = new ArrayList<Individual>();
+		Individual next;
+		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_EMAIL);) {
+			stmt.setString(1, email);
+			try (ResultSet result = stmt.executeQuery();) {
+				next = createIndividual(result);
+				while (next != null) {
+					toReturn.add(next);
+					next = createIndividual(result);
+				}
+			}
+		}
+		return toReturn;
+	}
+
+	/**
 	 * Return a list of individuals with the given first name.
 	 * 
 	 * @param fname

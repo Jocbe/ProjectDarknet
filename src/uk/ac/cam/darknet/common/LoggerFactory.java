@@ -18,7 +18,7 @@ import java.util.logging.Logger;
  * @author Author
  */
 public class LoggerFactory {
-	private static Logger	logger;
+	private static Logger logger;
 
 	/**
 	 * @return New Logger into which messages can be logged.
@@ -42,9 +42,16 @@ public class LoggerFactory {
 
 						final StringBuilder sb = new StringBuilder();
 
-						final String d = (new SimpleDateFormat("yyyy-mm-dd_hh:mm:ss")).format(new Date(r.getMillis()));
+						final String d = (new SimpleDateFormat(
+								Strings.LOGGER_DATE_FORMAT)).format(new Date(r
+								.getMillis()));
 
-						sb.append(d).append(" [").append(r.getLevel().getLocalizedName()).append("] - ").append(r.getSourceMethodName()).append(" (").append(r.getSourceClassName()).append("): ").append(formatMessage(r)).append("\n");
+						sb.append(d).append(" [")
+								.append(r.getLevel().getLocalizedName())
+								.append("] - ").append(r.getSourceMethodName())
+								.append(" (").append(r.getSourceClassName())
+								.append("): ").append(formatMessage(r))
+								.append("\n");
 
 						if (r.getThrown() != null) {
 							try {
@@ -53,8 +60,11 @@ public class LoggerFactory {
 									r.getThrown().printStackTrace(pw);
 								}
 								sb.append(sw.toString());
-							} catch (Exception e) {
-								System.err.println(Strings.LOG_FORMAT_EXCEPTION + e.getClass().toString() + ". Message: " + e.getMessage());
+							}
+							catch (Exception e) {
+								System.err.println(Strings.LOG_FORMAT_EXCEPTION
+										+ e.getClass().toString()
+										+ ". Message: " + e.getMessage());
 							}
 						}
 
@@ -73,7 +83,8 @@ public class LoggerFactory {
 				logger.addHandler(fh);
 				logger.addHandler(ch);
 
-			} catch (IOException e) {
+			}
+			catch (IOException e) {
 				System.err.println(Strings.LOG_EXCEPTION + e.getMessage());
 			}
 		}

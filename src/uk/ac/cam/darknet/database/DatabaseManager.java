@@ -15,8 +15,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
+
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
+import uk.ac.cam.darknet.common.Strings;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 
 /**
@@ -284,7 +286,7 @@ public abstract class DatabaseManager {
 
 	protected static String formatDate(Date date) {
 		if (date != null) {
-			return new SimpleDateFormat("yyyy-MM-dd HH-mm-ss").format(date);
+			return new SimpleDateFormat(Strings.DB_DATE_FORMAT).format(date);
 		} else {
 			return null;
 		}

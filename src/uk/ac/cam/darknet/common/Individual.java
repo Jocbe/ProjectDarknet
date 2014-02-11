@@ -161,4 +161,9 @@ public class Individual {
 			return false;
 		}
 	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode();
+	}
 }

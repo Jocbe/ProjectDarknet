@@ -20,15 +20,20 @@ import uk.ac.cam.darknet.common.Individual;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 
 /**
- * This class serves as an abstraction layer sitting above the database. In the system, we allow
- * only this class to communicate with the database, hence it provides all the methods that are
- * needed.
+ * Any implementation of this abstract class has methods to search for individuals. Both the data
+ * collection manager and effects should use implementations of this class to search for
+ * individuals.
  * 
  * @author Ibtehaj Nadeem
  */
 public abstract class DatabaseManager {
 	private static String									GET_BY_ID			= "SELECT * FROM individuals WHERE id = ?";
 	private static String									GET_BY_EVENT_DATE	= "SELECT * FROM individuals WHERE event = ?";
+	private static String									GET_BETWEEN_DATES	= "SELECT * FROM individuals WHERE event BETWEEN ? AND ?";
+	private static String									GET_BY_SEAT			= "SELECT * FROM individuals WHERE seat = ?";
+	private static String									GET_BY_EMAIL		= "SELECT * FROM individuals WHERE email = ?";
+	private static String									GET_BY_FNAME		= "SELECT * FROM individuals WHERE fname = ?";
+	private static String									GET_BY_LNAME		= "SELECT * FROM individuals WHERE lname = ?";
 	protected final Connection								connection;
 	protected final Hashtable<String, AttributeCategories>	globalAttributeTable;
 	private long											id;
@@ -127,6 +132,107 @@ public abstract class DatabaseManager {
 		Individual next;
 		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_EVENT_DATE);) {
 			stmt.setTimestamp(1, dateToSQLTimestamp(eventDate));
+			try (ResultSet result = stmt.executeQuery();) {
+				next = createIndividual(result);
+				while (next != null) {
+					toReturn.add(next);
+					next = createIndividual(result);
+				}
+			}
+		}
+		return toReturn;
+	}
+
+	/**
+	 * Return a list of individuals who are sitting on the specified seat.
+	 * 
+	 * @param seat
+	 *            The seat, expressed as a string.
+	 * @return A list of individuals who have booked the specified seat.
+	 * @throws SQLException
+	 */
+	public synchronized List<Individual> getBySeat(String seat) throws SQLException {
+		ArrayList<Individual> toReturn = new ArrayList<Individual>();
+		Individual next;
+		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_SEAT);) {
+			stmt.setString(1, seat);
+			try (ResultSet result = stmt.executeQuery();) {
+				next = createIndividual(result);
+				while (next != null) {
+					toReturn.add(next);
+					next = createIndividual(result);
+				}
+			}
+		}
+		return toReturn;
+	}
+
+	/**
+	 * Return a list of individuals with the given first name.
+	 * 
+	 * @param fname
+	 *            The first name of the individuals to be returned.
+	 * @return A list of individuals with the specified first name.
+	 * @throws SQLException
+	 */
+	public synchronized List<Individual> getByFirstName(String fname) throws SQLException {
+		ArrayList<Individual> toReturn = new ArrayList<Individual>();
+		Individual next;
+		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_FNAME);) {
+			stmt.setString(1, fname);
+			try (ResultSet result = stmt.executeQuery();) {
+				next = createIndividual(result);
+				while (next != null) {
+					toReturn.add(next);
+					next = createIndividual(result);
+				}
+			}
+		}
+		return toReturn;
+	}
+
+	/**
+	 * Return a list of individuals with the given last name.
+	 * 
+	 * @param lname
+	 *            The last name of the individuals to be returned.
+	 * @return A list of individuals with the specified last name.
+	 * @throws SQLException
+	 */
+	public synchronized List<Individual> getByLastName(String lname) throws SQLException {
+		ArrayList<Individual> toReturn = new ArrayList<Individual>();
+		Individual next;
+		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_LNAME);) {
+			stmt.setString(1, lname);
+			try (ResultSet result = stmt.executeQuery();) {
+				next = createIndividual(result);
+				while (next != null) {
+					toReturn.add(next);
+					next = createIndividual(result);
+				}
+			}
+		}
+		return toReturn;
+	}
+
+	/**
+	 * Return a list of individuals that have made a booking within the interval specified by the
+	 * two dates.
+	 * 
+	 * @param firstDate
+	 *            The earlier date.
+	 * @param secondDate
+	 *            The later date.
+	 * @return A list of individuals, each of which has booked a ticket in the period from
+	 *         <code>firstDate</code> and <code>lastDate</code>.
+	 * @throws SQLException
+	 */
+	public synchronized List<Individual> getBetweenDates(Date firstDate, Date secondDate) throws SQLException {
+		ArrayList<Individual> toReturn = new ArrayList<Individual>();
+		Individual next;
+		try (PreparedStatement stmt = connection.prepareStatement(GET_BETWEEN_DATES);) {
+			stmt.setTimestamp(1, dateToSQLTimestamp(firstDate));
+			stmt.setTimestamp(2, dateToSQLTimestamp(secondDate));
 			try (ResultSet result = stmt.executeQuery();) {
 				next = createIndividual(result);
 				while (next != null) {

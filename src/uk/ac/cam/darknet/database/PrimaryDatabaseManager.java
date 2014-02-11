@@ -14,7 +14,8 @@ import uk.ac.cam.darknet.common.Individual;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 
 /**
- * A primary database manager is used to provide database access to the primary data collectors.
+ * A primary database manager is used to store individuals that are created by primary data
+ * collectors.
  * 
  * @author Ibtehaj Nadeem
  */
@@ -60,11 +61,27 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 	}
 
 	private void setupParameters(Individual toStore) {
-		fname = toStore.getFirstName().trim().equals("") ? null : toStore.getFirstName().trim();
-		lname = toStore.getLastName().trim().equals("") ? null : toStore.getLastName().trim();
-		email = toStore.getEmail().trim().equals("") ? null : toStore.getEmail().trim().toLowerCase();
+		if (toStore.getFirstName() == null) {
+			fname = null;
+		} else {
+			fname = toStore.getFirstName().trim().equals("") ? null : toStore.getFirstName().trim();
+		}
+		if (toStore.getLastName() == null) {
+			lname = null;
+		} else {
+			lname = toStore.getLastName().trim().equals("") ? null : toStore.getLastName().trim();
+		}
+		if (toStore.getEmail() == null) {
+			email = null;
+		} else {
+			email = toStore.getEmail().trim().equals("") ? null : toStore.getEmail().trim().toLowerCase();
+		}
 		event = dateToSQLTimestamp(toStore.getEventDate());
-		seat = toStore.getSeat().trim().equals("") ? null : toStore.getSeat().trim();
+		if (toStore.getSeat() == null) {
+			seat = null;
+		} else {
+			seat = toStore.getSeat().trim().equals("") ? null : toStore.getSeat().trim();
+		}
 	}
 
 	/**
@@ -137,28 +154,26 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 		return true;
 	}
 
-	// @SuppressWarnings({"javadoc", "deprecation"})
-	// public static void main(String args[]) throws ClassNotFoundException,
-	// ConfigFileNotFoundException, IOException, SQLException {
-	// PrimaryDatabaseManager instance = new PrimaryDatabaseManager(null, args[0]);
-	// Individual individual;
-	// String[] fnames = {"Claire", "Denise", "Richard", "Travis", "Sheila"};
-	// String[] lnames = {"Manzella", "Salazar", "Connally", "Briggs", "Brewer"};
-	// String[] emails = {"c.manzella241@gmail.com", "", "", "", "sheilambrewer@teleworm.us"};
-	// String[] seats = {"A01", "B52", "", "C04", "D14"};
-	// for (int i = 0; i < 5; i++) {
-	// individual = Individual.getNewIndividual(fnames[i], lnames[i], emails[i], new
-	// java.util.Date(2014, 2, 10, 23, 0, 0), seats[i], null);
-	// instance.store(individual);
-	// }
-	// List<Individual> li = instance.getByEventDate(new java.util.Date(2014, 2, 10, 23, 0, 0));
-	// for (Individual i : li) {
-	// System.out.println(i.getFirstName());
-	// System.out.println(i.getLastName());
-	// System.out.println(i.getEmail());
-	// System.out.println(formatDate(i.getEventDate()));
-	// System.out.println(i.getSeat());
-	// System.out.println();
-	// }
-	// }
+	@SuppressWarnings({"javadoc", "deprecation"})
+	public static void main(String args[]) throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException {
+		PrimaryDatabaseManager instance = new PrimaryDatabaseManager(null, args[0]);
+		Individual individual;
+		String[] fnames = {"Claire", "Denise", "Richard", "Travis", "Sheila"};
+		String[] lnames = {"Manzella", "Salazar", "Connally", "Briggs", "Brewer"};
+		String[] emails = {"c.manzella241@gmail.com", "", "", "", "sheilambrewer@teleworm.us"};
+		String[] seats = {"A01", "B52", null, "C04", "D14"};
+		for (int i = 0; i < 5; i++) {
+			individual = Individual.getNewIndividual(fnames[i], lnames[i], emails[i], new java.util.Date(2014, 2, 10, 23, 0, 0), seats[i], null);
+			instance.store(individual);
+		}
+		List<Individual> li = instance.getByLastName("Manzella");
+		for (Individual i : li) {
+			System.out.println(i.getFirstName());
+			System.out.println(i.getLastName());
+			System.out.println(i.getEmail());
+			System.out.println(formatDate(i.getEventDate()));
+			System.out.println(i.getSeat());
+			System.out.println();
+		}
+	}
 }

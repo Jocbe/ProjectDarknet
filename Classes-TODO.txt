@@ -34,3 +34,11 @@ DataCollectionManager
     1. Creates global type table
     2. Creates DatabaseManager, takes global type table as a parameter
     3. Calls Data Collectors (primary, then secondary), they take DBManager as a parameter
+
+
+TASKS (Allocate yourselves)
+FacebookDataCollector             - Josh, Johann
+PrimaryDataCollector (csv import) - Farah
+GUI, pdf export                   - Augustin
+
+

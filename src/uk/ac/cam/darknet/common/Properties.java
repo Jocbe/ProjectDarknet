@@ -3,19 +3,24 @@ package uk.ac.cam.darknet.common;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import uk.ac.cam.darknet.exceptions.InvalidAttributeTypeException;
+import uk.ac.cam.darknet.exceptions.InvalidReliabilityException;
 import uk.ac.cam.darknet.exceptions.UnknownAttributeException;
 
 /**
  * This class stores an individual's attributes as a set of key-value pairs. Keys are always
  * strings, but values must be of the type specified by the attribute category that the attribute
- * falls into.
+ * falls into. This class also takes the attribute's reliability as a parameter when one is added.
+ * It always returns an <code>AttributeReliabilityPair</code>, which can be used to retrieve both
+ * the attribute and its reliability. Note that attributes are type checked using the global
+ * attribute table when being added. However, client code should cast retrieved attributes as they
+ * have to be returned as <code>Object</code>.
  * 
  * @author Ibtehaj Nadeem
  * 
  */
 public class Properties {
 	private final Hashtable<String, AttributeCategories>	globalAttributeTable;
-	private Hashtable<String, Object>						properties;
+	private Hashtable<String, AttributeReliabilityPair>		properties;
 
 	/**
 	 * Constructs a new <code>Properties</code> object with the given attribute table. This object
@@ -29,7 +34,7 @@ public class Properties {
 	 */
 	public Properties(final Hashtable<String, AttributeCategories> globalAttributeTable) {
 		this.globalAttributeTable = globalAttributeTable;
-		this.properties = new Hashtable<String, Object>();
+		this.properties = new Hashtable<String, AttributeReliabilityPair>();
 	}
 
 	/**
@@ -43,10 +48,14 @@ public class Properties {
 	 *            The name of the attribute to add.
 	 * @param value
 	 *            The corresponding object.
+	 * @param reliability
+	 *            The reliability of the attribute. This must be a number between 0.0 (no
+	 *            confidence) and 1.0 (complete certainty).
 	 * @throws UnknownAttributeException
 	 * @throws InvalidAttributeTypeException
+	 * @throws InvalidReliabilityException
 	 */
-	public synchronized void put(String key, Object value) throws UnknownAttributeException, InvalidAttributeTypeException {
+	public synchronized void put(String key, Object value, double reliability) throws UnknownAttributeException, InvalidAttributeTypeException, InvalidReliabilityException {
 		AttributeCategories attributeCategory = globalAttributeTable.get(key);
 		// Check if the key is a valid attribute.
 		if (attributeCategory == null)
@@ -55,7 +64,7 @@ public class Properties {
 		if (!attributeCategory.isObjectCompatible(value))
 			throw new InvalidAttributeTypeException(String.format(Strings.PROP_INVALID_TYPE_EXN, key, attributeCategory.getClassName()));
 		// If both checks are passed, add the new key-value pair.
-		properties.put(key, attributeCategory.getAttributeType().cast(value));
+		properties.put(key, new AttributeReliabilityPair(value, reliability));
 	}
 
 	/**
@@ -67,7 +76,7 @@ public class Properties {
 	 * @return The value to which the specified attribute name is mapped, or null if this map
 	 *         contains no mapping for the attribute.
 	 */
-	public synchronized Object get(String key) {
+	public synchronized AttributeReliabilityPair get(String key) {
 		return properties.get(key);
 	}
 
@@ -105,7 +114,7 @@ public class Properties {
 	 * 
 	 * @return an enumeration of the values in this <code>Properties</code> object.
 	 */
-	public synchronized Enumeration<Object> elements() {
+	public synchronized Enumeration<AttributeReliabilityPair> elements() {
 		return properties.elements();
 	}
 

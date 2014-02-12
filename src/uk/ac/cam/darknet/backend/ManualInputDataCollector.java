@@ -1,7 +1,10 @@
 package uk.ac.cam.darknet.backend;
 
 import java.io.File;
+import java.util.List;
+
 import uk.ac.cam.darknet.database.DatabaseManager;
+import uk.ac.cam.darknet.common.Individual;
 
 /**
  * This class is a primary data collector with a graphical user interface allowing manual data
@@ -19,10 +22,36 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 	 * @param dataInput
 	 *            The file which has the input data.
 	 */
-	public ManualInputDataCollector(DatabaseManager databaseManager, File dataInput) {
+	public ManualInputDataCollector(DatabaseManager databaseManager) {
 		super(databaseManager);
 		// TODO Auto-generated constructor stub
 	}
+	
+
+	/**
+	 * Loads Primary Data from CSV file into Database
+	 * 
+	 * @param pathname
+	 * 			path to CSV file containing primary data
+	 * @return
+	 * 			List of Individuals stored in Database
+	 */
+	public List<Individual> loadfromCSV(String pathname){
+		return null;
+	}
+
+	/**
+	 * Loads an Individual from ManualInputGUI into Database
+	 * 
+	 * @param ind
+	 * 			Individual to be stored
+	 * @return
+	 * 			Individual stored in Database
+	 */
+	public Individual loadIndividual(Individual ind){
+		return null;
+	}
+		
 
 	@Override
 	public void run() {

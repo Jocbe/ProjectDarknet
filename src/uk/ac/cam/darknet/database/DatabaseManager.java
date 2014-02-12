@@ -58,10 +58,11 @@ public abstract class DatabaseManager {
 	 * @throws SQLException
 	 */
 	protected DatabaseManager(Hashtable<String, AttributeCategories> globalAttributeTable, String pathToConfig) throws ConfigFileNotFoundException, IOException, ClassNotFoundException, SQLException {
-		// Assign global attribute table to local field.
-		this.globalAttributeTable = globalAttributeTable;
-
-		// Create the connection to the database.
+		if (globalAttributeTable == null) {
+			throw new IllegalArgumentException(Strings.NULL_GLOBAL_TABLE_EXN);
+		} else {
+			this.globalAttributeTable = globalAttributeTable;
+		}
 		connection = connectToDB(pathToConfig);
 		connection.setAutoCommit(false);
 	}
@@ -100,7 +101,7 @@ public abstract class DatabaseManager {
 		Class.forName("org.hsqldb.jdbc.JDBCDriver");
 		return DriverManager.getConnection(connectionUrl, username, password);
 	}
-	
+
 	/**
 	 * Return a list of all individuals in the system.
 	 * 

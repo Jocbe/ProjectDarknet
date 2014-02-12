@@ -12,7 +12,8 @@ import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
  * @author Ibtehaj Nadeem
  */
 public class SecondaryDatabaseManager extends DatabaseManager {
-	
+	private static final String	CREATE_SECONDARY_TABLES	= "";
+
 	/**
 	 * Creates a new <code>SecondaryDatabaseManager</code> with the specified global attribute table
 	 * and sets up the connection to the database.
@@ -32,8 +33,8 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 	public SecondaryDatabaseManager(Hashtable<String, AttributeCategories> globalAttributeTable, String pathToConfig) throws ConfigFileNotFoundException, IOException, ClassNotFoundException, SQLException {
 		super(globalAttributeTable, pathToConfig);
 	}
-	
+
 	private void createTables() {
-		
+
 	}
 }

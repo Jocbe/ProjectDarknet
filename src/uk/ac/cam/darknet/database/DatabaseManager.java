@@ -29,13 +29,12 @@ import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
  */
 public abstract class DatabaseManager {
 	private static String									GET_BY_ID			= "SELECT * FROM individuals WHERE id = ?";
-	private static String									GET_BETWEEN_IDS		= "SELECT * FROM individuals WHERE id BETWEEN ? AND ?";
 	private static String									GET_BY_EVENT_DATE	= "SELECT * FROM individuals WHERE event = ?";
-	private static String									GET_BETWEEN_DATES	= "SELECT * FROM individuals WHERE event BETWEEN ? AND ?";
 	private static String									GET_BY_SEAT			= "SELECT * FROM individuals WHERE seat = ?";
 	private static String									GET_BY_EMAIL		= "SELECT * FROM individuals WHERE email = ?";
 	private static String									GET_BY_FNAME		= "SELECT * FROM individuals WHERE fname = ?";
 	private static String									GET_BY_LNAME		= "SELECT * FROM individuals WHERE lname = ?";
+	private static String									GET_ALL_INDIVIDUALS	= "SELECT * FROM individuals";
 	protected final Connection								connection;
 	protected final Hashtable<String, AttributeCategories>	globalAttributeTable;
 	private long											id;
@@ -101,6 +100,20 @@ public abstract class DatabaseManager {
 		Class.forName("org.hsqldb.jdbc.JDBCDriver");
 		return DriverManager.getConnection(connectionUrl, username, password);
 	}
+	
+	/**
+	 * Return a list of all individuals in the system.
+	 * 
+	 * @return A list containing all the individuals in the system.
+	 * @throws SQLException
+	 */
+	public synchronized List<Individual> getAllIndividuals() throws SQLException {
+		ArrayList<Individual> toReturn = new ArrayList<Individual>();
+		try (PreparedStatement stmt = connection.prepareStatement(GET_ALL_INDIVIDUALS);) {
+			toReturn = getQueryResults(stmt);
+		}
+		return toReturn;
+	}
 
 	/**
 	 * Attempts to find and return an individual by their ID.
@@ -117,26 +130,6 @@ public abstract class DatabaseManager {
 			try (ResultSet result = stmt.executeQuery();) {
 				toReturn = createIndividual(result);
 			}
-		}
-		return toReturn;
-	}
-
-	/**
-	 * Returns all individual with IDs in the specified range.
-	 * 
-	 * @param lowerId
-	 *            The lower bound on the IDs.
-	 * @param upperId
-	 *            The upper bound on the IDs.
-	 * @return A list of individuals whose IDs are in the specified range.
-	 * @throws SQLException
-	 */
-	public synchronized ArrayList<Individual> getBetweenIds(long lowerId, long upperId) throws SQLException {
-		ArrayList<Individual> toReturn = new ArrayList<Individual>();
-		try (PreparedStatement stmt = connection.prepareStatement(GET_BETWEEN_IDS);) {
-			stmt.setLong(1, lowerId);
-			stmt.setLong(2, upperId);
-			toReturn = getQueryResults(stmt);
 		}
 		return toReturn;
 	}
@@ -226,28 +219,6 @@ public abstract class DatabaseManager {
 		return toReturn;
 	}
 
-	/**
-	 * Return a list of individuals that have made a booking within the interval specified by the
-	 * two dates.
-	 * 
-	 * @param firstDate
-	 *            The earlier date.
-	 * @param secondDate
-	 *            The later date.
-	 * @return A list of individuals, each of which have booked a ticket in the period from
-	 *         <code>firstDate</code> and <code>lastDate</code>.
-	 * @throws SQLException
-	 */
-	public synchronized List<Individual> getBetweenDates(Date firstDate, Date secondDate) throws SQLException {
-		ArrayList<Individual> toReturn = new ArrayList<Individual>();
-		try (PreparedStatement stmt = connection.prepareStatement(GET_BETWEEN_DATES);) {
-			stmt.setTimestamp(1, dateToSQLTimestamp(firstDate));
-			stmt.setTimestamp(2, dateToSQLTimestamp(secondDate));
-			toReturn = getQueryResults(stmt);
-		}
-		return toReturn;
-	}
-
 	private ArrayList<Individual> getQueryResults(PreparedStatement stmt) throws SQLException {
 		ArrayList<Individual> toReturn = new ArrayList<Individual>();
 		Individual next;
@@ -267,7 +238,7 @@ public abstract class DatabaseManager {
 			fname = result.getString(2);
 			lname = result.getString(3);
 			email = result.getString(4);
-			event = result.getDate(5);
+			event = result.getTimestamp(5);
 			seat = result.getString(6);
 			return new Individual(id, fname, lname, email, event, seat, globalAttributeTable);
 		} else {

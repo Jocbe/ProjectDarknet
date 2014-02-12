@@ -4,6 +4,9 @@ import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -12,14 +15,14 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
-import javax.swing.JTable;
 import javax.swing.JTextField;
 
-import org.hsqldb.DatabaseManager;
-
 import uk.ac.cam.darknet.common.Individual;
+import uk.ac.cam.darknet.common.Strings;
 import uk.ac.cam.darknet.database.PrimaryDatabaseManager;
+import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 
 /**
  * GUI for the primary data collector. Displays the current contents of the
@@ -35,7 +38,7 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 	private JTextField txtFldName;
 	private JTextField txtFldSecondName;
 	private JTextField txtFldEmail;
-	private JTable table;
+	private IndividualTable table;
 	private JTextField txtFldVenueName;
 	private JTextField txtFldSeat;
 	private JTextField txtFldCSVFilePath;
@@ -48,8 +51,11 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 	 * Initialize the GUI.
 	 */
 	public PrimaryDataCollectorGUI() {
+		// Show the GUI
 		initialize();
+		// Get all the individuals that are already in the DB
 		final List<Individual> individualsInDB = getDBContent();
+		// Display them in the table
 		displayDBContent(individualsInDB);
 	}
 
@@ -89,6 +95,7 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 
 		btnLoadAudience = new JButton("Load audience");
 		btnLoadAudience.setBounds(341, 39, 124, 23);
+		btnLoadAudience.addActionListener(this);
 		panel.add(btnLoadAudience);
 
 		txtFldName = new JTextField();
@@ -105,20 +112,6 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 		txtFldEmail.setBounds(99, 249, 114, 20);
 		panel.add(txtFldEmail);
 		txtFldEmail.setColumns(10);
-
-		final JSeparator separator_1 = new JSeparator();
-		separator_1.setBounds(12, 307, 453, 2);
-		panel.add(separator_1);
-
-		final JLabel lblPeopleCurrentlyIn = new JLabel(
-				"People currently in the database");
-		lblPeopleCurrentlyIn.setFont(new Font("Tahoma", Font.BOLD, 11));
-		lblPeopleCurrentlyIn.setBounds(12, 316, 240, 16);
-		panel.add(lblPeopleCurrentlyIn);
-
-		table = new JTable();
-		table.setBounds(12, 335, 453, 221);
-		panel.add(table);
 
 		final JLabel lblSetThe = new JLabel("1. Set the venue");
 		lblSetThe.setBounds(12, 120, 98, 16);
@@ -175,12 +168,33 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 
 		btnAddPerson = new JButton("Add person");
 		btnAddPerson.setBounds(360, 276, 105, 23);
+		btnAddPerson.addActionListener(this);
 		panel.add(btnAddPerson);
 
 		txtFldCSVFilePath = new JTextField();
 		txtFldCSVFilePath.setBounds(12, 40, 234, 20);
 		panel.add(txtFldCSVFilePath);
 		txtFldCSVFilePath.setColumns(10);
+
+		// People in the database
+		final JSeparator separator_1 = new JSeparator();
+		separator_1.setBounds(12, 307, 453, 2);
+		panel.add(separator_1);
+
+		final JLabel lblPeopleInDB = new JLabel(
+				"People currently in the database");
+		lblPeopleInDB.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblPeopleInDB.setBounds(12, 316, 240, 16);
+		panel.add(lblPeopleInDB);
+
+		final JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBounds(12, 335, 453, 221);
+		panel.add(scrollPane);
+
+		// The table of individuals
+		table = new IndividualTable();
+		table.setEnabled(false);
+		scrollPane.setViewportView(table);
 	}
 
 	/**
@@ -189,8 +203,21 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 	 * @return The list of all individuals already in the database.
 	 */
 	private List<Individual> getDBContent() {
-		// TODO: Get the contents of the Database
-		return null;
+		final PrimaryDatabaseManager dbm;
+		try {
+			// Load the database manager
+			// TODO: Use universal access path
+			dbm = new PrimaryDatabaseManager(null, Strings.DB_CONFIG_FILE_PATH);
+			// Return all individuals
+			// TODO: Use get all individuals method
+			return dbm.getBetweenDates(new Date(0), new Date(Long.MAX_VALUE));
+		}
+		catch (ClassNotFoundException | ConfigFileNotFoundException
+				| IOException | SQLException e) {
+			e.printStackTrace();
+			// TODO: Handle this in a better way
+			return null;
+		}
 	}
 
 	/**
@@ -202,10 +229,11 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 	private void displayDBContent(final List<Individual> individuals) {
 		// TODO: Display the list of all individuals with their primary data in
 		// the table
+		table.displayIndividuals(individuals);
 	}
 
 	/**
-	 * Action Listener for all the buttons.
+	 * Action Listeners for all the buttons.
 	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -225,11 +253,13 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 		// The load audience button, load the given CSV file
 		if (e.getSource() == btnLoadAudience) {
 			// TODO: Call appropriate method in the PrimaryDataCollector
+			System.out.println("DEBUG: Loading audience from CSV file.");
 		}
 
 		// The add single person button, add them to the DB
 		if (e.getSource() == btnAddPerson) {
 			// TODO: Call appropriate method in the DatabaseManager
+			System.out.println("DEBUG: Adding one person to the DB.");
 		}
 
 	}

@@ -29,6 +29,7 @@ import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
  */
 public abstract class DatabaseManager {
 	private static String									GET_BY_ID			= "SELECT * FROM individuals WHERE id = ?";
+	private static String									GET_BETWEEN_IDS		= "SELECT * FROM individuals WHERE id BETWEEN ? AND ?";
 	private static String									GET_BY_EVENT_DATE	= "SELECT * FROM individuals WHERE event = ?";
 	private static String									GET_BETWEEN_DATES	= "SELECT * FROM individuals WHERE event BETWEEN ? AND ?";
 	private static String									GET_BY_SEAT			= "SELECT * FROM individuals WHERE seat = ?";
@@ -121,6 +122,26 @@ public abstract class DatabaseManager {
 	}
 
 	/**
+	 * Returns all individual with IDs in the specified range.
+	 * 
+	 * @param lowerId
+	 *            The lower bound on the IDs.
+	 * @param upperId
+	 *            The upper bound on the IDs.
+	 * @return A list of individuals whose IDs are in the specified range.
+	 * @throws SQLException
+	 */
+	public synchronized ArrayList<Individual> getBetweenIds(long lowerId, long upperId) throws SQLException {
+		ArrayList<Individual> toReturn = new ArrayList<Individual>();
+		try (PreparedStatement stmt = connection.prepareStatement(GET_BETWEEN_IDS);) {
+			stmt.setLong(1, lowerId);
+			stmt.setLong(2, upperId);
+			toReturn = getQueryResults(stmt);
+		}
+		return toReturn;
+	}
+
+	/**
 	 * Return a list of individuals with the given first name.
 	 * 
 	 * @param fname
@@ -189,10 +210,10 @@ public abstract class DatabaseManager {
 	}
 
 	/**
-	 * Return a list of individuals by the date of an event.
+	 * Return a list of individuals by the date and time of an event.
 	 * 
 	 * @param eventDate
-	 *            The date of the event of which all individuals are to be fetched.
+	 *            The date and time of the event of which all individuals are to be fetched.
 	 * @return A list of individuals, each of which has booked a ticket for the given date.
 	 * @throws SQLException
 	 */
@@ -213,7 +234,7 @@ public abstract class DatabaseManager {
 	 *            The earlier date.
 	 * @param secondDate
 	 *            The later date.
-	 * @return A list of individuals, each of which has booked a ticket in the period from
+	 * @return A list of individuals, each of which have booked a ticket in the period from
 	 *         <code>firstDate</code> and <code>lastDate</code>.
 	 * @throws SQLException
 	 */

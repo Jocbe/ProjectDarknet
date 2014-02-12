@@ -20,7 +20,7 @@ import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
  * @author Ibtehaj Nadeem
  */
 public class PrimaryDatabaseManager extends DatabaseManager {
-	private static final String	CREATE_PRIMARY_TABLE	= "CREATE CACHED TABLE individuals (id BIGINT GENERATED ALWAYS AS IDENTITY(START WITH 1000000) PRIMARY KEY, fname VARCHAR(25) NOT NULL, lname VARCHAR(25) NOT NULL, email VARCHAR(254), event TIMESTAMP WITHOUT TIME ZONE, seat VARCHAR(10))";
+	private static final String	CREATE_PRIMARY_TABLE	= "CREATE CACHED TABLE individuals (id BIGINT GENERATED ALWAYS AS IDENTITY(START WITH 1000000) PRIMARY KEY, fname VARCHAR(25) NOT NULL, lname VARCHAR(25) NOT NULL, email VARCHAR(254), event TIMESTAMP(0) WITHOUT TIME ZONE, seat VARCHAR(10))";
 	private static final String	INSERT_INDIVIDUAL		= "INSERT INTO individuals (id, fname, lname, email, event, seat) VALUES (DEFAULT, ?, ?, ?, ?, ?)";
 	private static final String	EMAIL_PATTERN			= "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@" + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
 	private String				fname;
@@ -88,6 +88,11 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 	 * Stores a list of individuals into the database. If the number of individuals is large, this
 	 * is the preferred method. Inserting individuals one after the other is less efficient.
 	 * 
+	 * <b>Note:</b> This method will discard any individuals with invalid fields. This includes
+	 * empty (or null) first and/or last names and malformed email addresses. A count of the number
+	 * of individuals inserted will be given. In case of any other serious SQL error, all changes
+	 * will be rolled back.
+	 * 
 	 * @param list
 	 *            The list of individuals to store.
 	 * @return The number of individuals successfully inserted.
@@ -111,6 +116,9 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 				}
 				numOfIndividualsInserted++;
 			}
+		} catch (SQLException e) {
+			connection.rollback();
+			throw e;
 		}
 		connection.commit();
 		return numOfIndividualsInserted;
@@ -119,15 +127,22 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 	/**
 	 * Stores a single individual into the database.
 	 * 
+	 * <b>Note:</b> This method will discard the individual if it has invalid fields. This includes
+	 * empty (or null) first and/or last name and malformed email address. A boolean value will be
+	 * returned, indicating whether the insertion was successful. In case of any other serious SQL
+	 * error, all changes will be rolled back.
+	 * 
 	 * @param individual
 	 *            The individual to insert.
 	 * @return True if the individual was inserted successfully, false otherwise.
 	 * @throws SQLException
 	 */
 	public synchronized boolean store(Individual individual) throws SQLException {
+		boolean individualValid;
 		try (PreparedStatement stmt = connection.prepareStatement(INSERT_INDIVIDUAL);) {
 			setupParameters(individual);
-			if (parametersValid()) {
+			individualValid = parametersValid();
+			if (individualValid) {
 				stmt.setString(1, fname);
 				stmt.setString(2, lname);
 				stmt.setString(3, email);
@@ -135,9 +150,12 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 				stmt.setString(5, seat);
 				stmt.executeUpdate();
 			}
+		} catch (SQLException e) {
+			connection.rollback();
+			throw e;
 		}
 		connection.commit();
-		return true;
+		return individualValid;
 	}
 
 	private boolean parametersValid() {
@@ -154,7 +172,7 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 		return true;
 	}
 
-	@SuppressWarnings({"javadoc", "deprecation"})
+	@SuppressWarnings({"javadoc"})
 	public static void main(String args[]) throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException {
 		PrimaryDatabaseManager instance = new PrimaryDatabaseManager(null, args[0]);
 		Individual individual;
@@ -163,10 +181,10 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 		String[] emails = {"c.manzella241@gmail.com", "", "", "", "sheilambrewer@teleworm.us"};
 		String[] seats = {"A01", "B52", null, "C04", "D14"};
 		for (int i = 0; i < 5; i++) {
-			individual = Individual.getNewIndividual(fnames[i], lnames[i], emails[i], new java.util.Date(2014, 2, 10, 23, 0, 0), seats[i], null);
+			individual = Individual.getNewIndividual(fnames[i], lnames[i], emails[i], new java.util.Date(), seats[i], null);
 			instance.store(individual);
 		}
-		List<Individual> li = instance.getByEmail("sheilambrewer@teleworm.us");
+		List<Individual> li = instance.getBetweenIds(0, 1000004);
 		for (Individual i : li) {
 			System.out.println(i.getFirstName());
 			System.out.println(i.getLastName());

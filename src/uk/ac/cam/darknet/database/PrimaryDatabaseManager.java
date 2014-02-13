@@ -2,6 +2,7 @@ package uk.ac.cam.darknet.database;
 
 import java.io.IOException;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
@@ -21,8 +22,9 @@ import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
  * @author Ibtehaj Nadeem
  */
 public class PrimaryDatabaseManager extends DatabaseManager {
-	private static final String	CREATE_PRIMARY_TABLE	= "CREATE CACHED TABLE individuals (id BIGINT GENERATED ALWAYS AS IDENTITY(START WITH 1000000) PRIMARY KEY, fname VARCHAR(25) NOT NULL, lname VARCHAR(25) NOT NULL, email VARCHAR(254), event TIMESTAMP(0) WITHOUT TIME ZONE, seat VARCHAR(10))";
+	private static final String	CREATE_PRIMARY_TABLE	= "CREATE CACHED TABLE individuals (id BIGINT GENERATED ALWAYS AS IDENTITY(START WITH 1000000) PRIMARY KEY, fname VARCHAR(25) NOT NULL, lname VARCHAR(25) NOT NULL, email VARCHAR(254), event TIMESTAMP(0) WITHOUT TIME ZONE, seat VARCHAR(10), UNIQUE (fname, lname, email, event, seat))";
 	private static final String	INSERT_INDIVIDUAL		= "INSERT INTO individuals (id, fname, lname, email, event, seat) VALUES (DEFAULT, ?, ?, ?, ?, ?)";
+	private static final String	GET_NEW_ID				= "SELECT MAX(id) FROM individuals";
 	private static final String	DELETE_INDIVIDUAL		= "DELETE FROM individuals WHERE id = ?";
 	private static final String	UPDATE_INDIVIDUAL		= "UPDATE individuals SET fname = ?, lname = ?, email = ?, event = ?, seat = ? WHERE id = ?";
 	private static final String	EMAIL_PATTERN			= "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@" + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
@@ -84,9 +86,9 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 		try (PreparedStatement stmt = connection.prepareStatement(INSERT_INDIVIDUAL);) {
 			while (iterator.hasNext()) {
 				current = iterator.next();
-				setupParameters(current);
+				setupLocalFieldParameters(current);
 				if (parametersValid())
-					executeStatement(stmt);
+					executeSafeStatement(stmt);
 				numOfIndividualsInserted++;
 			}
 		} catch (SQLException e) {
@@ -101,28 +103,38 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 	 * Stores a single individual into the database.
 	 * 
 	 * <b>Note:</b> This method will discard the individual if it has invalid fields. This includes
-	 * empty (or null) first and/or last name and malformed email address. A boolean value will be
-	 * returned, indicating whether the insertion was successful. In case of any other serious SQL
-	 * error, all changes will be rolled back.
+	 * empty (or null) first and/or last name and malformed email address. In case of any other
+	 * serious SQL error, all changes will be rolled back.
 	 * 
 	 * @param individual
 	 *            The individual to insert.
-	 * @return True if the individual was inserted successfully, false otherwise.
+	 * @return The ID of the new individual, or -1 if insertion was unsuccessful. This may be the
+	 *         case if an individual with exactly the same data already existed.
 	 * @throws SQLException
 	 */
-	public synchronized boolean storeIndividual(Individual individual) throws SQLException {
-		boolean individualValid;
+	public synchronized long storeIndividual(Individual individual) throws SQLException {
+		long individualId = -1;
 		try (PreparedStatement stmt = connection.prepareStatement(INSERT_INDIVIDUAL);) {
-			setupParameters(individual);
-			individualValid = parametersValid();
-			if (individualValid)
-				executeStatement(stmt);
+			setupLocalFieldParameters(individual);
+			if (parametersValid()) {
+				try {
+					executeUnsafeStatement(stmt);
+					try (Statement getId = connection.createStatement()) {
+						try (ResultSet result = getId.executeQuery(GET_NEW_ID);) {
+							if (result.next())
+								individualId = result.getLong(1);
+						}
+					}
+				} catch (SQLException e) {
+					// Leave individualId as -1.
+				}
+			}
 		} catch (SQLException e) {
 			connection.rollback();
 			throw e;
 		}
 		connection.commit();
-		return individualValid;
+		return individualId;
 	}
 
 	/**
@@ -163,10 +175,10 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 		boolean individualValid;
 		try (PreparedStatement stmt = connection.prepareStatement(UPDATE_INDIVIDUAL);) {
 			stmt.setLong(6, id);
-			setupParameters(newData);
+			setupLocalFieldParameters(newData);
 			individualValid = parametersValid();
 			if (individualValid)
-				executeStatement(stmt);
+				executeUnsafeStatement(stmt);
 		} catch (SQLException e) {
 			connection.rollback();
 			throw e;
@@ -175,16 +187,33 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 		return individualValid;
 	}
 
-	private void executeStatement(PreparedStatement stmt) throws SQLException {
+	private void setupPreparedStatementParameters(PreparedStatement stmt) throws SQLException {
 		stmt.setString(1, fname);
 		stmt.setString(2, lname);
 		stmt.setString(3, email);
 		stmt.setTimestamp(4, event);
 		stmt.setString(5, seat);
+	}
+
+	// This method does not catch SQL exceptions. Thus, if it is called from within a loop then all
+	// changes will be rolled back if only one statement execution fails.
+	private void executeUnsafeStatement(PreparedStatement stmt) throws SQLException {
+		setupPreparedStatementParameters(stmt);
 		stmt.executeUpdate();
 	}
 
-	private void setupParameters(Individual toStore) {
+	// This method catches and ignores SQL exceptions. Individual exceptions will not affect a batch
+	// update.
+	private void executeSafeStatement(PreparedStatement stmt) {
+		try {
+			setupPreparedStatementParameters(stmt);
+			stmt.executeUpdate();
+		} catch (SQLException e) {
+			// Ignore SQL exceptions.
+		}
+	}
+
+	private void setupLocalFieldParameters(Individual toStore) {
 		if (toStore.getFirstName() == null) {
 			fname = null;
 		} else {
@@ -222,7 +251,7 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 		return true;
 	}
 
-	@SuppressWarnings({"javadoc"})
+	@SuppressWarnings({"javadoc", "deprecation", "unused"})
 	public static void main(String args[]) throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException {
 		PrimaryDatabaseManager instance = new PrimaryDatabaseManager(null, args[0]);
 		ArrayList<Individual> individuals = new ArrayList<Individual>();
@@ -232,7 +261,7 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 		String[] seats = {"A01", "B52", null, "C04", "D14"};
 		long b = System.currentTimeMillis();
 		for (int i = 0; i < 500; i++) {
-			individuals.add(Individual.getNewIndividual(fnames[i % 5], lnames[i % 5], emails[i % 5], new java.util.Date(), seats[i % 5], null));
+			individuals.add(Individual.getNewIndividual(fnames[i % 5], lnames[i % 5], emails[i % 5], new java.util.Date(2014, 0, 0), Integer.toString(i), null));
 		}
 		instance.storeIndividual(individuals);
 		long a = System.currentTimeMillis();

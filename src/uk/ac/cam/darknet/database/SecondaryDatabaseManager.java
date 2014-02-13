@@ -1,15 +1,20 @@
 package uk.ac.cam.darknet.database;
 
 import java.io.IOException;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.regex.Pattern;
 import uk.ac.cam.darknet.common.AttributeCategories;
+import uk.ac.cam.darknet.common.Individual;
 import uk.ac.cam.darknet.common.Strings;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 import uk.ac.cam.darknet.exceptions.InvalidAttributeNameException;
+import com.sun.xml.internal.ws.org.objectweb.asm.Type;
 
 /**
  * A secondary database manager is used to provide database access to the secondary data collectors.
@@ -17,7 +22,8 @@ import uk.ac.cam.darknet.exceptions.InvalidAttributeNameException;
  * @author Ibtehaj Nadeem
  */
 public class SecondaryDatabaseManager extends DatabaseManager {
-	private static final String	CREATE_SECONDARY_TABLE	= "CREATE CACHED TABLE %1$s (id BIGINT, attribute %2$s, reliability DOUBLE PRECISION, FOREIGN KEY (id) REFERENCES individuals(id), CHECK (reliability >= 0 AND reliability <= 1))";
+	private static final String	CREATE_SECONDARY_TABLE	= "CREATE CACHED TABLE %1$s (id BIGINT, attribute %2$s, reliability DOUBLE PRECISION, FOREIGN KEY (id) REFERENCES individuals(id), CHECK (reliability >= 0 AND reliability <= 1), UNIQUE(id, attribute))";
+	private static final String	INSERT_ATTRIBUTE		= "INSERT INTO %1$s (id, attribute, reliability) VALUES (?, ?, ?)";
 	private static final String	ATTRIBUTE_PATTERN		= "[a-zA-Z0-9_]+";
 	private Pattern				pattern					= Pattern.compile(ATTRIBUTE_PATTERN);
 
@@ -52,9 +58,9 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 			currentCategory = globalAttributeTable.get(currentAttributeName);
 			if (isAttributeNameValid(currentAttributeName)) {
 				try (Statement stmt = connection.createStatement();) {
-					stmt.execute(String.format(CREATE_SECONDARY_TABLE, currentAttributeName, getSQLType(currentCategory)));
+					stmt.execute(String.format(CREATE_SECONDARY_TABLE, currentAttributeName, getSQLTypeString(getSQLType(currentCategory))));
 				} catch (SQLException e) {
-					e.printStackTrace();
+					// Table already exists.
 				}
 			} else {
 				connection.rollback();
@@ -62,6 +68,28 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 			}
 		}
 		connection.commit();
+	}
+
+	/**
+	 * Stores the attributes of a list of individuals in the database.
+	 * 
+	 * @param individuals
+	 *            The list of individuals with <code>Properties</code> objects containing the
+	 *            attributes to be stored.
+	 */
+	public synchronized void storeAttributes(List<Individual> individuals) {
+		Enumeration<String> attributeNames = globalAttributeTable.keys();
+		// Iterator<Individual> iterator;
+		String currentAttributeName;
+		while (attributeNames.hasMoreElements()) {
+			currentAttributeName = attributeNames.nextElement();
+			try (PreparedStatement stmt = connection.prepareStatement(String.format(INSERT_ATTRIBUTE, currentAttributeName));) {
+				// TODO
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block THIS IS TEMPORARY!!!
+				e.printStackTrace();
+			}
+		}
 	}
 
 	private boolean isAttributeNameValid(String attributeName) {
@@ -72,29 +100,43 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 		}
 	}
 
-	private String getSQLType(AttributeCategories category) {
+	private int getSQLType(AttributeCategories category) {
 		if (category.getAttributeType() == byte.class) {
-			return "TINYINT";
+			return Types.TINYINT;
 		} else if (category.getAttributeType() == short.class) {
-			return "SMALLINT";
+			return Types.SMALLINT;
 		} else if (category.getAttributeType() == int.class) {
-			return "INTEGER";
+			return Types.INTEGER;
 		} else if (category.getAttributeType() == long.class) {
-			return "BIGINT";
+			return Types.BIGINT;
 		} else if (category.getAttributeType() == boolean.class) {
-			return "BOOLEAN";
+			return Types.BOOLEAN;
 		} else {
-			return "OTHER";
+			return Types.OTHER;
 		}
 	}
 
-	// @SuppressWarnings({"javadoc"})
-	// public static void main(String args[]) throws ClassNotFoundException,
-	// ConfigFileNotFoundException, IOException, SQLException, InvalidAttributeNameException {
-	// Hashtable<String, AttributeCategories> myTable = new Hashtable<String,
-	// AttributeCategories>();
-	// myTable.put("age", AttributeCategories.AGE);
-	// myTable.put("username", AttributeCategories.USER_NAME);
-	// SecondaryDatabaseManager instance = new SecondaryDatabaseManager(myTable, args[0]);
-	// }
+	private String getSQLTypeString(int SQLType) {
+		switch (SQLType) {
+			case Types.TINYINT :
+				return "TINYINT";
+			case Types.SMALLINT :
+				return "SMALLINT";
+			case Types.INTEGER :
+				return "INTEGER";
+			case Types.BIGINT :
+				return "BIGINT";
+			case Type.BOOLEAN :
+				return "BOOLEAN";
+			default :
+				return "OTHER";
+		}
+	}
+
+	@SuppressWarnings({"javadoc", "unused"})
+	public static void main(String args[]) throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException, InvalidAttributeNameException {
+		Hashtable<String, AttributeCategories> myTable = new Hashtable<String, AttributeCategories>();
+		myTable.put("test", AttributeCategories.USER_NAME);
+		SecondaryDatabaseManager instance = new SecondaryDatabaseManager(myTable, args[0]);
+	}
 }

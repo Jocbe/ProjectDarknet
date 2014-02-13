@@ -54,9 +54,9 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 		// Show the GUI
 		initialize();
 		// Get all the individuals that are already in the DB
-		//final List<Individual> individualsInDB = getDBContent();
+		final List<Individual> individualsInDB = getDBContent();
 		// Display them in the table
-		//displayDBContent(individualsInDB);
+		displayDBContent(individualsInDB);
 	}
 
 	/**
@@ -206,9 +206,9 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 		final PrimaryDatabaseManager dbm;
 		try {
 			// Load the database manager
-			// TODO: Use universal access path
-
-			dbm = new PrimaryDatabaseManager(null, Strings.DB_CONFIG_FILE_PATH);
+			final Strings strings = new Strings();
+			dbm = new PrimaryDatabaseManager(null,
+					strings.getProjectDirectory() + "/res/dbconfix.txt");
 			// Return all individuals
 			// TODO: Use get all individuals method
 			return dbm.getBetweenDates(new Date(0), new Date(Long.MAX_VALUE));
@@ -269,8 +269,7 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 	 * @param args Ignored
 	 */
 	public static void main(String[] args) {
-		//final PrimaryDataCollectorGUI pdcGUI = new PrimaryDataCollectorGUI();
-		//pdcGUI.frmPrimaryDataCollector.setVisible(true);
-		System.out.println("Hello");
+		final PrimaryDataCollectorGUI pdcGUI = new PrimaryDataCollectorGUI();
+		pdcGUI.frmPrimaryDataCollector.setVisible(true);
 	}
 }

@@ -15,6 +15,7 @@ import uk.ac.cam.darknet.database.DatabaseManager;
 
 /**
  * Secondary data collector which gets data from Twitter's API
+ * @author Johann Beleites
  */
 public class TwitterDataCollector extends SecondaryDataCollector {
 	/**

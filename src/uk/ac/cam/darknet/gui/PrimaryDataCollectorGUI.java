@@ -54,6 +54,7 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 		// Show the GUI
 		initialize();
 		// Get all the individuals that are already in the DB
+
 		final List<Individual> individualsInDB = getDBContent();
 		// Display them in the table
 		displayDBContent(individualsInDB);

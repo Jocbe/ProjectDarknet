@@ -29,6 +29,14 @@ public class Strings {
 	public static final String DB_DATE_FORMAT = "yyyy-MM-dd HH-mm-ss";
 	public static final String LOGGER_DATE_FORMAT = "yyyy-mm-dd_hh:mm:ss";
 
-	// Primary Data Collector GUI
-	public static final String DB_CONFIG_FILE_PATH = "C:/Users/augustin/workspace/ProjectDarknet/res/dbconfix.txt";
+	/**
+	 * @return The URL of the project folder.
+	 */
+	public String getProjectDirectory() {
+		// Get URL of this class and get rid of the file:/ at the beginning
+		final String classURL = this.getClass().getResource("").toString()
+				.replaceAll("file:/", "");
+		// Get out of the bin/uk/ac/cam/darknet/...
+		return classURL.replaceAll("bin/uk/ac/cam/darknet/common/", "");
+	}
 }

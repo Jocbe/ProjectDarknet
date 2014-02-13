@@ -61,8 +61,8 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 				if (nextLine != null) {
 					System.out.println(nextLine[5]);
 					// TODO: This approach may fail when the first line is a header, there must be a check for this. (Augustin)
-					String pattern = DateFormat.getDateInstance().format(
-							nextLine[5]);
+					// TODO: Replace the next 3 lines by this: final Date eventDate = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss").parse(nextLine[5]); (Augustin)
+					String pattern = DateFormat.getDateInstance().format(nextLine[5]);
 					DateFormat df = new SimpleDateFormat(pattern);
 					Date eventDate = df.parse(nextLine[5]);
 					Individual ind = Individual.getNewIndividual(nextLine[1], nextLine[2], nextLine[3], eventDate, nextLine[6], null);

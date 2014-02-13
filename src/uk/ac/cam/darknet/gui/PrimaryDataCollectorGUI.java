@@ -634,11 +634,16 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 		}
 		else {
 			// Update the table
-			table.displayIndividual(newIndividual);
+			try {
+				table.displayIndividual(dbm.getById(ID));
+			}
+			catch (SQLException e) {
+				JOptionPane.showMessageDialog(frame, Strings.GUI_DB_CONN_ERR,
+						"Database error", JOptionPane.ERROR_MESSAGE);
+			}
 			// Jump to the added line
 			table.scrollRectToVisible(table.getCellRect(
 					table.getRowCount() - 1, 0, true));
-			// TODO: Use dbm to get the individual from there.
 
 			// Reset the text fields
 			txtFldFirstName.setText("");
@@ -655,10 +660,9 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 	 * @return The ID of the individual, or -1 in case of error.
 	 */
 	private long saveIndividual(final Individual i) {
-		final long status = 42;
-		// TODO: Implement status
+		final long status;
 		try {
-			dbm.storeIndividual(i);
+			status = dbm.storeIndividual(i);
 		}
 		catch (SQLException e1) {
 			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_ADD_ERR,

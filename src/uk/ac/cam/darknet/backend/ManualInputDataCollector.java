@@ -59,6 +59,8 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 			String[] nextLine;
 			while ((nextLine = reader.readNext()) != null) {
 				if (nextLine != null) {
+					System.out.println(nextLine[5]);
+					// TODO: This approach may fail when the first line is a header, there must be a check for this. (Augustin)
 					String pattern = DateFormat.getDateInstance().format(
 							nextLine[5]);
 					DateFormat df = new SimpleDateFormat(pattern);

@@ -6,7 +6,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -19,7 +22,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
+import javax.swing.text.DateFormatter;
 
+import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
 import uk.ac.cam.darknet.common.Strings;
 import uk.ac.cam.darknet.database.PrimaryDatabaseManager;
@@ -34,7 +39,7 @@ import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
  * 
  */
 public class PrimaryDataCollectorGUI implements ActionListener {
-	private JFrame frmPrimaryDataCollector;
+	private JFrame frame;
 	private JTextField txtFldFirstName;
 	private JTextField txtFldSecondName;
 	private JTextField txtFldEmail;
@@ -42,37 +47,40 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 	private JTextField txtFldVenueName;
 	private JTextField txtFldSeat;
 	private JTextField txtFldCSVFilePath;
+	private JFormattedTextField txtFldVenueDate;
 	private JButton btnBrowse;
 	private JPanel panel;
 	private JButton btnLoadAudience;
 	private JButton btnAddPerson;
 	private JButton btnDone;
+	private PrimaryDatabaseManager dbm;
 
 	/**
 	 * Initialize the GUI.
 	 */
 	public PrimaryDataCollectorGUI() {
 		// Show the GUI
-		initialize();
+		initializeGUI();
+		// Connect to the database
+		startDBManager();
 		// Get all the individuals that are already in the DB
 		final List<Individual> individualsInDB = getDBContent();
 		// Display them in the table
-		displayDBContent(individualsInDB);
+		table.displayIndividuals(individualsInDB);
 	}
 
 	/**
 	 * Initialize the contents of the frame.
 	 */
-	private void initialize() {
-		frmPrimaryDataCollector = new JFrame();
-		frmPrimaryDataCollector.setResizable(false);
-		frmPrimaryDataCollector.setTitle("Primary Data Collector");
-		frmPrimaryDataCollector.setBounds(100, 100, 487, 624);
-		frmPrimaryDataCollector.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	private void initializeGUI() {
+		frame = new JFrame();
+		frame.setResizable(false);
+		frame.setTitle("Primary Data Collector");
+		frame.setBounds(100, 100, 487, 624);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		panel = new JPanel();
-		frmPrimaryDataCollector.getContentPane()
-				.add(panel, BorderLayout.CENTER);
+		frame.getContentPane().add(panel, BorderLayout.CENTER);
 		panel.setLayout(null);
 
 		final JLabel lblLoadFromCsv = new JLabel("Load from CSV file");
@@ -118,8 +126,8 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 		lblSetThe.setBounds(12, 120, 98, 16);
 		panel.add(lblSetThe);
 
-		final JLabel lblVenue = new JLabel("Name:");
-		lblVenue.setBounds(12, 148, 55, 16);
+		final JLabel lblVenue = new JLabel("Venue name:");
+		lblVenue.setBounds(12, 148, 79, 16);
 		panel.add(lblVenue);
 
 		txtFldVenueName = new JTextField();
@@ -131,9 +139,15 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 		lblDate.setBounds(231, 148, 55, 16);
 		panel.add(lblDate);
 
-		final JFormattedTextField txtFldVenueDate = new JFormattedTextField();
+		// Date formatted text field
+		final DateFormatter formatter = new DateFormatter(new SimpleDateFormat(
+				"yyyy-MM-dd HH:mm"));
+		txtFldVenueDate = new JFormattedTextField(formatter);
 		txtFldVenueDate.setColumns(10);
 		txtFldVenueDate.setBounds(320, 146, 145, 20);
+		txtFldVenueDate.setValue(new Date());
+		txtFldVenueDate
+				.setToolTipText("Enter date in the format yyyy-MM-dd HH:mm.");
 		panel.add(txtFldVenueDate);
 
 		final JLabel lblAddPerson = new JLabel("2. Add person");
@@ -204,38 +218,121 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 	}
 
 	/**
+	 * Starts the database manager.
+	 */
+	private void startDBManager() {
+		try {
+			// Start the database manager
+			final Strings strings = new Strings();
+			final Hashtable<String, AttributeCategories> emptyTable = new Hashtable<>();
+			dbm = new PrimaryDatabaseManager(emptyTable, strings.getBaseDir()
+					+ "/res/dbconfix.txt");
+		}
+		catch (ClassNotFoundException | ConfigFileNotFoundException
+				| IOException | SQLException e) {
+			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_CONN_ERR,
+					"Database error", JOptionPane.ERROR_MESSAGE);
+		}
+	}
+
+	/**
 	 * Get the list of all individuals that are already in the database.
 	 * 
 	 * @return The list of all individuals already in the database.
 	 */
 	private List<Individual> getDBContent() {
-		final PrimaryDatabaseManager dbm;
 		try {
-			// Load the database manager
-			final Strings strings = new Strings();
-			dbm = new PrimaryDatabaseManager(null,
-					strings.getProjectDirectory() + "/res/dbconfix.txt");
-			// Return all individuals
 			return dbm.getAllIndividuals();
 		}
-		catch (ClassNotFoundException | ConfigFileNotFoundException
-				| IOException | SQLException e) {
-			e.printStackTrace();
-			// TODO: Handle this in a better way
+		catch (SQLException e) {
+			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_READ_ERR,
+					"Database error", JOptionPane.ERROR_MESSAGE);
 			return null;
 		}
 	}
 
 	/**
-	 * Display all given individuals in a table in the GUI. Only primary
-	 * information will be displayed.
-	 * 
-	 * @param individuals The list of individuals to be displayed.
+	 * Open the file chooser when the browse button is clicked and handle the
+	 * file that is returned.
 	 */
-	private void displayDBContent(final List<Individual> individuals) {
-		// TODO: Display the list of all individuals with their primary data in
-		// the table
-		table.displayIndividuals(individuals);
+	private void handleBrowseButton() {
+		final JFileChooser fc = new JFileChooser();
+
+		// Return value from the file chooser (tells if a file was selected)
+		int returnVal = fc.showOpenDialog(panel);
+
+		// If file selected, set the text field'c contents to the path of it
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
+			txtFldCSVFilePath.setText(fc.getSelectedFile().toString());
+		}
+	}
+
+	/**
+	 * Load the given csv file.
+	 */
+	private void handleLoadAudience() {
+		// TODO
+	}
+
+	/**
+	 * Handle adding new person into the database, i.e. get the stuff from the
+	 * text fields, validate it, process it, add it to the database and update
+	 * the table.
+	 */
+	private void handleAddPerson() {
+		// Get values from the text fields
+		final String firstName = txtFldFirstName.getText();
+		final String lastName = txtFldSecondName.getText();
+		final String email = txtFldEmail.getText();
+		final String seat = txtFldSeat.getText();
+
+		// Get the date
+		final SimpleDateFormat dateFormatter = new SimpleDateFormat(
+				"yyyy-MM-dd HH:mm");
+		final Date eventDate;
+		try {
+			eventDate = dateFormatter.parse(txtFldVenueDate.getText());
+		}
+		catch (ParseException e1) {
+			JOptionPane.showMessageDialog(frame, Strings.GUI_DATE_FORMAT);
+			return;
+		}
+
+		// Ensure that name and email are filled in, if not, shout
+		if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty()) {
+			JOptionPane.showMessageDialog(frame, Strings.GUI_COMPUL_FLDS);
+			return;
+		}
+
+		// Save the individual
+		final Individual newIndividual = Individual.getNewIndividual(firstName,
+				lastName, email, eventDate, seat, null);
+		saveIndividual(newIndividual);
+
+		// Update the table
+		table.displayIndividual(newIndividual);
+
+		// Reset the text fields
+		txtFldFirstName.setText("");
+		txtFldSecondName.setText("");
+		txtFldEmail.setText("");
+		txtFldSeat.setText("");
+	}
+
+	/**
+	 * Save the given individual in the db. Show error dialog if error.
+	 * 
+	 * @param i The individual to be saved.
+	 */
+	private void saveIndividual(final Individual i) {
+		try {
+			dbm.storeIndividual(i);
+		}
+		catch (SQLException e1) {
+			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_ADD_ERR,
+					"Database error", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
 	}
 
 	/**
@@ -245,51 +342,20 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		// The browse button, open File Chooser dialog
 		if (e.getSource() == btnBrowse) {
-			final JFileChooser fc = new JFileChooser();
-
-			// Return value from the file chooser (tells if a file was selected)
-			int returnVal = fc.showOpenDialog(panel);
-
-			// If file selected, set the text field'c contents to the path of it
-			if (returnVal == JFileChooser.APPROVE_OPTION) {
-				txtFldCSVFilePath.setText(fc.getSelectedFile().toString());
-			}
+			handleBrowseButton();
 		}
-
 		// The load audience button, load the given CSV file
-		if (e.getSource() == btnLoadAudience) {
-			// TODO: Call appropriate method in the PrimaryDataCollector
-			System.out.println("DEBUG: Loading audience from CSV file.");
+		else if (e.getSource() == btnLoadAudience) {
+			handleLoadAudience();
 		}
-
 		// The add single person button, add them to the DB
-		if (e.getSource() == btnAddPerson) {
-			// TODO: Call appropriate method in the DatabaseManager
-			final String firstName = txtFldFirstName.getText();
-			final String lastName = txtFldSecondName.getText();
-			final String email = txtFldEmail.getText();
-			final String seat = txtFldSeat.getText();
-
-			// Ensure that name and email are filled in, if not, cry out
-			if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty()) {
-				JOptionPane.showMessageDialog(frmPrimaryDataCollector,
-						"Fields marked with an asterisk are compulsory.");
-				return;
-			}			
-			
-			// Reset the text fields
-			txtFldFirstName.setText("");
-			txtFldSecondName.setText("");
-			txtFldEmail.setText("");
-			txtFldSeat.setText("");
-
+		else if (e.getSource() == btnAddPerson) {
+			handleAddPerson();
 		}
-		
 		// Done button, close the window
-		if (e.getSource() == btnDone) {
-			frmPrimaryDataCollector.dispose();
+		else if (e.getSource() == btnDone) {
+			frame.dispose();
 		}
-
 	}
 
 	/**
@@ -299,6 +365,6 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 	 */
 	public static void main(String[] args) {
 		final PrimaryDataCollectorGUI pdcGUI = new PrimaryDataCollectorGUI();
-		pdcGUI.frmPrimaryDataCollector.setVisible(true);
+		pdcGUI.frame.setVisible(true);
 	}
 }

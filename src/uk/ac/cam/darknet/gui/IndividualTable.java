@@ -44,21 +44,29 @@ public class IndividualTable extends JTable {
 	 * @param individuals The list of individuals.
 	 */
 	public void displayIndividuals(final List<Individual> individuals) {
-		final DefaultTableModel model = (DefaultTableModel) this.getModel();
-
 		// Go through all individuals, get their fields and display
 		for (final Individual i : individuals) {
-			final long ID = i.getId();
-			final String firstName = i.getFirstName();
-			final String lastName = i.getLastName();
-			final String email = i.getEmail();
-			final String eventDate = i.getEventDate().toString();
-			final String seat = i.getSeat();
-
-			// Add row to the table
-			model.addRow(new Object[] { ID, firstName, lastName, email,
-					eventDate, seat });
+			displayIndividual(i);
 		}
+	}
+
+	/**
+	 * Displays the primary data of the given individual in the table. If there
+	 * are any data in the table this row is appended.
+	 * 
+	 * @param i The individual to be included in the table.
+	 */
+	public void displayIndividual(final Individual i) {
+		final long ID = i.getId();
+		final String firstName = i.getFirstName();
+		final String lastName = i.getLastName();
+		final String email = i.getEmail();
+		final String eventDate = i.getEventDate().toString();
+		final String seat = i.getSeat();
+
+		// Add row to the table
+		model.addRow(new Object[] { ID, firstName, lastName, email, eventDate,
+				seat });
 	}
 
 }

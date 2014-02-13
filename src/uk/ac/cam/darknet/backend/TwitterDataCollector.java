@@ -76,7 +76,14 @@ public class TwitterDataCollector extends SecondaryDataCollector {
 
 	@Override
 	public Hashtable<String, AttributeCategories> getAttributeTable() {
-		return super.getAttributeTable();
+		
+		if(attributeTable == null) {
+			attributeTable = new Hashtable<String, AttributeCategories>();
+			attributeTable.put("tweets", AttributeCategories.CS_STRING_LIST);
+			attributeTable.put("twitter_display_name", AttributeCategories.STRING);
+		}
+		
+		return attributeTable;
 	}
 
 	@Override

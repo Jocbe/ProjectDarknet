@@ -30,7 +30,15 @@ public enum AttributeCategories {
 	/**
 	 * The age of individuals
 	 */
-	AGE(byte.class);
+	AGE(byte.class),
+	/**
+	 * A comma-separated list of strings which are related to the individual (<code>String</code>)
+	 */
+	CS_STRING_LIST(String.class),
+	/**
+	 * A string attribute of an individual (<code>String</code>)
+	 */
+	STRING(String.class);
 
 	private final Class<?>	attributeType;
 	private final String	sqlType;

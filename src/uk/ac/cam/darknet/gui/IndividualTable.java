@@ -55,6 +55,7 @@ public class IndividualTable extends JTable {
 			final String eventDate = i.getEventDate().toString();
 			final String seat = i.getSeat();
 
+			// Add row to the table
 			model.addRow(new Object[] { ID, firstName, lastName, email,
 					eventDate, seat });
 		}

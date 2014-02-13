@@ -54,9 +54,9 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 		// Show the GUI
 		initialize();
 		// Get all the individuals that are already in the DB
-		final List<Individual> individualsInDB = getDBContent();
+		//final List<Individual> individualsInDB = getDBContent();
 		// Display them in the table
-		displayDBContent(individualsInDB);
+		//displayDBContent(individualsInDB);
 	}
 
 	/**
@@ -207,6 +207,7 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 		try {
 			// Load the database manager
 			// TODO: Use universal access path
+
 			dbm = new PrimaryDatabaseManager(null, Strings.DB_CONFIG_FILE_PATH);
 			// Return all individuals
 			// TODO: Use get all individuals method
@@ -227,8 +228,6 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 	 * @param individuals The list of individuals to be displayed.
 	 */
 	private void displayDBContent(final List<Individual> individuals) {
-		// TODO: Display the list of all individuals with their primary data in
-		// the table
 		table.displayIndividuals(individuals);
 	}
 
@@ -270,7 +269,8 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 	 * @param args Ignored
 	 */
 	public static void main(String[] args) {
-		final PrimaryDataCollectorGUI pdcGUI = new PrimaryDataCollectorGUI();
-		pdcGUI.frmPrimaryDataCollector.setVisible(true);
+		//final PrimaryDataCollectorGUI pdcGUI = new PrimaryDataCollectorGUI();
+		//pdcGUI.frmPrimaryDataCollector.setVisible(true);
+		System.out.println("Hello");
 	}
 }

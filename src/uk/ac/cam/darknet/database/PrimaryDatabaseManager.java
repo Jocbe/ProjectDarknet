@@ -22,7 +22,7 @@ import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
  * @author Ibtehaj Nadeem
  */
 public class PrimaryDatabaseManager extends DatabaseManager {
-	private static final String	CREATE_PRIMARY_TABLE	= "CREATE CACHED TABLE individuals (id BIGINT GENERATED ALWAYS AS IDENTITY(START WITH 1000000) PRIMARY KEY, fname VARCHAR(25) NOT NULL, lname VARCHAR(25) NOT NULL, email VARCHAR(254), event TIMESTAMP(0) WITHOUT TIME ZONE, seat VARCHAR(10), UNIQUE (fname, lname, email, event, seat))";
+	private static final String	CREATE_PRIMARY_TABLE	= "CREATE CACHED TABLE individuals (id BIGINT GENERATED ALWAYS AS IDENTITY(START WITH 1000000) PRIMARY KEY, fname VARCHAR(25) NOT NULL, lname VARCHAR(25) NOT NULL, email VARCHAR(254), event TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, seat VARCHAR(10), UNIQUE (fname, lname, email, event, seat))";
 	private static final String	INSERT_INDIVIDUAL		= "INSERT INTO individuals (id, fname, lname, email, event, seat) VALUES (DEFAULT, ?, ?, ?, ?, ?)";
 	private static final String	GET_NEW_ID				= "SELECT MAX(id) FROM individuals";
 	private static final String	DELETE_INDIVIDUAL		= "DELETE FROM individuals WHERE id = ?";

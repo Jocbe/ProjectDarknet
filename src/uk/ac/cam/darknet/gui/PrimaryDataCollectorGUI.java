@@ -14,6 +14,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -34,7 +35,7 @@ import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
  */
 public class PrimaryDataCollectorGUI implements ActionListener {
 	private JFrame frmPrimaryDataCollector;
-	private JTextField txtFldName;
+	private JTextField txtFldFirstName;
 	private JTextField txtFldSecondName;
 	private JTextField txtFldEmail;
 	private IndividualTable table;
@@ -45,6 +46,7 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 	private JPanel panel;
 	private JButton btnLoadAudience;
 	private JButton btnAddPerson;
+	private JButton btnDone;
 
 	/**
 	 * Initialize the GUI.
@@ -65,7 +67,7 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 		frmPrimaryDataCollector = new JFrame();
 		frmPrimaryDataCollector.setResizable(false);
 		frmPrimaryDataCollector.setTitle("Primary Data Collector");
-		frmPrimaryDataCollector.setBounds(100, 100, 487, 600);
+		frmPrimaryDataCollector.setBounds(100, 100, 487, 624);
 		frmPrimaryDataCollector.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		panel = new JPanel();
@@ -97,10 +99,10 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 		btnLoadAudience.addActionListener(this);
 		panel.add(btnLoadAudience);
 
-		txtFldName = new JTextField();
-		txtFldName.setBounds(99, 221, 114, 20);
-		panel.add(txtFldName);
-		txtFldName.setColumns(10);
+		txtFldFirstName = new JTextField();
+		txtFldFirstName.setBounds(99, 221, 114, 20);
+		panel.add(txtFldFirstName);
+		txtFldFirstName.setColumns(10);
 
 		txtFldSecondName = new JTextField();
 		txtFldSecondName.setBounds(320, 221, 145, 20);
@@ -194,6 +196,11 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 		table = new IndividualTable();
 		table.setEnabled(false);
 		scrollPane.setViewportView(table);
+
+		btnDone = new JButton("Done");
+		btnDone.setBounds(367, 558, 98, 26);
+		btnDone.addActionListener(this);
+		panel.add(btnDone);
 	}
 
 	/**
@@ -258,7 +265,29 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 		// The add single person button, add them to the DB
 		if (e.getSource() == btnAddPerson) {
 			// TODO: Call appropriate method in the DatabaseManager
-			System.out.println("DEBUG: Adding one person to the DB.");
+			final String firstName = txtFldFirstName.getText();
+			final String lastName = txtFldSecondName.getText();
+			final String email = txtFldEmail.getText();
+			final String seat = txtFldSeat.getText();
+
+			// Ensure that name and email are filled in, if not, cry out
+			if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty()) {
+				JOptionPane.showMessageDialog(frmPrimaryDataCollector,
+						"Fields marked with an asterisk are compulsory.");
+				return;
+			}			
+			
+			// Reset the text fields
+			txtFldFirstName.setText("");
+			txtFldSecondName.setText("");
+			txtFldEmail.setText("");
+			txtFldSeat.setText("");
+
+		}
+		
+		// Done button, close the window
+		if (e.getSource() == btnDone) {
+			frmPrimaryDataCollector.dispose();
 		}
 
 	}

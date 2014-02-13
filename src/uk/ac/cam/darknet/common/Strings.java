@@ -37,6 +37,6 @@ public class Strings {
 		final String classURL = this.getClass().getResource("").toString()
 				.replaceAll("file:/", "");
 		// Get out of the bin/uk/ac/cam/darknet/...
-		return classURL.replaceAll("bin/uk/ac/cam/darknet/common/", "");
+		return classURL.replaceAll("bin/uk/ac/cam/darknet/[a-z]*/", "");
 	}
 }

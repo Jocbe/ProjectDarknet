@@ -36,7 +36,6 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 	 */
 	public ManualInputDataCollector(PrimaryDatabaseManager databaseManager) {
 		super(databaseManager);
-		// TODO Auto-generated constructor stub
 	}
 	
 
@@ -51,7 +50,7 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 	 * @throws IOException 
 	 * 			If CSV file not found or if read is unsuccessful
 	 */
-	public List<Individual> loadfromCSV(String pathname) throws IOException{
+	public static List<Individual> loadfromCSV(String pathname) throws IOException{
 		List<Individual> audience = new ArrayList<Individual>();
 		InputStream csvStream = new FileInputStream(new File(pathname));
 		CSVReader reader = new CSVReader(new InputStreamReader(csvStream));
@@ -61,7 +60,7 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 			  String pattern = DateFormat.getDateInstance().format(nextLine[5]);
 			  DateFormat df = new SimpleDateFormat(pattern);
 			  Date eventDate = df.parse(nextLine[5]);
-			  Individual ind = Individual.getNewIndividual(nextLine[1], nextLine[2], nextLine[3], eventDate, nextLine[6], globalAttributeTable);
+			  Individual ind = Individual.getNewIndividual(nextLine[1], nextLine[2], nextLine[3], eventDate, nextLine[6], null);
 			  audience.add(ind);
 		  }
 		}
@@ -77,7 +76,7 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 	 * @return
 	 * 			Individual stored in Database
 	 */
-	public Individual loadIndividual(Individual ind){
+	public static Individual loadIndividual(Individual ind){
 		databaseManager.store(ind);
 		//why does this throw exception but other doesnt?
 		return ind;
@@ -90,5 +89,16 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 		// note will create Individuals and store them using database manager
 		PrimaryDataCollectorGUI gui = new PrimaryDataCollectorGUI();
 		//how do I start this?
+	}
+	
+	/**
+	 * this method is for testing 
+	 * 
+	 * @param args
+	 * @throws IOException 
+	 */
+	public static void main(String args[]) throws IOException{
+		List<Individual> audience = loadfromCSV(args[0]);
+		Individual i = audie
 	}
 }

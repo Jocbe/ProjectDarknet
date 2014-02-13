@@ -1,11 +1,13 @@
 package uk.ac.cam.darknet.gui;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 import uk.ac.cam.darknet.common.Individual;
+import uk.ac.cam.darknet.common.Strings;
 
 /**
  * A Swing table extending JTable to store individuals. Provides methods such as
@@ -16,6 +18,7 @@ import uk.ac.cam.darknet.common.Individual;
  */
 public class IndividualTable extends JTable {
 	private static final long serialVersionUID = 1L;
+	// Names of the columns in the table
 	private static final String[] columns = { "ID", "First name", "Last name",
 			"Email", "Event date", "Seat" };
 	final static DefaultTableModel model = new DefaultTableModel();
@@ -32,9 +35,8 @@ public class IndividualTable extends JTable {
 		// Create auto sorted for each column
 		this.setAutoCreateRowSorter(true);
 		// Set the column widths
-		this.getColumnModel().getColumn(0).setPreferredWidth(50);
-		this.getColumnModel().getColumn(4).setPreferredWidth(60);
-		this.getColumnModel().getColumn(5).setPreferredWidth(25);
+		this.getColumnModel().getColumn(0).setMaxWidth(60);
+		this.getColumnModel().getColumn(5).setMaxWidth(40);
 	}
 
 	/**
@@ -61,7 +63,16 @@ public class IndividualTable extends JTable {
 		final String firstName = i.getFirstName();
 		final String lastName = i.getLastName();
 		final String email = i.getEmail();
-		final String eventDate = i.getEventDate().toString();
+		final String eventDate;
+		// Handle cases with no date specified
+		if (i.getEventDate() != null) {
+			final SimpleDateFormat sdf = new SimpleDateFormat(
+					Strings.GUI_DATE_FORMAT);
+			eventDate = sdf.format(i.getEventDate());
+		}
+		else {
+			eventDate = "";
+		}
 		final String seat = i.getSeat();
 
 		// Add row to the table

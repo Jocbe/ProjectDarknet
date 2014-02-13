@@ -30,11 +30,14 @@ public class Strings {
 	public static final String LOGGER_DATE_FORMAT = "yyyy-mm-dd_hh:mm:ss";
 
 	// GUI
+	public static final String GUI_DATE_FORMAT = "yyyy-MM-dd HH:mm";
 	public static final String GUI_COMPUL_FLDS = "Fields marked with an asterisk are compulsory.";
-	public static final String GUI_DATE_FORMAT = "The date format is invalid. Use yyyy-MM-dd HH:mm.";
-	public static final String GUI_DB_ADD_ERR = "It wasn't possible to add the individual to the database.";
+	public static final String GUI_DATE_FORMAT_ERR = "The date format is invalid. Use yyyy-MM-dd HH:mm.";
+	public static final String GUI_DB_ADD_ERR = "It wasn't possible to add the individual to the database. Have you set all the fields correctly?";
 	public static final String GUI_DB_READ_ERR = "It wasn't possible to load individuals from the database.";
 	public static final String GUI_DB_CONN_ERR = "Could not connect to the database.";
+	public static final String GUI_CSV_ADD_ERR = "It wasn't possible to open or parse the given CSV file. Have you selected the right one :-)?";
+	
 
 	/**
 	 * @return The URL of the project folder.

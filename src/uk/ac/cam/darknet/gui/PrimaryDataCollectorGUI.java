@@ -12,6 +12,8 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
@@ -22,8 +24,11 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.DateFormatter;
 
+import uk.ac.cam.darknet.backend.ManualInputDataCollector;
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
 import uk.ac.cam.darknet.common.Strings;
@@ -58,9 +63,10 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 	/**
 	 * Initialize the GUI.
 	 */
-	public PrimaryDataCollectorGUI() {
+	public void initialize() {
 		// Show the GUI
 		initializeGUI();
+		frame.setVisible(true);
 		// Connect to the database
 		startDBManager();
 		// Get all the individuals that are already in the DB
@@ -74,137 +80,85 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 	 */
 	private void initializeGUI() {
 		frame = new JFrame();
-		frame.setResizable(false);
 		frame.setTitle("Primary Data Collector");
 		frame.setBounds(100, 100, 487, 624);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		panel = new JPanel();
 		frame.getContentPane().add(panel, BorderLayout.CENTER);
-		panel.setLayout(null);
 
 		final JLabel lblLoadFromCsv = new JLabel("Load from CSV file");
 		lblLoadFromCsv.setFont(new Font("Tahoma", Font.BOLD, 11));
-		lblLoadFromCsv.setBounds(12, 12, 118, 16);
-		panel.add(lblLoadFromCsv);
 
 		final JSeparator separator = new JSeparator();
-		separator.setBounds(12, 78, 453, 2);
-		panel.add(separator);
 
 		final JLabel lblInputManually = new JLabel("Manual input");
 		lblInputManually.setFont(new Font("Tahoma", Font.BOLD, 11));
-		lblInputManually.setBounds(12, 92, 118, 16);
-		panel.add(lblInputManually);
 
 		btnBrowse = new JButton("Browse");
-		btnBrowse.setBounds(250, 39, 79, 23);
 		btnBrowse.addActionListener(this);
-		panel.add(btnBrowse);
 
 		btnLoadAudience = new JButton("Load audience");
-		btnLoadAudience.setBounds(341, 39, 124, 23);
 		btnLoadAudience.addActionListener(this);
-		panel.add(btnLoadAudience);
 
 		txtFldFirstName = new JTextField();
-		txtFldFirstName.setBounds(99, 221, 114, 20);
-		panel.add(txtFldFirstName);
 		txtFldFirstName.setColumns(10);
 
 		txtFldSecondName = new JTextField();
-		txtFldSecondName.setBounds(320, 221, 145, 20);
-		panel.add(txtFldSecondName);
 		txtFldSecondName.setColumns(10);
 
 		txtFldEmail = new JTextField();
-		txtFldEmail.setBounds(99, 249, 114, 20);
-		panel.add(txtFldEmail);
 		txtFldEmail.setColumns(10);
 
 		final JLabel lblSetThe = new JLabel("1. Set the venue");
-		lblSetThe.setBounds(12, 120, 98, 16);
-		panel.add(lblSetThe);
 
 		final JLabel lblVenue = new JLabel("Venue name:");
-		lblVenue.setBounds(12, 148, 79, 16);
-		panel.add(lblVenue);
 
 		txtFldVenueName = new JTextField();
-		txtFldVenueName.setBounds(99, 146, 114, 20);
-		panel.add(txtFldVenueName);
 		txtFldVenueName.setColumns(10);
 
 		final JLabel lblDate = new JLabel("Date:");
-		lblDate.setBounds(231, 148, 55, 16);
-		panel.add(lblDate);
 
 		// Date formatted text field
 		final DateFormatter formatter = new DateFormatter(new SimpleDateFormat(
 				"yyyy-MM-dd HH:mm"));
 		txtFldVenueDate = new JFormattedTextField(formatter);
 		txtFldVenueDate.setColumns(10);
-		txtFldVenueDate.setBounds(320, 146, 145, 20);
 		txtFldVenueDate.setValue(new Date());
 		txtFldVenueDate
 				.setToolTipText("Enter date in the format yyyy-MM-dd HH:mm.");
-		panel.add(txtFldVenueDate);
 
 		final JLabel lblAddPerson = new JLabel("2. Add person");
-		lblAddPerson.setBounds(12, 193, 98, 16);
-		panel.add(lblAddPerson);
 
 		final JLabel lblName = new JLabel("First name*:");
-		lblName.setBounds(12, 223, 98, 16);
-		panel.add(lblName);
 
 		final JLabel lblSecondName = new JLabel("Second name*:");
-		lblSecondName.setBounds(231, 223, 98, 16);
-		panel.add(lblSecondName);
 
 		final JLabel lblEmail = new JLabel("Email*:");
-		lblEmail.setBounds(12, 251, 55, 16);
-		panel.add(lblEmail);
 
 		final JLabel lblSeat = new JLabel("Seat:");
-		lblSeat.setBounds(231, 251, 55, 16);
-		panel.add(lblSeat);
 
 		txtFldSeat = new JTextField();
-		txtFldSeat.setBounds(320, 249, 145, 20);
-		panel.add(txtFldSeat);
 		txtFldSeat.setColumns(10);
 
 		final JLabel lblFieldsMarked = new JLabel(
 				"* Fields marked with asterisk are compulsory");
 		lblFieldsMarked.setFont(new Font("Tahoma", Font.PLAIN, 10));
-		lblFieldsMarked.setBounds(12, 279, 226, 16);
-		panel.add(lblFieldsMarked);
 
 		btnAddPerson = new JButton("Add person");
-		btnAddPerson.setBounds(360, 276, 105, 23);
 		btnAddPerson.addActionListener(this);
-		panel.add(btnAddPerson);
 
 		txtFldCSVFilePath = new JTextField();
-		txtFldCSVFilePath.setBounds(12, 40, 234, 20);
-		panel.add(txtFldCSVFilePath);
 		txtFldCSVFilePath.setColumns(10);
 
 		// People in the database
 		final JSeparator separator_1 = new JSeparator();
-		separator_1.setBounds(12, 307, 453, 2);
-		panel.add(separator_1);
 
 		final JLabel lblPeopleInDB = new JLabel(
 				"People currently in the database");
 		lblPeopleInDB.setFont(new Font("Tahoma", Font.BOLD, 11));
-		lblPeopleInDB.setBounds(12, 316, 240, 16);
-		panel.add(lblPeopleInDB);
 
 		final JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(12, 335, 453, 221);
-		panel.add(scrollPane);
 
 		// The table of individuals
 		table = new IndividualTable();
@@ -212,9 +166,358 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 		scrollPane.setViewportView(table);
 
 		btnDone = new JButton("Done");
-		btnDone.setBounds(367, 558, 98, 26);
 		btnDone.addActionListener(this);
-		panel.add(btnDone);
+		GroupLayout gl_panel = new GroupLayout(panel);
+		gl_panel.setHorizontalGroup(gl_panel
+				.createParallelGroup(Alignment.LEADING)
+				.addGroup(
+						gl_panel.createSequentialGroup()
+								.addGroup(
+										gl_panel.createParallelGroup(
+												Alignment.LEADING)
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(12)
+																.addComponent(
+																		lblLoadFromCsv,
+																		GroupLayout.PREFERRED_SIZE,
+																		118,
+																		GroupLayout.PREFERRED_SIZE))
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(12)
+																.addComponent(
+																		txtFldCSVFilePath,
+																		GroupLayout.PREFERRED_SIZE,
+																		234,
+																		GroupLayout.PREFERRED_SIZE)
+																.addGap(4)
+																.addComponent(
+																		btnBrowse,
+																		GroupLayout.PREFERRED_SIZE,
+																		79,
+																		GroupLayout.PREFERRED_SIZE)
+																.addGap(12)
+																.addComponent(
+																		btnLoadAudience,
+																		GroupLayout.PREFERRED_SIZE,
+																		124,
+																		GroupLayout.PREFERRED_SIZE))
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(12)
+																.addComponent(
+																		separator,
+																		GroupLayout.PREFERRED_SIZE,
+																		453,
+																		GroupLayout.PREFERRED_SIZE))
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(12)
+																.addComponent(
+																		lblInputManually,
+																		GroupLayout.PREFERRED_SIZE,
+																		118,
+																		GroupLayout.PREFERRED_SIZE))
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(12)
+																.addComponent(
+																		lblSetThe,
+																		GroupLayout.PREFERRED_SIZE,
+																		98,
+																		GroupLayout.PREFERRED_SIZE))
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(12)
+																.addComponent(
+																		lblVenue,
+																		GroupLayout.PREFERRED_SIZE,
+																		79,
+																		GroupLayout.PREFERRED_SIZE)
+																.addGap(8)
+																.addComponent(
+																		txtFldVenueName,
+																		GroupLayout.PREFERRED_SIZE,
+																		GroupLayout.DEFAULT_SIZE,
+																		GroupLayout.PREFERRED_SIZE)
+																.addGap(18)
+																.addComponent(
+																		lblDate,
+																		GroupLayout.PREFERRED_SIZE,
+																		55,
+																		GroupLayout.PREFERRED_SIZE)
+																.addGap(34)
+																.addComponent(
+																		txtFldVenueDate,
+																		GroupLayout.PREFERRED_SIZE,
+																		145,
+																		GroupLayout.PREFERRED_SIZE))
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(12)
+																.addComponent(
+																		lblAddPerson,
+																		GroupLayout.PREFERRED_SIZE,
+																		98,
+																		GroupLayout.PREFERRED_SIZE))
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(12)
+																.addGroup(
+																		gl_panel.createParallelGroup(
+																				Alignment.LEADING)
+																				.addGroup(
+																						gl_panel.createSequentialGroup()
+																								.addGap(87)
+																								.addComponent(
+																										txtFldFirstName,
+																										GroupLayout.PREFERRED_SIZE,
+																										GroupLayout.DEFAULT_SIZE,
+																										GroupLayout.PREFERRED_SIZE))
+																				.addComponent(
+																						lblName,
+																						GroupLayout.PREFERRED_SIZE,
+																						98,
+																						GroupLayout.PREFERRED_SIZE))
+																.addGap(18)
+																.addGroup(
+																		gl_panel.createParallelGroup(
+																				Alignment.LEADING)
+																				.addComponent(
+																						lblSecondName,
+																						GroupLayout.PREFERRED_SIZE,
+																						98,
+																						GroupLayout.PREFERRED_SIZE)
+																				.addGroup(
+																						gl_panel.createSequentialGroup()
+																								.addGap(89)
+																								.addComponent(
+																										txtFldSecondName,
+																										GroupLayout.PREFERRED_SIZE,
+																										145,
+																										GroupLayout.PREFERRED_SIZE))))
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(12)
+																.addComponent(
+																		lblEmail,
+																		GroupLayout.PREFERRED_SIZE,
+																		55,
+																		GroupLayout.PREFERRED_SIZE)
+																.addGap(32)
+																.addComponent(
+																		txtFldEmail,
+																		GroupLayout.PREFERRED_SIZE,
+																		GroupLayout.DEFAULT_SIZE,
+																		GroupLayout.PREFERRED_SIZE)
+																.addGap(18)
+																.addComponent(
+																		lblSeat,
+																		GroupLayout.PREFERRED_SIZE,
+																		55,
+																		GroupLayout.PREFERRED_SIZE)
+																.addGap(34)
+																.addComponent(
+																		txtFldSeat,
+																		GroupLayout.PREFERRED_SIZE,
+																		145,
+																		GroupLayout.PREFERRED_SIZE))
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(12)
+																.addComponent(
+																		lblFieldsMarked,
+																		GroupLayout.PREFERRED_SIZE,
+																		226,
+																		GroupLayout.PREFERRED_SIZE)
+																.addGap(122)
+																.addComponent(
+																		btnAddPerson,
+																		GroupLayout.PREFERRED_SIZE,
+																		105,
+																		GroupLayout.PREFERRED_SIZE))
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(12)
+																.addComponent(
+																		separator_1,
+																		GroupLayout.PREFERRED_SIZE,
+																		453,
+																		GroupLayout.PREFERRED_SIZE))
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(12)
+																.addComponent(
+																		lblPeopleInDB,
+																		GroupLayout.PREFERRED_SIZE,
+																		240,
+																		GroupLayout.PREFERRED_SIZE))
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(12)
+																.addComponent(
+																		scrollPane))
+												.addGroup(
+														Alignment.TRAILING,
+														gl_panel.createSequentialGroup()
+																.addGap(367)
+																.addComponent(
+																		btnDone,
+																		GroupLayout.PREFERRED_SIZE,
+																		98,
+																		GroupLayout.PREFERRED_SIZE)))
+								.addContainerGap()));
+		gl_panel.setVerticalGroup(gl_panel
+				.createParallelGroup(Alignment.LEADING)
+				.addGroup(
+						gl_panel.createSequentialGroup()
+								.addGap(12)
+								.addComponent(lblLoadFromCsv,
+										GroupLayout.PREFERRED_SIZE, 16,
+										GroupLayout.PREFERRED_SIZE)
+								.addGap(11)
+								.addGroup(
+										gl_panel.createParallelGroup(
+												Alignment.LEADING)
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(1)
+																.addComponent(
+																		txtFldCSVFilePath,
+																		GroupLayout.PREFERRED_SIZE,
+																		GroupLayout.DEFAULT_SIZE,
+																		GroupLayout.PREFERRED_SIZE))
+												.addGroup(
+														gl_panel.createParallelGroup(
+																Alignment.BASELINE)
+																.addComponent(
+																		btnBrowse,
+																		GroupLayout.PREFERRED_SIZE,
+																		23,
+																		GroupLayout.PREFERRED_SIZE)
+																.addComponent(
+																		btnLoadAudience,
+																		GroupLayout.PREFERRED_SIZE,
+																		23,
+																		GroupLayout.PREFERRED_SIZE)))
+								.addGap(16)
+								.addComponent(separator,
+										GroupLayout.PREFERRED_SIZE,
+										GroupLayout.DEFAULT_SIZE,
+										GroupLayout.PREFERRED_SIZE)
+								.addGap(12)
+								.addComponent(lblInputManually,
+										GroupLayout.PREFERRED_SIZE, 16,
+										GroupLayout.PREFERRED_SIZE)
+								.addGap(12)
+								.addComponent(lblSetThe)
+								.addGap(10)
+								.addGroup(
+										gl_panel.createParallelGroup(
+												Alignment.LEADING)
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(2)
+																.addComponent(
+																		lblVenue))
+												.addComponent(
+														txtFldVenueName,
+														GroupLayout.PREFERRED_SIZE,
+														GroupLayout.DEFAULT_SIZE,
+														GroupLayout.PREFERRED_SIZE)
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(2)
+																.addComponent(
+																		lblDate))
+												.addComponent(
+														txtFldVenueDate,
+														GroupLayout.PREFERRED_SIZE,
+														GroupLayout.DEFAULT_SIZE,
+														GroupLayout.PREFERRED_SIZE))
+								.addGap(27)
+								.addComponent(lblAddPerson)
+								.addGap(12)
+								.addGroup(
+										gl_panel.createParallelGroup(
+												Alignment.LEADING)
+												.addComponent(
+														txtFldFirstName,
+														GroupLayout.PREFERRED_SIZE,
+														GroupLayout.DEFAULT_SIZE,
+														GroupLayout.PREFERRED_SIZE)
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(2)
+																.addComponent(
+																		lblName))
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(2)
+																.addComponent(
+																		lblSecondName))
+												.addComponent(
+														txtFldSecondName,
+														GroupLayout.PREFERRED_SIZE,
+														GroupLayout.DEFAULT_SIZE,
+														GroupLayout.PREFERRED_SIZE))
+								.addGap(8)
+								.addGroup(
+										gl_panel.createParallelGroup(
+												Alignment.LEADING)
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(2)
+																.addComponent(
+																		lblEmail))
+												.addComponent(
+														txtFldEmail,
+														GroupLayout.PREFERRED_SIZE,
+														GroupLayout.DEFAULT_SIZE,
+														GroupLayout.PREFERRED_SIZE)
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(2)
+																.addComponent(
+																		lblSeat))
+												.addComponent(
+														txtFldSeat,
+														GroupLayout.PREFERRED_SIZE,
+														GroupLayout.DEFAULT_SIZE,
+														GroupLayout.PREFERRED_SIZE))
+								.addGap(7)
+								.addGroup(
+										gl_panel.createParallelGroup(
+												Alignment.LEADING)
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(3)
+																.addComponent(
+																		lblFieldsMarked,
+																		GroupLayout.PREFERRED_SIZE,
+																		16,
+																		GroupLayout.PREFERRED_SIZE))
+												.addComponent(
+														btnAddPerson,
+														GroupLayout.PREFERRED_SIZE,
+														23,
+														GroupLayout.PREFERRED_SIZE))
+								.addGap(8)
+								.addComponent(separator_1,
+										GroupLayout.PREFERRED_SIZE,
+										GroupLayout.DEFAULT_SIZE,
+										GroupLayout.PREFERRED_SIZE)
+								.addGap(7)
+								.addComponent(lblPeopleInDB,
+										GroupLayout.PREFERRED_SIZE, 16,
+										GroupLayout.PREFERRED_SIZE)
+								.addGap(3)
+								.addComponent(scrollPane,
+										GroupLayout.DEFAULT_SIZE, 221,
+										Short.MAX_VALUE).addGap(2)
+								.addComponent(btnDone).addGap(8)));
+		panel.setLayout(gl_panel);
 	}
 
 	/**
@@ -257,6 +560,10 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 	 */
 	private void handleBrowseButton() {
 		final JFileChooser fc = new JFileChooser();
+		// Set up the filter for .csv and.txt files
+		final FileFilter filter = new FileNameExtensionFilter("CSV file",
+				"csv", "txt");
+		fc.setFileFilter(filter);
 
 		// Return value from the file chooser (tells if a file was selected)
 		int returnVal = fc.showOpenDialog(panel);
@@ -271,7 +578,18 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 	 * Load the given csv file.
 	 */
 	private void handleLoadAudience() {
-		// TODO
+		// Load the list of individuals from the csv file
+		final String csvFileURL = txtFldCSVFilePath.getText();
+		final List<Individual> csvIndividuals;
+		try {
+			csvIndividuals = ManualInputDataCollector.loadfromCSV(csvFileURL);
+		}
+		catch (IOException | SQLException | ParseException e) {
+			JOptionPane.showMessageDialog(frame, Strings.GUI_CSV_ADD_ERR,
+					"CSV file import error", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+
 	}
 
 	/**
@@ -294,7 +612,7 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 			eventDate = dateFormatter.parse(txtFldVenueDate.getText());
 		}
 		catch (ParseException e1) {
-			JOptionPane.showMessageDialog(frame, Strings.GUI_DATE_FORMAT);
+			JOptionPane.showMessageDialog(frame, Strings.GUI_DATE_FORMAT_ERR);
 			return;
 		}
 
@@ -307,32 +625,47 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 		// Save the individual
 		final Individual newIndividual = Individual.getNewIndividual(firstName,
 				lastName, email, eventDate, seat, null);
-		saveIndividual(newIndividual);
+		final long ID = saveIndividual(newIndividual);
 
-		// Update the table
-		table.displayIndividual(newIndividual);
+		// If there was an error
+		if (ID == -1) {
+			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_ADD_ERR,
+					"Database error", JOptionPane.ERROR_MESSAGE);
+		}
+		else {
+			// Update the table
+			table.displayIndividual(newIndividual);
+			// Jump to the added line
+			table.scrollRectToVisible(table.getCellRect(
+					table.getRowCount() - 1, 0, true));
+			// TODO: Use dbm to get the individual from there.
 
-		// Reset the text fields
-		txtFldFirstName.setText("");
-		txtFldSecondName.setText("");
-		txtFldEmail.setText("");
-		txtFldSeat.setText("");
+			// Reset the text fields
+			txtFldFirstName.setText("");
+			txtFldSecondName.setText("");
+			txtFldEmail.setText("");
+			txtFldSeat.setText("");
+		}
 	}
 
 	/**
 	 * Save the given individual in the db. Show error dialog if error.
 	 * 
 	 * @param i The individual to be saved.
+	 * @return The ID of the individual, or -1 in case of error.
 	 */
-	private void saveIndividual(final Individual i) {
+	private long saveIndividual(final Individual i) {
+		final long status = 42;
+		// TODO: Implement status
 		try {
 			dbm.storeIndividual(i);
 		}
 		catch (SQLException e1) {
 			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_ADD_ERR,
 					"Database error", JOptionPane.ERROR_MESSAGE);
-			return;
+			return -1;
 		}
+		return status;
 	}
 
 	/**
@@ -365,6 +698,6 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 	 */
 	public static void main(String[] args) {
 		final PrimaryDataCollectorGUI pdcGUI = new PrimaryDataCollectorGUI();
-		pdcGUI.frame.setVisible(true);
+		pdcGUI.initialize();
 	}
 }

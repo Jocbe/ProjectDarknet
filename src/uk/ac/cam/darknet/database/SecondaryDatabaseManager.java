@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -103,7 +104,11 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 						stmt.setLong(1, currentIndividual.getId());
 						stmt.setObject(2, currentAttrRel.getAttribute(), getSQLType(globalAttributeTable.get(currentAttributeName)));
 						stmt.setDouble(3, currentAttrRel.getReliability());
-						stmt.execute();
+						try {
+							stmt.execute();
+						} catch (SQLException e) {
+							// Attribute already present.
+						}
 					}
 				}
 			} catch (SQLException e) {
@@ -123,15 +128,15 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 	}
 
 	private int getSQLType(AttributeCategories category) {
-		if (category.getAttributeType() == byte.class) {
+		if (category.getAttributeType() == Byte.class) {
 			return Types.TINYINT;
-		} else if (category.getAttributeType() == short.class) {
+		} else if (category.getAttributeType() == Short.class) {
 			return Types.SMALLINT;
-		} else if (category.getAttributeType() == int.class) {
+		} else if (category.getAttributeType() == Integer.class) {
 			return Types.INTEGER;
-		} else if (category.getAttributeType() == long.class) {
+		} else if (category.getAttributeType() == Long.class) {
 			return Types.BIGINT;
-		} else if (category.getAttributeType() == boolean.class) {
+		} else if (category.getAttributeType() == Boolean.class) {
 			return Types.BOOLEAN;
 		} else {
 			return Types.OTHER;
@@ -158,9 +163,14 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 	@SuppressWarnings({"javadoc"})
 	public static void main(String args[]) throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException, InvalidAttributeNameException, UnknownAttributeException, InvalidAttributeTypeException, InvalidReliabilityException {
 		Hashtable<String, AttributeCategories> myTable = new Hashtable<String, AttributeCategories>();
-		myTable.put("test", AttributeCategories.USER_NAME);
+		myTable.put("usr", AttributeCategories.USER_NAME);
+		myTable.put("age", AttributeCategories.AGE);
 		SecondaryDatabaseManager instance = new SecondaryDatabaseManager(myTable, args[0]);
-		Individual testSubject = instance.getById(1000050);
-		testSubject.getProperties().put("test", "This is a test.", 0.5);
+		Individual testSubject1 = instance.getById(1000050);
+		testSubject1.getProperties().put("usr", "username", 0.1);
+		testSubject1.getProperties().put("age", (byte) 21, 0.5);
+		ArrayList<Individual> l = new ArrayList<Individual>();
+		l.add(testSubject1);
+		instance.storeAttributes(l);
 	}
 }

@@ -106,7 +106,7 @@ public class Properties {
 	 * @return True if the key is contained, false otherwise.
 	 */
 	public synchronized boolean containsAttribute(String key) {
-		return properties.contains(key);
+		return properties.containsKey(key);
 	}
 
 	/**

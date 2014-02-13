@@ -209,6 +209,7 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 
 	// This method catches and ignores SQL exceptions. Individual exceptions will not affect a batch
 	// update.
+	@SuppressWarnings("unused")
 	private void executeSafeStatement(PreparedStatement stmt) {
 		try {
 			setupPreparedStatementParameters(stmt);

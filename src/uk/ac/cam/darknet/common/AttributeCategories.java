@@ -30,7 +30,7 @@ public enum AttributeCategories {
 	/**
 	 * The age of individuals
 	 */
-	AGE(byte.class),
+	AGE(Byte.class),
 	/**
 	 * A comma-separated list of strings which are related to the individual (<code>String</code>)
 	 */

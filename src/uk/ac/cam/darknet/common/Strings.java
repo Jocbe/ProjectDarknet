@@ -1,20 +1,21 @@
 package uk.ac.cam.darknet.common;
 
 /**
- * Externalised string resources used across the system. Each string should be public final.
+ * Externalised string resources used across the system. Each string should be
+ * public final.
  * 
  * @author Augustin Zidek
  */
 @SuppressWarnings("javadoc")
 public class Strings {
 	// LoggerFactory
-	public static final String	LOGGER_NAME					= "DarkLogger";
-	public static final String	LOG_PATH					= "log/main.log";
-	public static final String	LOG_EXCEPTION				= "IOException opening log file! ";
+	public static final String LOGGER_NAME = "DarkLogger";
+	public static final String LOG_PATH = "log/main.log";
+	public static final String LOG_EXCEPTION = "IOException opening log file! ";
 
 	// Storage
-	public static final String	STORAGE_CLASS_REL_URL		= "bin/uk/ac/cam/darknet/storage/";
-	public static final String	STORAGE_REL_URL				= "storage/";
+	public static final String STORAGE_CLASS_REL_URL = "bin/uk/ac/cam/darknet/storage/";
+	public static final String STORAGE_REL_URL = "storage/";
 
 	// Exceptions
 	public static final String	UNKNOWN_ATTR_EXN			= "Cannot add the unknown attribute '%1$s' to the properties of an individual.";
@@ -25,6 +26,9 @@ public class Strings {
 	public static final String	NULL_GLOBAL_TABLE_EXN		= "The global attribute table cannot be null.";
 
 	// Date formats - DatabaseManager, LoggerFactory
-	public static final String	DB_DATE_FORMAT				= "yyyy-MM-dd HH-mm-ss";
-	public static final String	LOGGER_DATE_FORMAT			= "yyyy-mm-dd_hh:mm:ss";
+	public static final String DB_DATE_FORMAT = "yyyy-MM-dd HH-mm-ss";
+	public static final String LOGGER_DATE_FORMAT = "yyyy-mm-dd_hh:mm:ss";
+
+	// Primary Data Collector GUI
+	public static final String DB_CONFIG_FILE_PATH = "C:/Users/augustin/workspace/ProjectDarknet/res/dbconfix.txt";
 }

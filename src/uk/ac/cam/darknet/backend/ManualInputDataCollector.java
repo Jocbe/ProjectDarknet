@@ -15,6 +15,7 @@ import au.com.bytecode.opencsv.CSVReader;
 
 import uk.ac.cam.darknet.database.DatabaseManager;
 import uk.ac.cam.darknet.database.PrimaryDatabaseManager;
+import uk.ac.cam.darknet.gui.PrimaryDataCollectorGUI;
 import uk.ac.cam.darknet.common.Individual;
 
 /**
@@ -78,7 +79,7 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 	 */
 	public Individual loadIndividual(Individual ind){
 		databaseManager.store(ind);
-		//why does this thow exception but other doesnt?
+		//why does this throw exception but other doesnt?
 		return ind;
 	}
 		
@@ -87,5 +88,7 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 	public void run() {
 		// TODO Auto-generated method stub
 		// note will create Individuals and store them using database manager
+		PrimaryDataCollectorGUI gui = new PrimaryDataCollectorGUI();
+		//how do I start this?
 	}
 }

@@ -59,10 +59,10 @@ public class Properties {
 		AttributeCategories attributeCategory = globalAttributeTable.get(key);
 		// Check if the key is a valid attribute.
 		if (attributeCategory == null)
-			throw new UnknownAttributeException(String.format(Strings.PROP_UNKNOWN_ATTR_EXN, key));
+			throw new UnknownAttributeException(String.format(Strings.UNKNOWN_ATTR_EXN, key));
 		// Check if the value is of the correct type.
 		if (!attributeCategory.isObjectCompatible(value))
-			throw new InvalidAttributeTypeException(String.format(Strings.PROP_INVALID_TYPE_EXN, key, attributeCategory.getClassName()));
+			throw new InvalidAttributeTypeException(String.format(Strings.INVALID_TYPE_EXN, key, attributeCategory.getClassName()));
 		// If both checks are passed, add the new key-value pair.
 		properties.put(key, new AttributeReliabilityPair(value, reliability));
 	}

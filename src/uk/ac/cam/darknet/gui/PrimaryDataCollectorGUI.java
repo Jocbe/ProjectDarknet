@@ -33,7 +33,6 @@ import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
  * 
  */
 public class PrimaryDataCollectorGUI implements ActionListener {
-
 	private JFrame frmPrimaryDataCollector;
 	private JTextField txtFldName;
 	private JTextField txtFldSecondName;
@@ -54,7 +53,6 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 		// Show the GUI
 		initialize();
 		// Get all the individuals that are already in the DB
-
 		final List<Individual> individualsInDB = getDBContent();
 		// Display them in the table
 		displayDBContent(individualsInDB);
@@ -207,8 +205,9 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 		final PrimaryDatabaseManager dbm;
 		try {
 			// Load the database manager
-			// TODO: Use universal access path
-			dbm = new PrimaryDatabaseManager(null, Strings.DB_CONFIG_FILE_PATH);
+			final Strings strings = new Strings();
+			dbm = new PrimaryDatabaseManager(null,
+					strings.getProjectDirectory() + "/res/dbconfix.txt");
 			// Return all individuals
 			// TODO: Use get all individuals method
 			return dbm.getBetweenDates(new Date(0), new Date(Long.MAX_VALUE));

@@ -72,11 +72,11 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 		}
 	}
 
-	@SuppressWarnings({"javadoc"})
-	public static void main(String args[]) throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException, InvalidAttributeNameException {
-		Hashtable<String, AttributeCategories> myTable = new Hashtable<String, AttributeCategories>();
-		myTable.put("age", AttributeCategories.AGE);
-		myTable.put("username", AttributeCategories.USER_NAME);
-		SecondaryDatabaseManager instance = new SecondaryDatabaseManager(myTable, args[0]);
-	}
+//	@SuppressWarnings({"javadoc"})
+//	public static void main(String args[]) throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException, InvalidAttributeNameException {
+//		Hashtable<String, AttributeCategories> myTable = new Hashtable<String, AttributeCategories>();
+//		myTable.put("age", AttributeCategories.AGE);
+//		myTable.put("username", AttributeCategories.USER_NAME);
+//		SecondaryDatabaseManager instance = new SecondaryDatabaseManager(myTable, args[0]);
+//	}
 }

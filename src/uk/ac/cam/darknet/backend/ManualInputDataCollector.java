@@ -1,7 +1,22 @@
 package uk.ac.cam.darknet.backend;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import au.com.bytecode.opencsv.CSVReader;
+
 import uk.ac.cam.darknet.database.DatabaseManager;
+import uk.ac.cam.darknet.database.PrimaryDatabaseManager;
+import uk.ac.cam.darknet.gui.PrimaryDataCollectorGUI;
+import uk.ac.cam.darknet.common.Individual;
 
 /**
  * This class is a primary data collector with a graphical user interface allowing manual data
@@ -19,14 +34,61 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 	 * @param dataInput
 	 *            The file which has the input data.
 	 */
-	public ManualInputDataCollector(DatabaseManager databaseManager, File dataInput) {
+	public ManualInputDataCollector(PrimaryDatabaseManager databaseManager) {
 		super(databaseManager);
 		// TODO Auto-generated constructor stub
 	}
+	
+
+	/**
+	 * Loads Primary Data from CSV file into Database
+	 * 
+	 * @param pathname
+	 * 			path to CSV file containing primary data, CSV file expected to have the following format:
+	 * 			Customer Id, First Name, Last Name, Email Address, Event Name, Event Date/Time, Seat, Price, Ticket Type, Date Confirmed, Sales Channel
+	 * @return
+	 * 			List of Individuals stored in Database
+	 * @throws IOException 
+	 * 			If CSV file not found or if read is unsuccessful
+	 */
+	public List<Individual> loadfromCSV(String pathname) throws IOException{
+		List<Individual> audience = new ArrayList<Individual>();
+		InputStream csvStream = new FileInputStream(new File(pathname));
+		CSVReader reader = new CSVReader(new InputStreamReader(csvStream));
+		String[] nextLine;
+		while ((nextLine = reader.readNext()) != null) {
+		  if (nextLine != null) {
+			  String pattern = DateFormat.getDateInstance().format(nextLine[5]);
+			  DateFormat df = new SimpleDateFormat(pattern);
+			  Date eventDate = df.parse(nextLine[5]);
+			  Individual ind = Individual.getNewIndividual(nextLine[1], nextLine[2], nextLine[3], eventDate, nextLine[6], globalAttributeTable);
+			  audience.add(ind);
+		  }
+		}
+		databaseManager.store(audience);
+		return audience;
+	}
+
+	/**
+	 * Loads an Individual from ManualInputGUI into Database
+	 * 
+	 * @param ind
+	 * 			Individual to be stored
+	 * @return
+	 * 			Individual stored in Database
+	 */
+	public Individual loadIndividual(Individual ind){
+		databaseManager.store(ind);
+		//why does this throw exception but other doesnt?
+		return ind;
+	}
+		
 
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
 		// note will create Individuals and store them using database manager
+		PrimaryDataCollectorGUI gui = new PrimaryDataCollectorGUI();
+		//how do I start this?
 	}
 }

@@ -1,6 +1,7 @@
 package uk.ac.cam.darknet.backend;
 
 import uk.ac.cam.darknet.database.DatabaseManager;
+import uk.ac.cam.darknet.database.PrimaryDatabaseManager;
 
 /**
  * Primary data collectors collect reliable data from ticket booking systems (such as Spektrix) or
@@ -12,7 +13,7 @@ import uk.ac.cam.darknet.database.DatabaseManager;
  */
 public abstract class PrimaryDataCollector implements DataCollector {
 	@SuppressWarnings("unused")
-	private DatabaseManager	databaseManager;
+	protected PrimaryDatabaseManager	databaseManager;
 
 	@Override
 	public String getCollectorId() {
@@ -25,7 +26,7 @@ public abstract class PrimaryDataCollector implements DataCollector {
 	 * @param databaseManager
 	 *            The database manager to use to write to the database.
 	 */
-	public PrimaryDataCollector(DatabaseManager databaseManager) {
+	public PrimaryDataCollector(PrimaryDatabaseManager databaseManager) {
 		this.databaseManager = databaseManager;
 	}
 }

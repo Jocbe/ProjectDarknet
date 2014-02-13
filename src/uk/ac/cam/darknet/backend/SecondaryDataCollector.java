@@ -15,8 +15,8 @@ import uk.ac.cam.darknet.database.DatabaseManager;
  */
 public abstract class SecondaryDataCollector implements DataCollector {
 	@SuppressWarnings("unused")
-	private DatabaseManager							databaseManager;
-	private Hashtable<String, AttributeCategories>	attributeTable;
+	protected DatabaseManager							databaseManager;
+	protected Hashtable<String, AttributeCategories>	attributeTable;
 
 	/**
 	 * This method returns a table of the attributes that this collector supports. The table is a

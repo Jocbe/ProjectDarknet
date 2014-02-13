@@ -13,7 +13,7 @@ import uk.ac.cam.darknet.database.PrimaryDatabaseManager;
  */
 public abstract class PrimaryDataCollector implements DataCollector {
 	@SuppressWarnings("unused")
-	protected PrimaryDatabaseManager	databaseManager;
+	protected static PrimaryDatabaseManager	databaseManager;
 
 	@Override
 	public String getCollectorId() {

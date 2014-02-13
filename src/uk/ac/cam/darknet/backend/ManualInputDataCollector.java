@@ -5,7 +5,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.sql.SQLException;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -49,8 +51,10 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 	 * 			List of Individuals stored in Database
 	 * @throws IOException 
 	 * 			If CSV file not found or if read is unsuccessful
+	 * @throws SQLException 
+	 * @throws ParseException 
 	 */
-	public static List<Individual> loadfromCSV(String pathname) throws IOException{
+	public static List<Individual> loadfromCSV(String pathname) throws IOException, SQLException, ParseException{
 		List<Individual> audience = new ArrayList<Individual>();
 		InputStream csvStream = new FileInputStream(new File(pathname));
 		CSVReader reader = new CSVReader(new InputStreamReader(csvStream));
@@ -64,7 +68,7 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 			  audience.add(ind);
 		  }
 		}
-		databaseManager.store(audience);
+		databaseManager.storeIndividual(audience);
 		return audience;
 	}
 
@@ -75,9 +79,10 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 	 * 			Individual to be stored
 	 * @return
 	 * 			Individual stored in Database
+	 * @throws SQLException 
 	 */
-	public static Individual loadIndividual(Individual ind){
-		databaseManager.store(ind);
+	public static Individual loadIndividual(Individual ind) throws SQLException{
+		databaseManager.storeIndividual(ind);
 		//why does this throw exception but other doesnt?
 		return ind;
 	}
@@ -96,9 +101,12 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 	 * 
 	 * @param args
 	 * @throws IOException 
+	 * @throws SQLException 
+	 * @throws ParseException 
 	 */
-	public static void main(String args[]) throws IOException{
+	public static void main(String args[]) throws IOException, SQLException, ParseException{
 		List<Individual> audience = loadfromCSV(args[0]);
-		Individual i = audie
+		Individual i = audience.get(0);
+		System.out.println();
 	}
 }

@@ -16,7 +16,7 @@ public class TwitterTests {
 			IDs ids;
 			System.out.println("Listing follower's ids");
 			
-			String name = "Lord Sugar";
+			String name = "johnsmith";
 			
 			//ids = twitter.getFollowersIDs(names, cursor);
 			
@@ -30,7 +30,6 @@ public class TwitterTests {
 		} catch (TwitterException te) {
             te.printStackTrace();
             System.out.println("Failed to get followers' ids: " + te.getMessage());
-            System.exit(-1);
         }
 	}
 }

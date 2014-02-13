@@ -215,10 +215,8 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 			final Strings strings = new Strings();
 			dbm = new PrimaryDatabaseManager(null,
 					strings.getProjectDirectory() + "/res/dbconfix.txt");
-
 			// Return all individuals
-			// TODO: Use get all individuals method
-			return dbm.getBetweenDates(new Date(0), new Date(Long.MAX_VALUE));
+			return dbm.getAllIndividuals();
 		}
 		catch (ClassNotFoundException | ConfigFileNotFoundException
 				| IOException | SQLException e) {
@@ -235,6 +233,8 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 	 * @param individuals The list of individuals to be displayed.
 	 */
 	private void displayDBContent(final List<Individual> individuals) {
+		// TODO: Display the list of all individuals with their primary data in
+		// the table
 		table.displayIndividuals(individuals);
 	}
 

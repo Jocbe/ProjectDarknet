@@ -15,7 +15,7 @@ public class AttributeReliabilityPair {
 
 	AttributeReliabilityPair(Object attribute, double reliability) throws InvalidReliabilityException {
 		if (reliability < 0.0 || reliability > 1.0)
-			throw new InvalidReliabilityException(Strings.ARP_INVALID_RELIABILITY_EXN);
+			throw new InvalidReliabilityException(Strings.INVALID_RELIABILITY_EXN);
 		this.attribute = attribute;
 		this.reliability = reliability;
 	}

@@ -7,13 +7,18 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 import uk.ac.cam.darknet.common.AttributeCategories;
+import uk.ac.cam.darknet.common.AttributeReliabilityPair;
 import uk.ac.cam.darknet.common.Individual;
 import uk.ac.cam.darknet.common.Strings;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 import uk.ac.cam.darknet.exceptions.InvalidAttributeNameException;
+import uk.ac.cam.darknet.exceptions.InvalidAttributeTypeException;
+import uk.ac.cam.darknet.exceptions.InvalidReliabilityException;
+import uk.ac.cam.darknet.exceptions.UnknownAttributeException;
 import com.sun.xml.internal.ws.org.objectweb.asm.Type;
 
 /**
@@ -71,25 +76,42 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 	}
 
 	/**
-	 * Stores the attributes of a list of individuals in the database.
+	 * Stores the attributes of a list of individuals in the database. The changes are committed
+	 * atomically. If there is an error, the changes are rolled back.
 	 * 
 	 * @param individuals
 	 *            The list of individuals with <code>Properties</code> objects containing the
 	 *            attributes to be stored.
+	 * @throws SQLException
 	 */
-	public synchronized void storeAttributes(List<Individual> individuals) {
+	public synchronized void storeAttributes(List<Individual> individuals) throws SQLException {
 		Enumeration<String> attributeNames = globalAttributeTable.keys();
-		// Iterator<Individual> iterator;
+		Iterator<Individual> iterator;
 		String currentAttributeName;
+		Individual currentIndividual;
+		AttributeReliabilityPair currentAttrRel;
+		// statements. Note that the time spent executing this method is dominated by SQL. Iterate
+		// over attribute names first rather than individuals to exploit prepared statements.
 		while (attributeNames.hasMoreElements()) {
 			currentAttributeName = attributeNames.nextElement();
 			try (PreparedStatement stmt = connection.prepareStatement(String.format(INSERT_ATTRIBUTE, currentAttributeName));) {
-				// TODO
+				iterator = individuals.iterator();
+				while (iterator.hasNext()) {
+					currentIndividual = iterator.next();
+					if (currentIndividual.getProperties().containsAttribute(currentAttributeName)) {
+						currentAttrRel = currentIndividual.getProperties().get(currentAttributeName);
+						stmt.setLong(1, currentIndividual.getId());
+						stmt.setObject(2, currentAttrRel.getAttribute(), getSQLType(globalAttributeTable.get(currentAttributeName)));
+						stmt.setDouble(3, currentAttrRel.getReliability());
+						stmt.execute();
+					}
+				}
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block THIS IS TEMPORARY!!!
-				e.printStackTrace();
+				connection.rollback();
+				throw e;
 			}
 		}
+		connection.commit();
 	}
 
 	private boolean isAttributeNameValid(String attributeName) {
@@ -133,10 +155,12 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 		}
 	}
 
-	@SuppressWarnings({"javadoc", "unused"})
-	public static void main(String args[]) throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException, InvalidAttributeNameException {
+	@SuppressWarnings({"javadoc"})
+	public static void main(String args[]) throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException, InvalidAttributeNameException, UnknownAttributeException, InvalidAttributeTypeException, InvalidReliabilityException {
 		Hashtable<String, AttributeCategories> myTable = new Hashtable<String, AttributeCategories>();
 		myTable.put("test", AttributeCategories.USER_NAME);
 		SecondaryDatabaseManager instance = new SecondaryDatabaseManager(myTable, args[0]);
+		Individual testSubject = instance.getById(1000050);
+		testSubject.getProperties().put("test", "This is a test.", 0.5);
 	}
 }

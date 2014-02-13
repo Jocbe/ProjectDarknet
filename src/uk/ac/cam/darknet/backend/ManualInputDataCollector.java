@@ -5,7 +5,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.sql.SQLException;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,7 +38,6 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 	 */
 	public ManualInputDataCollector(PrimaryDatabaseManager databaseManager) {
 		super(databaseManager);
-		// TODO Auto-generated constructor stub
 	}
 	
 
@@ -50,8 +51,10 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 	 * 			List of Individuals stored in Database
 	 * @throws IOException 
 	 * 			If CSV file not found or if read is unsuccessful
+	 * @throws SQLException 
+	 * @throws ParseException 
 	 */
-	public List<Individual> loadfromCSV(String pathname) throws IOException{
+	public static List<Individual> loadfromCSV(String pathname) throws IOException, SQLException, ParseException{
 		List<Individual> audience = new ArrayList<Individual>();
 		InputStream csvStream = new FileInputStream(new File(pathname));
 		CSVReader reader = new CSVReader(new InputStreamReader(csvStream));
@@ -61,11 +64,11 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 			  String pattern = DateFormat.getDateInstance().format(nextLine[5]);
 			  DateFormat df = new SimpleDateFormat(pattern);
 			  Date eventDate = df.parse(nextLine[5]);
-			  Individual ind = Individual.getNewIndividual(nextLine[1], nextLine[2], nextLine[3], eventDate, nextLine[6], globalAttributeTable);
+			  Individual ind = Individual.getNewIndividual(nextLine[1], nextLine[2], nextLine[3], eventDate, nextLine[6], null);
 			  audience.add(ind);
 		  }
 		}
-		databaseManager.store(audience);
+		databaseManager.storeIndividual(audience);
 		return audience;
 	}
 
@@ -76,9 +79,10 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 	 * 			Individual to be stored
 	 * @return
 	 * 			Individual stored in Database
+	 * @throws SQLException 
 	 */
-	public Individual loadIndividual(Individual ind){
-		databaseManager.store(ind);
+	public static Individual loadIndividual(Individual ind) throws SQLException{
+		databaseManager.storeIndividual(ind);
 		//why does this throw exception but other doesnt?
 		return ind;
 	}
@@ -90,5 +94,19 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 		// note will create Individuals and store them using database manager
 		PrimaryDataCollectorGUI gui = new PrimaryDataCollectorGUI();
 		//how do I start this?
+	}
+	
+	/**
+	 * this method is for testing 
+	 * 
+	 * @param args
+	 * @throws IOException 
+	 * @throws SQLException 
+	 * @throws ParseException 
+	 */
+	public static void main(String args[]) throws IOException, SQLException, ParseException{
+		List<Individual> audience = loadfromCSV(args[0]);
+		Individual i = audience.get(0);
+		System.out.println();
 	}
 }

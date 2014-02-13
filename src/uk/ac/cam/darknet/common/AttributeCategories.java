@@ -41,23 +41,9 @@ public enum AttributeCategories {
 	STRING(String.class);
 
 	private final Class<?>	attributeType;
-	private final String	sqlType;
 
 	AttributeCategories(Class<?> attributeType) {
 		this.attributeType = attributeType;
-		if (attributeType == byte.class) {
-			this.sqlType = "TINYINT";
-		} else if (attributeType == short.class) {
-			this.sqlType = "SMALLINT";
-		} else if (attributeType == int.class) {
-			this.sqlType = "INTEGER";
-		} else if (attributeType == long.class) {
-			this.sqlType = "BIGINT";
-		} else if (attributeType == boolean.class) {
-			this.sqlType = "BOOLEAN";
-		} else {
-			this.sqlType = "OTHER";
-		}
 	}
 
 	/**
@@ -68,16 +54,6 @@ public enum AttributeCategories {
 	 */
 	public Class<?> getAttributeType() {
 		return attributeType;
-	}
-
-	/**
-	 * Returns the string representation of the appropriate SQL type to use for this attribute
-	 * category.
-	 * 
-	 * @return A string literal that can be embedded in SQL statements to specify an SQL type.
-	 */
-	public String getSQLTypeString() {
-		return sqlType;
 	}
 
 	/**

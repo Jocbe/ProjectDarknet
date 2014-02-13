@@ -52,7 +52,7 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 			currentCategory = globalAttributeTable.get(currentAttributeName);
 			if (isAttributeNameValid(currentAttributeName)) {
 				try (Statement stmt = connection.createStatement();) {
-					stmt.execute(String.format(CREATE_SECONDARY_TABLE, currentAttributeName, currentCategory.getSQLTypeString()));
+					stmt.execute(String.format(CREATE_SECONDARY_TABLE, currentAttributeName, getSQLType(currentCategory)));
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
@@ -72,11 +72,29 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 		}
 	}
 
-//	@SuppressWarnings({"javadoc"})
-//	public static void main(String args[]) throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException, InvalidAttributeNameException {
-//		Hashtable<String, AttributeCategories> myTable = new Hashtable<String, AttributeCategories>();
-//		myTable.put("age", AttributeCategories.AGE);
-//		myTable.put("username", AttributeCategories.USER_NAME);
-//		SecondaryDatabaseManager instance = new SecondaryDatabaseManager(myTable, args[0]);
-//	}
+	private String getSQLType(AttributeCategories category) {
+		if (category.getAttributeType() == byte.class) {
+			return "TINYINT";
+		} else if (category.getAttributeType() == short.class) {
+			return "SMALLINT";
+		} else if (category.getAttributeType() == int.class) {
+			return "INTEGER";
+		} else if (category.getAttributeType() == long.class) {
+			return "BIGINT";
+		} else if (category.getAttributeType() == boolean.class) {
+			return "BOOLEAN";
+		} else {
+			return "OTHER";
+		}
+	}
+
+	// @SuppressWarnings({"javadoc"})
+	// public static void main(String args[]) throws ClassNotFoundException,
+	// ConfigFileNotFoundException, IOException, SQLException, InvalidAttributeNameException {
+	// Hashtable<String, AttributeCategories> myTable = new Hashtable<String,
+	// AttributeCategories>();
+	// myTable.put("age", AttributeCategories.AGE);
+	// myTable.put("username", AttributeCategories.USER_NAME);
+	// SecondaryDatabaseManager instance = new SecondaryDatabaseManager(myTable, args[0]);
+	// }
 }

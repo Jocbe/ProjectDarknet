@@ -87,9 +87,14 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 			while (iterator.hasNext()) {
 				current = iterator.next();
 				setupLocalFieldParameters(current);
-				if (parametersValid())
-					executeSafeStatement(stmt);
-				numOfIndividualsInserted++;
+				if (parametersValid()) {
+					try {
+						executeUnsafeStatement(stmt);
+						numOfIndividualsInserted++;
+					} catch (SQLException e) {
+						// Do not increment numOfIndividualsInserted.
+					}
+				}
 			}
 		} catch (SQLException e) {
 			connection.rollback();

@@ -33,12 +33,16 @@ public class SpektrixCSVParser {
 	/**
 	 * Parses CSV file from Spektrix and produces a list of Individuals
 	 * 
-	 * @param pathname path to Spektrix CSV file, CSV file expected to have the
+	 * @param pathname
+	 *            path to Spektrix CSV file, CSV file expected to have the
 	 *            following format: Customer Id, First Name, Last Name, Email
 	 *            Address, Event Name, Event Date/Time, Seat, Price, Ticket
-	 *            Type, Date Confirmed, Sales Channel
+	 *            Type, Date Confirmed, Sales Channel. Note ignores first line
+	 *            of CSV file on the assumption that this lays out columns and
+	 *            it not actual data
 	 * @return List of Individuals stored in Database
-	 * @throws IOException If CSV file not found or if read is unsuccessful
+	 * @throws IOException
+	 *             If CSV file not found or if read is unsuccessful
 	 * @throws SQLException
 	 * @throws ParseException
 	 */
@@ -50,7 +54,8 @@ public class SpektrixCSVParser {
 			String[] nextLine;
 			DateFormat df = new SimpleDateFormat("dd/mm/yyyy HH:mm:ss");
 			Hashtable<String, AttributeCategories> table = new Hashtable<String, AttributeCategories>();
-			reader.readNext(); // get rid of column titles
+			reader.readNext(); // get rid of column titles (first line ignored.
+								// assumed to be field names)
 			while ((nextLine = reader.readNext()) != null) {
 				if (nextLine != null) {
 					Date eventDate = df.parse(nextLine[5]);

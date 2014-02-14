@@ -6,7 +6,7 @@ import javax.swing.JFrame;
 
 /**
  * @author Augustin Zidek
- *
+ * 
  */
 public class LauncherGUI {
 
@@ -14,6 +14,8 @@ public class LauncherGUI {
 
 	/**
 	 * Launch the application.
+	 * 
+	 * @param args Ignored
 	 */
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {

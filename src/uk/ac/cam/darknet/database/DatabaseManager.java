@@ -58,11 +58,11 @@ public abstract class DatabaseManager {
 	 * @throws SQLException
 	 */
 	protected DatabaseManager(Hashtable<String, AttributeCategories> globalAttributeTable, String pathToConfig) throws ConfigFileNotFoundException, IOException, ClassNotFoundException, SQLException {
-		if (globalAttributeTable == null) {
-			throw new IllegalArgumentException(Strings.NULL_GLOBAL_TABLE_EXN);
-		} else {
-			this.globalAttributeTable = globalAttributeTable;
-		}
+		// if (globalAttributeTable == null) {
+		// throw new IllegalArgumentException(Strings.NULL_GLOBAL_TABLE_EXN);
+		// } else {
+		this.globalAttributeTable = globalAttributeTable;
+		// }
 		connection = connectToDB(pathToConfig);
 		connection.setAutoCommit(false);
 	}

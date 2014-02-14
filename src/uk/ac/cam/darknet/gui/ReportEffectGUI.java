@@ -4,12 +4,17 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 
+/**
+ * @author Augustin Zidek
+ *
+ */
 public class ReportEffectGUI {
 
 	private JFrame frame;
 
 	/**
-	 * Launch the application.
+	 * Launch the application. Testing only.
+	 * @param args Ignored
 	 */
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {

@@ -6,9 +6,10 @@ import twitter4j.IDs;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
+import uk.ac.cam.darknet.backend.TwitterDataCollector;
 
 public class TwitterTests {
-	@Test
+	//@Test
 	public void getFollowers() {
 		try {
 			Twitter twitter = new TwitterFactory().getInstance();
@@ -31,5 +32,11 @@ public class TwitterTests {
             te.printStackTrace();
             System.out.println("Failed to get followers' ids: " + te.getMessage());
         }
+	}
+	
+	@Test
+	public void status() {
+		TwitterDataCollector dc = new TwitterDataCollector(null);
+		dc.run();
 	}
 }

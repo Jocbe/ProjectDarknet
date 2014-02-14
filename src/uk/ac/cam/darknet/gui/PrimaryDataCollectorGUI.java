@@ -6,9 +6,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.List;
 
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
@@ -19,7 +24,12 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.DateFormatter;
 
+import uk.ac.cam.darknet.backend.ManualInputDataCollector;
+import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
 import uk.ac.cam.darknet.common.Strings;
 import uk.ac.cam.darknet.database.PrimaryDatabaseManager;
@@ -34,7 +44,7 @@ import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
  * 
  */
 public class PrimaryDataCollectorGUI implements ActionListener {
-	private JFrame frmPrimaryDataCollector;
+	private JFrame frame;
 	private JTextField txtFldFirstName;
 	private JTextField txtFldSecondName;
 	private JTextField txtFldEmail;
@@ -42,155 +52,113 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 	private JTextField txtFldVenueName;
 	private JTextField txtFldSeat;
 	private JTextField txtFldCSVFilePath;
+	private JFormattedTextField txtFldVenueDate;
 	private JButton btnBrowse;
 	private JPanel panel;
 	private JButton btnLoadAudience;
 	private JButton btnAddPerson;
 	private JButton btnDone;
+	private PrimaryDatabaseManager dbm;
 
 	/**
 	 * Initialize the GUI.
 	 */
-	public PrimaryDataCollectorGUI() {
+	public void initialize() {
 		// Show the GUI
-		initialize();
+		initializeGUI();
+		frame.setVisible(true);
+		// Connect to the database
+		startDBManager();
 		// Get all the individuals that are already in the DB
 		final List<Individual> individualsInDB = getDBContent();
 		// Display them in the table
-		displayDBContent(individualsInDB);
+		table.displayIndividuals(individualsInDB);
 	}
 
 	/**
 	 * Initialize the contents of the frame.
 	 */
-	private void initialize() {
-		frmPrimaryDataCollector = new JFrame();
-		frmPrimaryDataCollector.setResizable(false);
-		frmPrimaryDataCollector.setTitle("Primary Data Collector");
-		frmPrimaryDataCollector.setBounds(100, 100, 487, 624);
-		frmPrimaryDataCollector.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	private void initializeGUI() {
+		frame = new JFrame();
+		frame.setTitle("Primary Data Collector");
+		frame.setBounds(100, 100, 487, 624);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		panel = new JPanel();
-		frmPrimaryDataCollector.getContentPane()
-				.add(panel, BorderLayout.CENTER);
-		panel.setLayout(null);
+		frame.getContentPane().add(panel, BorderLayout.CENTER);
 
 		final JLabel lblLoadFromCsv = new JLabel("Load from CSV file");
 		lblLoadFromCsv.setFont(new Font("Tahoma", Font.BOLD, 11));
-		lblLoadFromCsv.setBounds(12, 12, 118, 16);
-		panel.add(lblLoadFromCsv);
 
 		final JSeparator separator = new JSeparator();
-		separator.setBounds(12, 78, 453, 2);
-		panel.add(separator);
 
 		final JLabel lblInputManually = new JLabel("Manual input");
 		lblInputManually.setFont(new Font("Tahoma", Font.BOLD, 11));
-		lblInputManually.setBounds(12, 92, 118, 16);
-		panel.add(lblInputManually);
 
 		btnBrowse = new JButton("Browse");
-		btnBrowse.setBounds(250, 39, 79, 23);
 		btnBrowse.addActionListener(this);
-		panel.add(btnBrowse);
 
 		btnLoadAudience = new JButton("Load audience");
-		btnLoadAudience.setBounds(341, 39, 124, 23);
 		btnLoadAudience.addActionListener(this);
-		panel.add(btnLoadAudience);
 
 		txtFldFirstName = new JTextField();
-		txtFldFirstName.setBounds(99, 221, 114, 20);
-		panel.add(txtFldFirstName);
 		txtFldFirstName.setColumns(10);
 
 		txtFldSecondName = new JTextField();
-		txtFldSecondName.setBounds(320, 221, 145, 20);
-		panel.add(txtFldSecondName);
 		txtFldSecondName.setColumns(10);
 
 		txtFldEmail = new JTextField();
-		txtFldEmail.setBounds(99, 249, 114, 20);
-		panel.add(txtFldEmail);
 		txtFldEmail.setColumns(10);
 
 		final JLabel lblSetThe = new JLabel("1. Set the venue");
-		lblSetThe.setBounds(12, 120, 98, 16);
-		panel.add(lblSetThe);
 
-		final JLabel lblVenue = new JLabel("Name:");
-		lblVenue.setBounds(12, 148, 55, 16);
-		panel.add(lblVenue);
+		final JLabel lblVenue = new JLabel("Venue name:");
 
 		txtFldVenueName = new JTextField();
-		txtFldVenueName.setBounds(99, 146, 114, 20);
-		panel.add(txtFldVenueName);
 		txtFldVenueName.setColumns(10);
 
 		final JLabel lblDate = new JLabel("Date:");
-		lblDate.setBounds(231, 148, 55, 16);
-		panel.add(lblDate);
 
-		final JFormattedTextField txtFldVenueDate = new JFormattedTextField();
+		// Date formatted text field
+		final DateFormatter formatter = new DateFormatter(new SimpleDateFormat(
+				"yyyy-MM-dd HH:mm"));
+		txtFldVenueDate = new JFormattedTextField(formatter);
 		txtFldVenueDate.setColumns(10);
-		txtFldVenueDate.setBounds(320, 146, 145, 20);
-		panel.add(txtFldVenueDate);
+		txtFldVenueDate.setValue(new Date());
+		txtFldVenueDate
+				.setToolTipText("Enter date in the format yyyy-MM-dd HH:mm.");
 
 		final JLabel lblAddPerson = new JLabel("2. Add person");
-		lblAddPerson.setBounds(12, 193, 98, 16);
-		panel.add(lblAddPerson);
 
 		final JLabel lblName = new JLabel("First name*:");
-		lblName.setBounds(12, 223, 98, 16);
-		panel.add(lblName);
 
 		final JLabel lblSecondName = new JLabel("Second name*:");
-		lblSecondName.setBounds(231, 223, 98, 16);
-		panel.add(lblSecondName);
 
 		final JLabel lblEmail = new JLabel("Email*:");
-		lblEmail.setBounds(12, 251, 55, 16);
-		panel.add(lblEmail);
 
 		final JLabel lblSeat = new JLabel("Seat:");
-		lblSeat.setBounds(231, 251, 55, 16);
-		panel.add(lblSeat);
 
 		txtFldSeat = new JTextField();
-		txtFldSeat.setBounds(320, 249, 145, 20);
-		panel.add(txtFldSeat);
 		txtFldSeat.setColumns(10);
 
 		final JLabel lblFieldsMarked = new JLabel(
 				"* Fields marked with asterisk are compulsory");
 		lblFieldsMarked.setFont(new Font("Tahoma", Font.PLAIN, 10));
-		lblFieldsMarked.setBounds(12, 279, 226, 16);
-		panel.add(lblFieldsMarked);
 
 		btnAddPerson = new JButton("Add person");
-		btnAddPerson.setBounds(360, 276, 105, 23);
 		btnAddPerson.addActionListener(this);
-		panel.add(btnAddPerson);
 
 		txtFldCSVFilePath = new JTextField();
-		txtFldCSVFilePath.setBounds(12, 40, 234, 20);
-		panel.add(txtFldCSVFilePath);
 		txtFldCSVFilePath.setColumns(10);
 
 		// People in the database
 		final JSeparator separator_1 = new JSeparator();
-		separator_1.setBounds(12, 307, 453, 2);
-		panel.add(separator_1);
 
 		final JLabel lblPeopleInDB = new JLabel(
 				"People currently in the database");
 		lblPeopleInDB.setFont(new Font("Tahoma", Font.BOLD, 11));
-		lblPeopleInDB.setBounds(12, 316, 240, 16);
-		panel.add(lblPeopleInDB);
 
 		final JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(12, 335, 453, 221);
-		panel.add(scrollPane);
 
 		// The table of individuals
 		table = new IndividualTable();
@@ -198,9 +166,376 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 		scrollPane.setViewportView(table);
 
 		btnDone = new JButton("Done");
-		btnDone.setBounds(367, 558, 98, 26);
 		btnDone.addActionListener(this);
-		panel.add(btnDone);
+		GroupLayout gl_panel = new GroupLayout(panel);
+		gl_panel.setHorizontalGroup(gl_panel
+				.createParallelGroup(Alignment.LEADING)
+				.addGroup(
+						gl_panel.createSequentialGroup()
+								.addGroup(
+										gl_panel.createParallelGroup(
+												Alignment.LEADING)
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(12)
+																.addComponent(
+																		lblLoadFromCsv,
+																		GroupLayout.PREFERRED_SIZE,
+																		118,
+																		GroupLayout.PREFERRED_SIZE))
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(12)
+																.addComponent(
+																		txtFldCSVFilePath,
+																		GroupLayout.PREFERRED_SIZE,
+																		234,
+																		GroupLayout.PREFERRED_SIZE)
+																.addGap(4)
+																.addComponent(
+																		btnBrowse,
+																		GroupLayout.PREFERRED_SIZE,
+																		79,
+																		GroupLayout.PREFERRED_SIZE)
+																.addGap(12)
+																.addComponent(
+																		btnLoadAudience,
+																		GroupLayout.PREFERRED_SIZE,
+																		124,
+																		GroupLayout.PREFERRED_SIZE))
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(12)
+																.addComponent(
+																		separator,
+																		GroupLayout.PREFERRED_SIZE,
+																		453,
+																		GroupLayout.PREFERRED_SIZE))
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(12)
+																.addComponent(
+																		lblInputManually,
+																		GroupLayout.PREFERRED_SIZE,
+																		118,
+																		GroupLayout.PREFERRED_SIZE))
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(12)
+																.addComponent(
+																		lblSetThe,
+																		GroupLayout.PREFERRED_SIZE,
+																		98,
+																		GroupLayout.PREFERRED_SIZE))
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(12)
+																.addComponent(
+																		lblVenue,
+																		GroupLayout.PREFERRED_SIZE,
+																		79,
+																		GroupLayout.PREFERRED_SIZE)
+																.addGap(8)
+																.addComponent(
+																		txtFldVenueName,
+																		GroupLayout.PREFERRED_SIZE,
+																		GroupLayout.DEFAULT_SIZE,
+																		GroupLayout.PREFERRED_SIZE)
+																.addGap(18)
+																.addComponent(
+																		lblDate,
+																		GroupLayout.PREFERRED_SIZE,
+																		55,
+																		GroupLayout.PREFERRED_SIZE)
+																.addGap(34)
+																.addComponent(
+																		txtFldVenueDate,
+																		GroupLayout.PREFERRED_SIZE,
+																		145,
+																		GroupLayout.PREFERRED_SIZE))
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(12)
+																.addComponent(
+																		lblAddPerson,
+																		GroupLayout.PREFERRED_SIZE,
+																		98,
+																		GroupLayout.PREFERRED_SIZE))
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(12)
+																.addGroup(
+																		gl_panel.createParallelGroup(
+																				Alignment.LEADING)
+																				.addGroup(
+																						gl_panel.createSequentialGroup()
+																								.addGap(87)
+																								.addComponent(
+																										txtFldFirstName,
+																										GroupLayout.PREFERRED_SIZE,
+																										GroupLayout.DEFAULT_SIZE,
+																										GroupLayout.PREFERRED_SIZE))
+																				.addComponent(
+																						lblName,
+																						GroupLayout.PREFERRED_SIZE,
+																						98,
+																						GroupLayout.PREFERRED_SIZE))
+																.addGap(18)
+																.addGroup(
+																		gl_panel.createParallelGroup(
+																				Alignment.LEADING)
+																				.addComponent(
+																						lblSecondName,
+																						GroupLayout.PREFERRED_SIZE,
+																						98,
+																						GroupLayout.PREFERRED_SIZE)
+																				.addGroup(
+																						gl_panel.createSequentialGroup()
+																								.addGap(89)
+																								.addComponent(
+																										txtFldSecondName,
+																										GroupLayout.PREFERRED_SIZE,
+																										145,
+																										GroupLayout.PREFERRED_SIZE))))
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(12)
+																.addComponent(
+																		lblEmail,
+																		GroupLayout.PREFERRED_SIZE,
+																		55,
+																		GroupLayout.PREFERRED_SIZE)
+																.addGap(32)
+																.addComponent(
+																		txtFldEmail,
+																		GroupLayout.PREFERRED_SIZE,
+																		GroupLayout.DEFAULT_SIZE,
+																		GroupLayout.PREFERRED_SIZE)
+																.addGap(18)
+																.addComponent(
+																		lblSeat,
+																		GroupLayout.PREFERRED_SIZE,
+																		55,
+																		GroupLayout.PREFERRED_SIZE)
+																.addGap(34)
+																.addComponent(
+																		txtFldSeat,
+																		GroupLayout.PREFERRED_SIZE,
+																		145,
+																		GroupLayout.PREFERRED_SIZE))
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(12)
+																.addComponent(
+																		lblFieldsMarked,
+																		GroupLayout.PREFERRED_SIZE,
+																		226,
+																		GroupLayout.PREFERRED_SIZE)
+																.addGap(122)
+																.addComponent(
+																		btnAddPerson,
+																		GroupLayout.PREFERRED_SIZE,
+																		105,
+																		GroupLayout.PREFERRED_SIZE))
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(12)
+																.addComponent(
+																		separator_1,
+																		GroupLayout.PREFERRED_SIZE,
+																		453,
+																		GroupLayout.PREFERRED_SIZE))
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(12)
+																.addComponent(
+																		lblPeopleInDB,
+																		GroupLayout.PREFERRED_SIZE,
+																		240,
+																		GroupLayout.PREFERRED_SIZE))
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(12)
+																.addComponent(
+																		scrollPane))
+												.addGroup(
+														Alignment.TRAILING,
+														gl_panel.createSequentialGroup()
+																.addGap(367)
+																.addComponent(
+																		btnDone,
+																		GroupLayout.PREFERRED_SIZE,
+																		98,
+																		GroupLayout.PREFERRED_SIZE)))
+								.addContainerGap()));
+		gl_panel.setVerticalGroup(gl_panel
+				.createParallelGroup(Alignment.LEADING)
+				.addGroup(
+						gl_panel.createSequentialGroup()
+								.addGap(12)
+								.addComponent(lblLoadFromCsv,
+										GroupLayout.PREFERRED_SIZE, 16,
+										GroupLayout.PREFERRED_SIZE)
+								.addGap(11)
+								.addGroup(
+										gl_panel.createParallelGroup(
+												Alignment.LEADING)
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(1)
+																.addComponent(
+																		txtFldCSVFilePath,
+																		GroupLayout.PREFERRED_SIZE,
+																		GroupLayout.DEFAULT_SIZE,
+																		GroupLayout.PREFERRED_SIZE))
+												.addGroup(
+														gl_panel.createParallelGroup(
+																Alignment.BASELINE)
+																.addComponent(
+																		btnBrowse,
+																		GroupLayout.PREFERRED_SIZE,
+																		23,
+																		GroupLayout.PREFERRED_SIZE)
+																.addComponent(
+																		btnLoadAudience,
+																		GroupLayout.PREFERRED_SIZE,
+																		23,
+																		GroupLayout.PREFERRED_SIZE)))
+								.addGap(16)
+								.addComponent(separator,
+										GroupLayout.PREFERRED_SIZE,
+										GroupLayout.DEFAULT_SIZE,
+										GroupLayout.PREFERRED_SIZE)
+								.addGap(12)
+								.addComponent(lblInputManually,
+										GroupLayout.PREFERRED_SIZE, 16,
+										GroupLayout.PREFERRED_SIZE)
+								.addGap(12)
+								.addComponent(lblSetThe)
+								.addGap(10)
+								.addGroup(
+										gl_panel.createParallelGroup(
+												Alignment.LEADING)
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(2)
+																.addComponent(
+																		lblVenue))
+												.addComponent(
+														txtFldVenueName,
+														GroupLayout.PREFERRED_SIZE,
+														GroupLayout.DEFAULT_SIZE,
+														GroupLayout.PREFERRED_SIZE)
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(2)
+																.addComponent(
+																		lblDate))
+												.addComponent(
+														txtFldVenueDate,
+														GroupLayout.PREFERRED_SIZE,
+														GroupLayout.DEFAULT_SIZE,
+														GroupLayout.PREFERRED_SIZE))
+								.addGap(27)
+								.addComponent(lblAddPerson)
+								.addGap(12)
+								.addGroup(
+										gl_panel.createParallelGroup(
+												Alignment.LEADING)
+												.addComponent(
+														txtFldFirstName,
+														GroupLayout.PREFERRED_SIZE,
+														GroupLayout.DEFAULT_SIZE,
+														GroupLayout.PREFERRED_SIZE)
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(2)
+																.addComponent(
+																		lblName))
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(2)
+																.addComponent(
+																		lblSecondName))
+												.addComponent(
+														txtFldSecondName,
+														GroupLayout.PREFERRED_SIZE,
+														GroupLayout.DEFAULT_SIZE,
+														GroupLayout.PREFERRED_SIZE))
+								.addGap(8)
+								.addGroup(
+										gl_panel.createParallelGroup(
+												Alignment.LEADING)
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(2)
+																.addComponent(
+																		lblEmail))
+												.addComponent(
+														txtFldEmail,
+														GroupLayout.PREFERRED_SIZE,
+														GroupLayout.DEFAULT_SIZE,
+														GroupLayout.PREFERRED_SIZE)
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(2)
+																.addComponent(
+																		lblSeat))
+												.addComponent(
+														txtFldSeat,
+														GroupLayout.PREFERRED_SIZE,
+														GroupLayout.DEFAULT_SIZE,
+														GroupLayout.PREFERRED_SIZE))
+								.addGap(7)
+								.addGroup(
+										gl_panel.createParallelGroup(
+												Alignment.LEADING)
+												.addGroup(
+														gl_panel.createSequentialGroup()
+																.addGap(3)
+																.addComponent(
+																		lblFieldsMarked,
+																		GroupLayout.PREFERRED_SIZE,
+																		16,
+																		GroupLayout.PREFERRED_SIZE))
+												.addComponent(
+														btnAddPerson,
+														GroupLayout.PREFERRED_SIZE,
+														23,
+														GroupLayout.PREFERRED_SIZE))
+								.addGap(8)
+								.addComponent(separator_1,
+										GroupLayout.PREFERRED_SIZE,
+										GroupLayout.DEFAULT_SIZE,
+										GroupLayout.PREFERRED_SIZE)
+								.addGap(7)
+								.addComponent(lblPeopleInDB,
+										GroupLayout.PREFERRED_SIZE, 16,
+										GroupLayout.PREFERRED_SIZE)
+								.addGap(3)
+								.addComponent(scrollPane,
+										GroupLayout.DEFAULT_SIZE, 221,
+										Short.MAX_VALUE).addGap(2)
+								.addComponent(btnDone).addGap(8)));
+		panel.setLayout(gl_panel);
+	}
+
+	/**
+	 * Starts the database manager.
+	 */
+	private void startDBManager() {
+		try {
+			// Start the database manager
+			final Strings strings = new Strings();
+			final Hashtable<String, AttributeCategories> emptyTable = new Hashtable<>();
+			dbm = new PrimaryDatabaseManager(emptyTable, strings.getBaseDir()
+					+ "/res/dbconfix.txt");
+		}
+		catch (ClassNotFoundException | ConfigFileNotFoundException
+				| IOException | SQLException e) {
+			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_CONN_ERR,
+					"Database error", JOptionPane.ERROR_MESSAGE);
+		}
 	}
 
 	/**
@@ -209,33 +544,132 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 	 * @return The list of all individuals already in the database.
 	 */
 	private List<Individual> getDBContent() {
-		final PrimaryDatabaseManager dbm;
 		try {
-			// Load the database manager
-			final Strings strings = new Strings();
-			dbm = new PrimaryDatabaseManager(null,
-					strings.getProjectDirectory() + "/res/dbconfix.txt");
-			// Return all individuals
 			return dbm.getAllIndividuals();
 		}
-		catch (ClassNotFoundException | ConfigFileNotFoundException
-				| IOException | SQLException e) {
-			e.printStackTrace();
-			// TODO: Handle this in a better way
+		catch (SQLException e) {
+			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_READ_ERR,
+					"Database error", JOptionPane.ERROR_MESSAGE);
 			return null;
 		}
 	}
 
 	/**
-	 * Display all given individuals in a table in the GUI. Only primary
-	 * information will be displayed.
-	 * 
-	 * @param individuals The list of individuals to be displayed.
+	 * Open the file chooser when the browse button is clicked and handle the
+	 * file that is returned.
 	 */
-	private void displayDBContent(final List<Individual> individuals) {
-		// TODO: Display the list of all individuals with their primary data in
-		// the table
-		table.displayIndividuals(individuals);
+	private void handleBrowseButton() {
+		final JFileChooser fc = new JFileChooser();
+		// Set up the filter for .csv and.txt files
+		final FileFilter filter = new FileNameExtensionFilter("CSV file",
+				"csv", "txt");
+		fc.setFileFilter(filter);
+
+		// Return value from the file chooser (tells if a file was selected)
+		int returnVal = fc.showOpenDialog(panel);
+
+		// If file selected, set the text field'c contents to the path of it
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
+			txtFldCSVFilePath.setText(fc.getSelectedFile().toString());
+		}
+	}
+
+	/**
+	 * Load the given csv file.
+	 */
+	private void handleLoadAudience() {
+		// Load the list of individuals from the csv file
+		final String csvFileURL = txtFldCSVFilePath.getText();
+		final List<Individual> csvIndividuals;
+		try {
+			csvIndividuals = ManualInputDataCollector.loadfromCSV(csvFileURL);
+		}
+		catch (IOException | SQLException | ParseException e) {
+			JOptionPane.showMessageDialog(frame, Strings.GUI_CSV_ADD_ERR,
+					"CSV file import error", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+
+	}
+
+	/**
+	 * Handle adding new person into the database, i.e. get the stuff from the
+	 * text fields, validate it, process it, add it to the database and update
+	 * the table.
+	 */
+	private void handleAddPerson() {
+		// Get values from the text fields
+		final String firstName = txtFldFirstName.getText();
+		final String lastName = txtFldSecondName.getText();
+		final String email = txtFldEmail.getText();
+		final String seat = txtFldSeat.getText();
+
+		// Get the date
+		final SimpleDateFormat dateFormatter = new SimpleDateFormat(
+				"yyyy-MM-dd HH:mm");
+		final Date eventDate;
+		try {
+			eventDate = dateFormatter.parse(txtFldVenueDate.getText());
+		}
+		catch (ParseException e1) {
+			JOptionPane.showMessageDialog(frame, Strings.GUI_DATE_FORMAT_ERR);
+			return;
+		}
+
+		// Ensure that name and email are filled in, if not, shout
+		if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty()) {
+			JOptionPane.showMessageDialog(frame, Strings.GUI_COMPUL_FLDS);
+			return;
+		}
+
+		// Save the individual
+		final Individual newIndividual = Individual.getNewIndividual(firstName,
+				lastName, email, eventDate, seat, null);
+		final long ID = saveIndividual(newIndividual);
+
+		// If there was an error
+		if (ID == -1) {
+			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_ADD_ERR,
+					"Database error", JOptionPane.ERROR_MESSAGE);
+		}
+		else {
+			// Update the table
+			try {
+				table.displayIndividual(dbm.getById(ID));
+			}
+			catch (SQLException e) {
+				JOptionPane.showMessageDialog(frame, Strings.GUI_DB_CONN_ERR,
+						"Database error", JOptionPane.ERROR_MESSAGE);
+			}
+			// Jump to the added line
+			table.scrollRectToVisible(table.getCellRect(
+					table.getRowCount() - 1, 0, true));
+
+			// Reset the text fields
+			txtFldFirstName.setText("");
+			txtFldSecondName.setText("");
+			txtFldEmail.setText("");
+			txtFldSeat.setText("");
+		}
+	}
+
+	/**
+	 * Save the given individual in the db. Show error dialog if error.
+	 * 
+	 * @param i The individual to be saved.
+	 * @return The ID of the individual, or -1 in case of error.
+	 */
+	private long saveIndividual(final Individual i) {
+		final long status;
+		try {
+			status = dbm.storeIndividual(i);
+		}
+		catch (SQLException e1) {
+			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_ADD_ERR,
+					"Database error", JOptionPane.ERROR_MESSAGE);
+			return -1;
+		}
+		return status;
 	}
 
 	/**
@@ -245,51 +679,20 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		// The browse button, open File Chooser dialog
 		if (e.getSource() == btnBrowse) {
-			final JFileChooser fc = new JFileChooser();
-
-			// Return value from the file chooser (tells if a file was selected)
-			int returnVal = fc.showOpenDialog(panel);
-
-			// If file selected, set the text field'c contents to the path of it
-			if (returnVal == JFileChooser.APPROVE_OPTION) {
-				txtFldCSVFilePath.setText(fc.getSelectedFile().toString());
-			}
+			handleBrowseButton();
 		}
-
 		// The load audience button, load the given CSV file
-		if (e.getSource() == btnLoadAudience) {
-			// TODO: Call appropriate method in the PrimaryDataCollector
-			System.out.println("DEBUG: Loading audience from CSV file.");
+		else if (e.getSource() == btnLoadAudience) {
+			handleLoadAudience();
 		}
-
 		// The add single person button, add them to the DB
-		if (e.getSource() == btnAddPerson) {
-			// TODO: Call appropriate method in the DatabaseManager
-			final String firstName = txtFldFirstName.getText();
-			final String lastName = txtFldSecondName.getText();
-			final String email = txtFldEmail.getText();
-			final String seat = txtFldSeat.getText();
-
-			// Ensure that name and email are filled in, if not, cry out
-			if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty()) {
-				JOptionPane.showMessageDialog(frmPrimaryDataCollector,
-						"Fields marked with an asterisk are compulsory.");
-				return;
-			}			
-			
-			// Reset the text fields
-			txtFldFirstName.setText("");
-			txtFldSecondName.setText("");
-			txtFldEmail.setText("");
-			txtFldSeat.setText("");
-
+		else if (e.getSource() == btnAddPerson) {
+			handleAddPerson();
 		}
-		
 		// Done button, close the window
-		if (e.getSource() == btnDone) {
-			frmPrimaryDataCollector.dispose();
+		else if (e.getSource() == btnDone) {
+			frame.dispose();
 		}
-
 	}
 
 	/**
@@ -299,6 +702,6 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 	 */
 	public static void main(String[] args) {
 		final PrimaryDataCollectorGUI pdcGUI = new PrimaryDataCollectorGUI();
-		pdcGUI.frmPrimaryDataCollector.setVisible(true);
+		pdcGUI.initialize();
 	}
 }

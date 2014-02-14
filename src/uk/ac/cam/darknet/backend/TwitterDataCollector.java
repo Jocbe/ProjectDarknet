@@ -1,13 +1,21 @@
 package uk.ac.cam.darknet.backend;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+
+import twitter4j.ResponseList;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import twitter4j.TwitterFactory;
+import twitter4j.User;
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
 import uk.ac.cam.darknet.database.DatabaseManager;
 
 /**
  * Secondary data collector which gets data from Twitter's API
+ * @author Johann Beleites
  */
 public class TwitterDataCollector extends SecondaryDataCollector {
 	/**
@@ -16,6 +24,9 @@ public class TwitterDataCollector extends SecondaryDataCollector {
 	 * @param databaseManager
 	 *            The database manager to use to write to the database.
 	 */
+	
+	private List<Individual> individuals;
+	
 	public TwitterDataCollector(DatabaseManager databaseManager) {
 		super(databaseManager);
 		// TODO Auto-generated constructor stub
@@ -23,18 +34,57 @@ public class TwitterDataCollector extends SecondaryDataCollector {
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
+		
+		List<String> demoUsers = new ArrayList<String>();
+		demoUsers.add("treozs");
+		demoUsers.add("johnsmith");
+		
+		Twitter twitter = new TwitterFactory().getInstance();
+		ResponseList<User> users;
+		
+		int i = 0;
+		
+		for(String demoName: demoUsers) {
+			System.out.println("#### Searching for users with '" + demoUsers.get(i) + "' ####");
+			
+			try {
+				users = twitter.searchUsers(demoUsers.get(i), 1);
+				
+				for(User u: users) {
+					if (u.getStatus() != null) {
+						System.out.println("@" + u.getScreenName() + " - " + u.getStatus().getText());
+	                } else {
+	                    // the user is protected
+	                    System.out.println("@" + u.getScreenName());
+	                }
+				}
+				
+			} catch (TwitterException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			System.out.println();
+			i++;
+		}
+		
 	}
 
 	@Override
 	public void setup(List<Individual> individuals) {
-		// TODO Auto-generated method stub
+		this.individuals = individuals;
 	}
 
 	@Override
 	public Hashtable<String, AttributeCategories> getAttributeTable() {
-		// TODO Auto-generated method stub
-		return null;
+		
+		if(attributeTable == null) {
+			attributeTable = new Hashtable<String, AttributeCategories>();
+			attributeTable.put("tweets", AttributeCategories.CS_STRING_LIST);
+			attributeTable.put("twitter_display_name", AttributeCategories.STRING);
+		}
+		
+		return attributeTable;
 	}
 
 	@Override

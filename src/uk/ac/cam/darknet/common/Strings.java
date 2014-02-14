@@ -37,6 +37,7 @@ public class Strings {
 	public static final String GUI_DB_READ_ERR = "It wasn't possible to load individuals from the database.";
 	public static final String GUI_DB_CONN_ERR = "Could not connect to the database.";
 	public static final String GUI_CSV_ADD_ERR = "It wasn't possible to open or parse the given CSV file. Have you selected the right one :-)?";
+	public static final String GUI_DB_CSV_ADD_ERR = "It wasn't possible to load the individuals from the CSV file into the database. Check your CSV file.";
 	
 
 	/**

@@ -15,12 +15,11 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
 
+import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
 import uk.ac.cam.darknet.common.Strings;
 import uk.ac.cam.darknet.database.PrimaryDatabaseManager;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
-import uk.ac.cam.darknet.gui.PrimaryDataCollectorGUI;
-import uk.ac.cam.darknet.common.AttributeCategories;
 import au.com.bytecode.opencsv.CSVReader;
 
 /**

@@ -28,7 +28,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.DateFormatter;
 
-import uk.ac.cam.darknet.backend.ManualInputDataCollector;
+import uk.ac.cam.darknet.backend.SpektrixCSVParser;
 import uk.ac.cam.darknet.backend.PrimaryDataCollector;
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
@@ -63,7 +63,8 @@ public class PrimaryDataCollectorGUI extends PrimaryDataCollector implements
 	private PrimaryDatabaseManager dbm;
 
 	/**
-	 * TODO
+	 * Creates new primary data collector. The GUI and everything else is
+	 * started using the run method.
 	 * 
 	 * @param databaseManager The primary database manager.
 	 */
@@ -570,18 +571,29 @@ public class PrimaryDataCollectorGUI extends PrimaryDataCollector implements
 	 * Load the given csv file.
 	 */
 	private void handleLoadAudience() {
-		// Load the list of individuals from the csv file
+		// Get the path to the csv file
 		final String csvFileURL = txtFldCSVFilePath.getText();
+		// Load the list of individuals from the csv file
 		final List<Individual> csvIndividuals;
+		final SpektrixCSVParser csvParser = new SpektrixCSVParser(dbm);
 		try {
-			System.out.println(csvFileURL);
-			csvIndividuals = ManualInputDataCollector.loadfromCSV(csvFileURL);
+			csvIndividuals = csvParser.loadfromCSV(csvFileURL);
 		}
 		catch (IOException | SQLException | ParseException e) {
 			JOptionPane.showMessageDialog(frame, Strings.GUI_CSV_ADD_ERR,
 					"CSV file import error", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
+		// Add the individuals to the database
+		try {
+			dbm.storeIndividual(csvIndividuals);
+		}
+		catch (SQLException e) {
+			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_CSV_ADD_ERR,
+					"Database error", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+		
 
 	}
 

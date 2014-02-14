@@ -266,7 +266,7 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 		String[] emails = {"c.manzella241@gmail.com", "", "", "", "sheilambrewer@teleworm.us"};
 		String[] seats = {"A01", "B52", null, "C04", "D14"};
 		long b = System.currentTimeMillis();
-		for (int i = 0; i < 500; i++) {
+		for (int i = 0; i < 5000; i++) {
 			individuals.add(Individual.getNewIndividual(fnames[i % 5], lnames[i % 5], emails[i % 5], new java.util.Date(2014, 0, 0), Integer.toString(i), null));
 		}
 		instance.storeIndividual(individuals);

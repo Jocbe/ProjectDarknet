@@ -708,10 +708,8 @@ public class PrimaryDataCollectorGUI extends PrimaryDataCollector implements
 	public static void main(String[] args) {
 		try {
 			// Start the database manager
-			final Strings strings = new Strings();
 			final Hashtable<String, AttributeCategories> emptyTable = new Hashtable<>();
-			final PrimaryDatabaseManager dbm = new PrimaryDatabaseManager(
-					emptyTable, strings.getBaseDir() + "/res/dbconfix.txt");
+			final PrimaryDatabaseManager dbm = new PrimaryDatabaseManager(emptyTable);
 			final PrimaryDataCollectorGUI pdcGUI = new PrimaryDataCollectorGUI(
 					dbm);
 			pdcGUI.run();

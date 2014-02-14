@@ -11,13 +11,16 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Locale;
 
 import au.com.bytecode.opencsv.CSVReader;
 
 import uk.ac.cam.darknet.database.DatabaseManager;
 import uk.ac.cam.darknet.database.PrimaryDatabaseManager;
 import uk.ac.cam.darknet.gui.PrimaryDataCollectorGUI;
+import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
 
 /**
@@ -59,16 +62,20 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 		InputStream csvStream = new FileInputStream(new File(pathname));
 		CSVReader reader = new CSVReader(new InputStreamReader(csvStream));
 		String[] nextLine;
+		DateFormat df = new SimpleDateFormat("dd/mm/yyyy HH:mm:ss");
+		Hashtable<String, AttributeCategories> table = new Hashtable<String, AttributeCategories>();
+		reader.readNext(); //get rid of column titles
 		while ((nextLine = reader.readNext()) != null) {
 		  if (nextLine != null) {
-			  String pattern = DateFormat.getDateInstance().format(nextLine[5]);
-			  DateFormat df = new SimpleDateFormat(pattern);
 			  Date eventDate = df.parse(nextLine[5]);
-			  Individual ind = Individual.getNewIndividual(nextLine[1], nextLine[2], nextLine[3], eventDate, nextLine[6], null);
+			  Individual ind = Individual.getNewIndividual(nextLine[1], nextLine[2], nextLine[3], eventDate, nextLine[6], table);
 			  audience.add(ind);
 		  }
 		}
-		databaseManager.storeIndividual(audience);
+		System.out.println(audience.size());
+		int loaded = databaseManager.storeIndividual(audience);
+		System.out.println(loaded);
+		reader.close();
 		return audience;
 	}
 
@@ -97,7 +104,7 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 	}
 	
 	/**
-	 * this method is for testing 
+	 * this method is for testing purposes only
 	 * 
 	 * @param args
 	 * @throws IOException 
@@ -106,7 +113,15 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 	 */
 	public static void main(String args[]) throws IOException, SQLException, ParseException{
 		List<Individual> audience = loadfromCSV(args[0]);
+		DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT, Locale.UK);
 		Individual i = audience.get(0);
-		System.out.println();
+		System.out.println(i.getFirstName());
+		System.out.println(i.getFirstName()+"  "+ i.getLastName()+"  "+i.getEmail()+"  "+df.format(i.getEventDate())+"  "+i.getSeat());
+		i = audience.get(1);
+		System.out.println(i.getFirstName()+"  "+ i.getLastName()+"  "+i.getEmail()+"  "+df.format(i.getEventDate())+"  "+i.getSeat());
+		i = audience.get(520);
+		System.out.println(i.getFirstName()+"  "+ i.getLastName()+"  "+i.getEmail()+"  "+df.format(i.getEventDate())+"  "+i.getSeat());
+		i = audience.get(525);
+		System.out.println(i.getFirstName()+"  "+ i.getLastName()+"  "+i.getEmail()+"  "+df.format(i.getEventDate())+"  "+i.getSeat());
 	}
 }

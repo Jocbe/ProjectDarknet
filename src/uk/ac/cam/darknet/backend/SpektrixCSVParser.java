@@ -16,7 +16,9 @@ import java.util.List;
 import java.util.Locale;
 
 import uk.ac.cam.darknet.common.Individual;
+import uk.ac.cam.darknet.common.Strings;
 import uk.ac.cam.darknet.database.PrimaryDatabaseManager;
+import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 import uk.ac.cam.darknet.gui.PrimaryDataCollectorGUI;
 import uk.ac.cam.darknet.common.AttributeCategories;
 import au.com.bytecode.opencsv.CSVReader;
@@ -29,7 +31,10 @@ import au.com.bytecode.opencsv.CSVReader;
  * 
  * @author Farah Patel
  */
-public class ManualInputDataCollector extends PrimaryDataCollector {
+public class SpektrixCSVParser {
+	
+	private PrimaryDatabaseManager databaseManager;
+
 	/**
 	 * Create a new manual data collector with the specified database manager.
 	 * 
@@ -38,15 +43,15 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 	 * @param dataInput
 	 *            The file which has the input data.
 	 */
-	public ManualInputDataCollector(PrimaryDatabaseManager databaseManager) {
-		super(databaseManager);
+	public SpektrixCSVParser(PrimaryDatabaseManager databaseManager) {
+		this.databaseManager = databaseManager;
 	}
 
 	/**
-	 * Loads Primary Data from CSV file into Database
+	 * Parses CSV file from Spektrix and produces a list of Individuals
 	 * 
 	 * @param pathname
-	 *            path to CSV file containing primary data, CSV file expected to
+	 *            path to Spektrix CSV file, CSV file expected to
 	 *            have the following format: Customer Id, First Name, Last Name,
 	 *            Email Address, Event Name, Event Date/Time, Seat, Price,
 	 *            Ticket Type, Date Confirmed, Sales Channel
@@ -56,7 +61,7 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 	 * @throws SQLException
 	 * @throws ParseException
 	 */
-	public static List<Individual> loadfromCSV(String pathname)
+	public List<Individual> loadfromCSV(String pathname)
 			throws IOException, SQLException, ParseException {
 		List<Individual> audience = new ArrayList<Individual>();
 		InputStream csvStream = new FileInputStream(new File(pathname));
@@ -74,31 +79,11 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 					audience.add(ind);
 				}
 			}
-			int loaded = databaseManager.storeIndividual(audience);
 			return audience;
 		}
 	}
 
-	/**
-	 * Loads an Individual from ManualInputGUI into Database
-	 * 
-	 * @param ind
-	 *            Individual to be stored
-	 * @return Individual stored in Database
-	 * @throws SQLException
-	 */
-	public static Individual loadIndividual(Individual ind) throws SQLException {
-		databaseManager.storeIndividual(ind);
-		return ind;
-	}
-
-	@Override
-	public void run() {
-		// note will create Individuals and store them using database manager
-		PrimaryDataCollectorGUI gui = new PrimaryDataCollectorGUI();
-		gui.initialize();
-	}
-
+	
 	/**
 	 * this method is for testing purposes only 
 	 * 
@@ -106,10 +91,14 @@ public class ManualInputDataCollector extends PrimaryDataCollector {
 	 * @throws IOException
 	 * @throws SQLException
 	 * @throws ParseException
+	 * @throws ConfigFileNotFoundException 
+	 * @throws ClassNotFoundException 
 	 */
 	public static void main(String args[]) throws IOException, SQLException,
-			ParseException {
-		List<Individual> audience = loadfromCSV(args[0]);
+			ParseException, ClassNotFoundException, ConfigFileNotFoundException {
+		Strings x = new Strings();
+		SpektrixCSVParser parser = new SpektrixCSVParser(new PrimaryDatabaseManager(null,x.getBaseDir()+"/res/dbconfix.txt"));
+		List<Individual> audience = parser.loadfromCSV(args[0]);
 		DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT, Locale.UK);
 		Individual i = audience.get(0);
 		System.out.println(i.getFirstName());

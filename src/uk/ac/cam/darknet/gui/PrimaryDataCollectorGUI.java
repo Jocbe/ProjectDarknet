@@ -575,7 +575,7 @@ public class PrimaryDataCollectorGUI extends PrimaryDataCollector implements
 		final String csvFileURL = txtFldCSVFilePath.getText();
 		// Load the list of individuals from the csv file
 		final List<Individual> csvIndividuals;
-		final SpektrixCSVParser csvParser = new SpektrixCSVParser(dbm);
+		final SpektrixCSVParser csvParser = new SpektrixCSVParser();
 		try {
 			csvIndividuals = csvParser.loadfromCSV(csvFileURL);
 		}
@@ -593,7 +593,6 @@ public class PrimaryDataCollectorGUI extends PrimaryDataCollector implements
 					"Database error", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		
 
 	}
 
@@ -709,7 +708,8 @@ public class PrimaryDataCollectorGUI extends PrimaryDataCollector implements
 		try {
 			// Start the database manager
 			final Hashtable<String, AttributeCategories> emptyTable = new Hashtable<>();
-			final PrimaryDatabaseManager dbm = new PrimaryDatabaseManager(emptyTable);
+			final PrimaryDatabaseManager dbm = new PrimaryDatabaseManager(
+					emptyTable);
 			final PrimaryDataCollectorGUI pdcGUI = new PrimaryDataCollectorGUI(
 					dbm);
 			pdcGUI.run();

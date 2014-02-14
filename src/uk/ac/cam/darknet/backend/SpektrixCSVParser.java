@@ -17,8 +17,6 @@ import java.util.Locale;
 
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
-import uk.ac.cam.darknet.common.Strings;
-import uk.ac.cam.darknet.database.PrimaryDatabaseManager;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -31,37 +29,21 @@ import au.com.bytecode.opencsv.CSVReader;
  * @author Farah Patel
  */
 public class SpektrixCSVParser {
-	
-	private PrimaryDatabaseManager databaseManager;
-
-	/**
-	 * Create a new manual data collector with the specified database manager.
-	 * 
-	 * @param databaseManager
-	 *            The database manager to use to write to the database.
-	 * @param dataInput
-	 *            The file which has the input data.
-	 */
-	public SpektrixCSVParser(PrimaryDatabaseManager databaseManager) {
-		this.databaseManager = databaseManager;
-	}
 
 	/**
 	 * Parses CSV file from Spektrix and produces a list of Individuals
 	 * 
-	 * @param pathname
-	 *            path to Spektrix CSV file, CSV file expected to
-	 *            have the following format: Customer Id, First Name, Last Name,
-	 *            Email Address, Event Name, Event Date/Time, Seat, Price,
-	 *            Ticket Type, Date Confirmed, Sales Channel
+	 * @param pathname path to Spektrix CSV file, CSV file expected to have the
+	 *            following format: Customer Id, First Name, Last Name, Email
+	 *            Address, Event Name, Event Date/Time, Seat, Price, Ticket
+	 *            Type, Date Confirmed, Sales Channel
 	 * @return List of Individuals stored in Database
-	 * @throws IOException
-	 *             If CSV file not found or if read is unsuccessful
+	 * @throws IOException If CSV file not found or if read is unsuccessful
 	 * @throws SQLException
 	 * @throws ParseException
 	 */
-	public List<Individual> loadfromCSV(String pathname)
-			throws IOException, SQLException, ParseException {
+	public List<Individual> loadfromCSV(String pathname) throws IOException,
+			SQLException, ParseException {
 		List<Individual> audience = new ArrayList<Individual>();
 		InputStream csvStream = new FileInputStream(new File(pathname));
 		try (CSVReader reader = new CSVReader(new InputStreamReader(csvStream));) {
@@ -82,21 +64,19 @@ public class SpektrixCSVParser {
 		}
 	}
 
-	
 	/**
-	 * this method is for testing purposes only 
+	 * this method is for testing purposes only
 	 * 
 	 * @param args
 	 * @throws IOException
 	 * @throws SQLException
 	 * @throws ParseException
-	 * @throws ConfigFileNotFoundException 
-	 * @throws ClassNotFoundException 
+	 * @throws ConfigFileNotFoundException
+	 * @throws ClassNotFoundException
 	 */
 	public static void main(String args[]) throws IOException, SQLException,
 			ParseException, ClassNotFoundException, ConfigFileNotFoundException {
-		Strings x = new Strings();
-		SpektrixCSVParser parser = new SpektrixCSVParser(new PrimaryDatabaseManager(null,x.getBaseDir()+"/res/dbconfix.txt"));
+		SpektrixCSVParser parser = new SpektrixCSVParser();
 		List<Individual> audience = parser.loadfromCSV(args[0]);
 		DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT, Locale.UK);
 		Individual i = audience.get(0);

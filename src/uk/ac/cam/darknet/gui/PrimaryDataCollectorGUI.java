@@ -29,6 +29,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.DateFormatter;
 
 import uk.ac.cam.darknet.backend.ManualInputDataCollector;
+import uk.ac.cam.darknet.backend.PrimaryDataCollector;
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
 import uk.ac.cam.darknet.common.Strings;
@@ -43,7 +44,8 @@ import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
  * @author Augustin Zidek
  * 
  */
-public class PrimaryDataCollectorGUI implements ActionListener {
+public class PrimaryDataCollectorGUI extends PrimaryDataCollector implements
+		ActionListener {
 	private JFrame frame;
 	private JTextField txtFldFirstName;
 	private JTextField txtFldSecondName;
@@ -61,14 +63,22 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 	private PrimaryDatabaseManager dbm;
 
 	/**
+	 * TODO
+	 * 
+	 * @param databaseManager The primary database manager.
+	 */
+	public PrimaryDataCollectorGUI(final PrimaryDatabaseManager databaseManager) {
+		super(databaseManager);
+		this.dbm = databaseManager;
+	}
+
+	/**
 	 * Initialize the GUI.
 	 */
-	public void initialize() {
+	public void run() {
 		// Show the GUI
 		initializeGUI();
 		frame.setVisible(true);
-		// Connect to the database
-		startDBManager();
 		// Get all the individuals that are already in the DB
 		final List<Individual> individualsInDB = getDBContent();
 		// Display them in the table
@@ -521,24 +531,6 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 	}
 
 	/**
-	 * Starts the database manager.
-	 */
-	private void startDBManager() {
-		try {
-			// Start the database manager
-			final Strings strings = new Strings();
-			final Hashtable<String, AttributeCategories> emptyTable = new Hashtable<>();
-			dbm = new PrimaryDatabaseManager(emptyTable, strings.getBaseDir()
-					+ "/res/dbconfix.txt");
-		}
-		catch (ClassNotFoundException | ConfigFileNotFoundException
-				| IOException | SQLException e) {
-			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_CONN_ERR,
-					"Database error", JOptionPane.ERROR_MESSAGE);
-		}
-	}
-
-	/**
 	 * Get the list of all individuals that are already in the database.
 	 * 
 	 * @return The list of all individuals already in the database.
@@ -582,6 +574,7 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 		final String csvFileURL = txtFldCSVFilePath.getText();
 		final List<Individual> csvIndividuals;
 		try {
+			System.out.println(csvFileURL);
 			csvIndividuals = ManualInputDataCollector.loadfromCSV(csvFileURL);
 		}
 		catch (IOException | SQLException | ParseException e) {
@@ -701,7 +694,20 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 	 * @param args Ignored
 	 */
 	public static void main(String[] args) {
-		final PrimaryDataCollectorGUI pdcGUI = new PrimaryDataCollectorGUI();
-		pdcGUI.initialize();
+		try {
+			// Start the database manager
+			final Strings strings = new Strings();
+			final Hashtable<String, AttributeCategories> emptyTable = new Hashtable<>();
+			final PrimaryDatabaseManager dbm = new PrimaryDatabaseManager(
+					emptyTable, strings.getBaseDir() + "/res/dbconfix.txt");
+			final PrimaryDataCollectorGUI pdcGUI = new PrimaryDataCollectorGUI(
+					dbm);
+			pdcGUI.run();
+		}
+		catch (ClassNotFoundException | ConfigFileNotFoundException
+				| IOException | SQLException e) {
+			e.printStackTrace();
+		}
+
 	}
 }

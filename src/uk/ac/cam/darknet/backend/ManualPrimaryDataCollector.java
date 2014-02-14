@@ -1,4 +1,4 @@
-package uk.ac.cam.darknet.gui;
+package uk.ac.cam.darknet.backend;
 
 import java.awt.BorderLayout;
 import java.awt.Font;
@@ -28,13 +28,12 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.DateFormatter;
 
-import uk.ac.cam.darknet.backend.SpektrixCSVParser;
-import uk.ac.cam.darknet.backend.PrimaryDataCollector;
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
 import uk.ac.cam.darknet.common.Strings;
 import uk.ac.cam.darknet.database.PrimaryDatabaseManager;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
+import uk.ac.cam.darknet.gui.IndividualTable;
 
 /**
  * GUI for the primary data collector. Displays the current contents of the
@@ -44,7 +43,7 @@ import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
  * @author Augustin Zidek
  * 
  */
-public class PrimaryDataCollectorGUI extends PrimaryDataCollector implements
+public class ManualPrimaryDataCollector extends PrimaryDataCollector implements
 		ActionListener {
 	private JFrame frame;
 	private JTextField txtFldFirstName;
@@ -68,7 +67,7 @@ public class PrimaryDataCollectorGUI extends PrimaryDataCollector implements
 	 * 
 	 * @param databaseManager The primary database manager.
 	 */
-	public PrimaryDataCollectorGUI(final PrimaryDatabaseManager databaseManager) {
+	public ManualPrimaryDataCollector(final PrimaryDatabaseManager databaseManager) {
 		super(databaseManager);
 		this.dbm = databaseManager;
 	}
@@ -584,15 +583,33 @@ public class PrimaryDataCollectorGUI extends PrimaryDataCollector implements
 					"CSV file import error", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
+
 		// Add the individuals to the database
+		int audienceCount;
 		try {
-			dbm.storeIndividual(csvIndividuals);
+			audienceCount = dbm.storeIndividual(csvIndividuals);
 		}
 		catch (SQLException e) {
-			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_CSV_ADD_ERR,
-					"Database error", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
+		// Show confirmation dialog
+		JOptionPane.showMessageDialog(frame, audienceCount
+				+ " audience members added to the database.",
+				"Audience loaded from CSV", JOptionPane.INFORMATION_MESSAGE);
+
+		// Clear the table
+		table.clearTable();
+		try {
+			table.displayIndividuals(dbm.getAllIndividuals());
+		}
+		catch (SQLException e) {
+			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_READ_ERR,
+					"Database error", JOptionPane.ERROR_MESSAGE);
+		}
+
+		// Jump to the last added individual
+		table.scrollRectToVisible(table.getCellRect(table.getRowCount() - 1, 0,
+				true));
 
 	}
 
@@ -710,7 +727,7 @@ public class PrimaryDataCollectorGUI extends PrimaryDataCollector implements
 			final Hashtable<String, AttributeCategories> emptyTable = new Hashtable<>();
 			final PrimaryDatabaseManager dbm = new PrimaryDatabaseManager(
 					emptyTable);
-			final PrimaryDataCollectorGUI pdcGUI = new PrimaryDataCollectorGUI(
+			final ManualPrimaryDataCollector pdcGUI = new ManualPrimaryDataCollector(
 					dbm);
 			pdcGUI.run();
 		}

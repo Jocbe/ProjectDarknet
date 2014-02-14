@@ -80,4 +80,11 @@ public class IndividualTable extends JTable {
 				seat });
 	}
 
+	/**
+	 * Clears all the rows in the table.
+	 */
+	public void clearTable() {
+		model.setRowCount(0);
+	}
+
 }

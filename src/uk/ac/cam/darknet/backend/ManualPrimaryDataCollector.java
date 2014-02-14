@@ -67,7 +67,8 @@ public class ManualPrimaryDataCollector extends PrimaryDataCollector implements
 	 * 
 	 * @param databaseManager The primary database manager.
 	 */
-	public ManualPrimaryDataCollector(final PrimaryDatabaseManager databaseManager) {
+	public ManualPrimaryDataCollector(
+			final PrimaryDatabaseManager databaseManager) {
 		super(databaseManager);
 		this.dbm = databaseManager;
 	}
@@ -585,7 +586,7 @@ public class ManualPrimaryDataCollector extends PrimaryDataCollector implements
 		}
 
 		// Add the individuals to the database
-		int audienceCount;
+		final int audienceCount;
 		try {
 			audienceCount = dbm.storeIndividual(csvIndividuals);
 		}
@@ -594,10 +595,10 @@ public class ManualPrimaryDataCollector extends PrimaryDataCollector implements
 		}
 		// Show confirmation dialog
 		JOptionPane.showMessageDialog(frame, audienceCount
-				+ " audience members added to the database.",
-				"Audience loaded from CSV", JOptionPane.INFORMATION_MESSAGE);
+				+ " audience members added to the database.");
 
-		// Clear the table
+		// Clear the table and show all individuals. This is used because user
+		// ID's can't be determined prior to adding them to the DB.
 		table.clearTable();
 		try {
 			table.displayIndividuals(dbm.getAllIndividuals());
@@ -608,9 +609,8 @@ public class ManualPrimaryDataCollector extends PrimaryDataCollector implements
 		}
 
 		// Jump to the last added individual
-		table.scrollRectToVisible(table.getCellRect(table.getRowCount() - 1, 0,
-				true));
-
+		final int lastIndividualRow = table.getRowCount() - 1;
+		table.scrollRectToVisible(table.getCellRect(lastIndividualRow, 0, true));
 	}
 
 	/**

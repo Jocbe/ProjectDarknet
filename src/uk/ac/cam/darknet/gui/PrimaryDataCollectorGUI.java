@@ -528,8 +528,7 @@ public class PrimaryDataCollectorGUI implements ActionListener {
 			// Start the database manager
 			final Strings strings = new Strings();
 			final Hashtable<String, AttributeCategories> emptyTable = new Hashtable<>();
-			dbm = new PrimaryDatabaseManager(emptyTable, strings.getBaseDir()
-					+ "/res/dbconfix.txt");
+			dbm = new PrimaryDatabaseManager(emptyTable);
 		}
 		catch (ClassNotFoundException | ConfigFileNotFoundException
 				| IOException | SQLException e) {

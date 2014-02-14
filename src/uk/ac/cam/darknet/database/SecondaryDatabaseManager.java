@@ -50,8 +50,8 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 	 * @throws SQLException
 	 * @throws InvalidAttributeNameException
 	 */
-	public SecondaryDatabaseManager(Hashtable<String, AttributeCategories> globalAttributeTable, String pathToConfig) throws ConfigFileNotFoundException, IOException, ClassNotFoundException, SQLException, InvalidAttributeNameException {
-		super(globalAttributeTable, pathToConfig);
+	public SecondaryDatabaseManager(Hashtable<String, AttributeCategories> globalAttributeTable) throws ConfigFileNotFoundException, IOException, ClassNotFoundException, SQLException, InvalidAttributeNameException {
+		super(globalAttributeTable);
 		createTables();
 	}
 
@@ -165,7 +165,7 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 		Hashtable<String, AttributeCategories> myTable = new Hashtable<String, AttributeCategories>();
 		myTable.put("usr", AttributeCategories.USER_NAME);
 		myTable.put("age", AttributeCategories.AGE);
-		SecondaryDatabaseManager instance = new SecondaryDatabaseManager(myTable, args[0]);
+		SecondaryDatabaseManager instance = new SecondaryDatabaseManager(myTable);
 		Individual testSubject1 = instance.getById(1000050);
 		testSubject1.getProperties().put("usr", "username", 0.1);
 		testSubject1.getProperties().put("age", (byte) 21, 0.5);

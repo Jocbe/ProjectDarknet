@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
+import uk.ac.cam.darknet.common.Strings;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 
 /**
@@ -51,8 +52,8 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 	 * @throws ClassNotFoundException
 	 * @throws SQLException
 	 */
-	public PrimaryDatabaseManager(Hashtable<String, AttributeCategories> globalAttributeTable, String pathToConfig) throws ConfigFileNotFoundException, IOException, ClassNotFoundException, SQLException {
-		super(globalAttributeTable, pathToConfig);
+	public PrimaryDatabaseManager(Hashtable<String, AttributeCategories> globalAttributeTable) throws ConfigFileNotFoundException, IOException, ClassNotFoundException, SQLException {
+		super(globalAttributeTable);
 		createTable();
 	}
 
@@ -259,14 +260,14 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 
 	@SuppressWarnings({"javadoc", "deprecation", "unused"})
 	public static void main(String args[]) throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException {
-		PrimaryDatabaseManager instance = new PrimaryDatabaseManager(null, args[0]);
+		PrimaryDatabaseManager instance = new PrimaryDatabaseManager(null);
 		ArrayList<Individual> individuals = new ArrayList<Individual>();
 		String[] fnames = {"Claire", "Denise", "Richard", "Travis", "Sheila"};
 		String[] lnames = {"Manzella", "Salazar", "Connally", "Briggs", "Brewer"};
 		String[] emails = {"c.manzella241@gmail.com", "", "", "", "sheilambrewer@teleworm.us"};
 		String[] seats = {"A01", "B52", null, "C04", "D14"};
 		long b = System.currentTimeMillis();
-		for (int i = 0; i < 5000; i++) {
+		for (int i = 5000; i < 5010; i++) {
 			individuals.add(Individual.getNewIndividual(fnames[i % 5], lnames[i % 5], emails[i % 5], new java.util.Date(2014, 0, 0), Integer.toString(i), null));
 		}
 		instance.storeIndividual(individuals);

@@ -57,13 +57,13 @@ public abstract class DatabaseManager {
 	 * @throws ClassNotFoundException
 	 * @throws SQLException
 	 */
-	protected DatabaseManager(Hashtable<String, AttributeCategories> globalAttributeTable, String pathToConfig) throws ConfigFileNotFoundException, IOException, ClassNotFoundException, SQLException {
+	protected DatabaseManager(Hashtable<String, AttributeCategories> globalAttributeTable) throws ConfigFileNotFoundException, IOException, ClassNotFoundException, SQLException {
 		// if (globalAttributeTable == null) {
 		// throw new IllegalArgumentException(Strings.NULL_GLOBAL_TABLE_EXN);
 		// } else {
 		this.globalAttributeTable = globalAttributeTable;
 		// }
-		connection = connectToDB(pathToConfig);
+		connection = connectToDB(Strings.getBaseDir() + "/res/dbconfig.txt");
 		connection.setAutoCommit(false);
 	}
 

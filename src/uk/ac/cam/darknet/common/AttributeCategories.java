@@ -34,11 +34,15 @@ public enum AttributeCategories {
 	/**
 	 * A comma-separated list of strings which are related to the individual (<code>String</code>)
 	 */
-	CS_STRING_LIST(String.class),
+	//CS_STRING_LIST(String.class),
 	/**
 	 * A string attribute of an individual (<code>String</code>)
 	 */
-	STRING(String.class);
+	//STRING(String.class);
+	/**
+	 * Some status (ex. FB status, tweet)
+	 */
+	STATUS(String.class);
 
 	private final Class<?>	attributeType;
 

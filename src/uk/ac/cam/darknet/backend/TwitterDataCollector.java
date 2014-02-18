@@ -80,8 +80,8 @@ public class TwitterDataCollector extends SecondaryDataCollector {
 		
 		if(attributeTable == null) {
 			attributeTable = new Hashtable<String, AttributeCategories>();
-			attributeTable.put("tweets", AttributeCategories.CS_STRING_LIST);
-			attributeTable.put("twitter_display_name", AttributeCategories.STRING);
+			attributeTable.put("tweet", AttributeCategories.STATUS);
+//			attributeTable.put("twitter_display_name", AttributeCategories.NAME);
 		}
 		
 		return attributeTable;

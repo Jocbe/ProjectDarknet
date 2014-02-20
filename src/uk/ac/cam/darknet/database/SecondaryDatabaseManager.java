@@ -163,7 +163,7 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 	@SuppressWarnings({"javadoc"})
 	public static void main(String args[]) throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException, InvalidAttributeNameException, UnknownAttributeException, InvalidAttributeTypeException, InvalidReliabilityException {
 		Hashtable<String, AttributeCategories> myTable = new Hashtable<String, AttributeCategories>();
-		myTable.put("usr", AttributeCategories.USER_NAME);
+		myTable.put("usr", AttributeCategories.ALIAS);
 		myTable.put("age", AttributeCategories.AGE);
 		SecondaryDatabaseManager instance = new SecondaryDatabaseManager(myTable);
 		Individual testSubject1 = instance.getById(1000050);

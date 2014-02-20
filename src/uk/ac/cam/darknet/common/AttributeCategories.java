@@ -8,39 +8,27 @@ package uk.ac.cam.darknet.common;
  */
 public enum AttributeCategories {
 	/**
-	 * First names of individuals (<code>String</code>)
+	 * User/nick names that individuals use on various websites (<code>String</code>)
 	 */
-	FISRT_NAME(String.class),
-	/**
-	 * Last names of individuals (<code>String</code>)
-	 */
-	LAST_NAME(String.class),
-	/**
-	 * User names that individuals use on various websites (<code>String</code>)
-	 */
-	USER_NAME(String.class),
-	/**
-	 * Email addresses of individuals (<code>String</code>)
-	 */
-	EMAIL(String.class),
+	ALIAS(String.class),
 	/**
 	 * Paths to photos of individuals stored in the photo store on disk. (<code>String</code>)
 	 */
 	PHOTO(String.class),
 	/**
-	 * The age of individuals
+	 * The age of individuals 
 	 */
 	AGE(Byte.class),
 	/**
-	 * A comma-separated list of strings which are related to the individual (<code>String</code>)
+	 * Gender of user (<code>String</code>)
 	 */
-	//CS_STRING_LIST(String.class),
+	GENDER(String.class),
 	/**
-	 * A string attribute of an individual (<code>String</code>)
+	 * A phone number of the individual (<code>String</code>)
 	 */
-	//STRING(String.class);
+	PHONE_NUMBER(String.class),
 	/**
-	 * Some status (ex. FB status, tweet)
+	 * Some status (ex. FB status, tweet) (<code>String</code>)
 	 */
 	STATUS(String.class);
 

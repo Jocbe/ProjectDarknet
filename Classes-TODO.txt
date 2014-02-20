@@ -36,9 +36,25 @@ DataCollectionManager
     3. Calls Data Collectors (primary, then secondary), they take DBManager as a parameter
 
 
-TASKS (Allocate yourselves)
-FacebookDataCollector             - Josh, Johann
-PrimaryDataCollector (csv import) - Farah
-GUI, pdf export                   - Augustin
+TASKS
+Augustin : GUI: Home GUI, SDColGUI, EffectsGUI, Report Effect
+Ibtehaj  : IndividualPreferences, IndividualRequirements
+Josh     : DataCollectionManager, FacebookDataCollector
+Farah    : PictureWallEffect
+Johann   : FacebookDataCollector
 
 
+
+
+
+
+MEETING MINUTES
+- Aggregate audience data (past visits, audience-wide)          1
+- Twitter: Tweets, photos. Must have Twitter ID.                2
+- Facebook - fictional character, befriends the audience        0   
+- Spektrix - can we get FB/Twitter IDs as columns in the CSV? 
+- Test how much data is possible to get out of WIFI attack - give some summary
+- SHODAN
+- FB: Mutual friendship, friends in the audience, family members
+- FB: Search for rather old data, people don't remember them
+- 

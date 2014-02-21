@@ -9,9 +9,13 @@ import uk.ac.cam.darknet.database.DatabaseManager;
 
 import com.restfb.Connection;
 import com.restfb.DefaultFacebookClient;
+import com.restfb.Facebook;
 import com.restfb.FacebookClient;
 import com.restfb.Parameter;
 import com.restfb.types.Album;
+import com.restfb.types.CategorizedFacebookType;
+import com.restfb.types.NamedFacebookType;
+import com.restfb.types.Photo;
 import com.restfb.types.User;
 
 /**
@@ -34,7 +38,7 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 
 	@Override
 	public void run() {
-		FacebookClient client = new DefaultFacebookClient("CAACEdEose0cBAIR6bbRJM0nY5Kolg3l5ORF7KGsZCU0sOJZAqh8g5c6IktWuGeV7wke2HoZB1LZBcAPp3mE5koHRumVKlZCSZBr7fbTeDsqRXDZBSstmyCJqZBBJe0ZAyf2nmZAmOZA7ONOFgMRGeLxS5lJpvbQkHJqSD3VjaWGF5EDfpgKWL5LQslJvOpaxuxZBhrMZD");
+		FacebookClient client = new DefaultFacebookClient("CAACEdEose0cBAEogvuL9ynu08Umd5JFCpjSlylropybW0LO4vKX89ZArJjTfSzxzIF1JVvuk2Su3MSp3iKn9EqlC4EdoSEVPEdPZBYAyto5Jgb9bBtAwQjnNJF8n5vKgDMbGmkiX2U4RMzmkNiKdT01HvyqOlrWAUGarMAlOh4YC0z4KcvTjx0fos5UgMIekgFeDQ3xQZDZD");
 		
 		Connection<User> c = client.fetchConnection("me/friends", User.class, Parameter.with("fields", "id,name,picture"));
 		
@@ -45,10 +49,10 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 			System.out.print(u.getName());
 			id = u.getId();
 			
-			List<Album> p = client.fetchConnection(id + "/photos", Album.class).getData();
+			List<Photo> p = client.fetchConnection(id + "/photos", Photo.class).getData();
 			
 			//User f = client.fetchObject(id, User.class);
-			if(p.size() > 0) System.out.print("  " + p.get(0).toString());
+			if(p.size() > 0) System.out.print("  " + p.size() + ": " + p.get(0).getSource());
 			
 			System.out.println();
 		}

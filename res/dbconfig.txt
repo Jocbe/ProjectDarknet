@@ -1,5 +1,7 @@
 # Default connection to the Project Darknet database.
-urlid darknetuser
-url jdbc:hsqldb:hsql://131.111.131.26:5000/darknetdb
-username DARKNETUSER
-password Z7OM07Hosb
+prefix=jdbc:hsqldb:hsql:
+host=131.111.131.26
+port=5000
+alias=darknetdb
+username=DARKNETADMIN
+password=q3NBt7Dxbbbytwb

@@ -1,9 +1,5 @@
-# This is the configuration file used by the DatabaseManager.
-# Do not modify this file unless you are migrating the database.
-
-prefix=jdbc:hsqldb:hsql:
-host=131.111.131.26
-port=5000
-alias=darknetdb
-username=SA
-password=L5EpWNr2HW
+# Default connection to the Project Darknet database.
+urlid darknetuser
+url jdbc:hsqldb:hsql://131.111.131.26:5000/darknetdb
+username DARKNETUSER
+password Z7OM07Hosb

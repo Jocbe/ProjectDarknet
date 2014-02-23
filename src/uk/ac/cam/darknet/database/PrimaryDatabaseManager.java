@@ -325,7 +325,6 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 	@SuppressWarnings({"javadoc"})
 	public static void main(String args[]) throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException {
 		PrimaryDatabaseManager instance = new PrimaryDatabaseManager(null);
-		instance.createShowIfNotExists(new java.util.Date(0, 10, 0), 1);
 		instance.connection.close();
 	}
 }

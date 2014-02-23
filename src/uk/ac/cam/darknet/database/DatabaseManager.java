@@ -10,17 +10,20 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.regex.Pattern;
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
 import uk.ac.cam.darknet.common.Show;
 import uk.ac.cam.darknet.common.Strings;
 import uk.ac.cam.darknet.common.Venue;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
+import com.sun.xml.internal.ws.org.objectweb.asm.Type;
 
 /**
  * Any implementation of this abstract class has methods to search for individuals. Both the data
@@ -39,6 +42,7 @@ public abstract class DatabaseManager {
 	private static String									GET_ALL_INDIVIDUALS	= "SELECT * FROM individuals";
 	private static String									GET_ALL_SHOWS		= "SELECT shows.date, venues.id, venues.name FROM shows NATURAL JOIN venues";
 	private static String									GET_ALL_VENUES		= "SELECT * FROM venues";
+	private static final String								ATTRIBUTE_PATTERN	= "[a-zA-Z0-9_]+";
 	protected final Connection								connection;
 	protected final Hashtable<String, AttributeCategories>	globalAttributeTable;
 	private long											id;
@@ -48,6 +52,7 @@ public abstract class DatabaseManager {
 	private Date											date;
 	private int												venue;
 	private String											seat;
+	private Pattern											pattern				= Pattern.compile(ATTRIBUTE_PATTERN);
 
 	/**
 	 * Creates a new <code>DatabaseManager</code> with the specified global attribute table and sets
@@ -325,6 +330,47 @@ public abstract class DatabaseManager {
 			return new Timestamp(date.getTime());
 		} else {
 			return null;
+		}
+	}
+
+	protected boolean isAttributeNameValid(String attributeName) {
+		if (attributeName == null || attributeName.length() == 0 || (!pattern.matcher(attributeName).matches())) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	protected int getSQLType(AttributeCategories category) {
+		if (category.getAttributeType() == Byte.class) {
+			return Types.TINYINT;
+		} else if (category.getAttributeType() == Short.class) {
+			return Types.SMALLINT;
+		} else if (category.getAttributeType() == Integer.class) {
+			return Types.INTEGER;
+		} else if (category.getAttributeType() == Long.class) {
+			return Types.BIGINT;
+		} else if (category.getAttributeType() == Boolean.class) {
+			return Types.BOOLEAN;
+		} else {
+			return Types.OTHER;
+		}
+	}
+
+	protected String getSQLTypeString(int SQLType) {
+		switch (SQLType) {
+			case Types.TINYINT :
+				return "TINYINT";
+			case Types.SMALLINT :
+				return "SMALLINT";
+			case Types.INTEGER :
+				return "INTEGER";
+			case Types.BIGINT :
+				return "BIGINT";
+			case Type.BOOLEAN :
+				return "BOOLEAN";
+			default :
+				return "OTHER";
 		}
 	}
 }

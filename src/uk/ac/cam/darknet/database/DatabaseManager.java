@@ -234,6 +234,17 @@ public abstract class DatabaseManager {
 	}
 
 	/**
+	 * Return a list of individuals that attend a particular show (combination of date and venue).
+	 * 
+	 * @param show The show for which to find infividuals.
+	 * @return A list of individuals, each of which has booked a ticket for the given show.
+	 * @throws SQLException
+	 */
+	public synchronized List<Individual> getByShow(Show show) throws SQLException {
+		return getByShow(show.getDate(), show.getVenue().getId());
+	}
+
+	/**
 	 * Get all the shows in the system.
 	 * 
 	 * @return A list of all the shows in the system.

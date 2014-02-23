@@ -15,9 +15,6 @@ import uk.ac.cam.darknet.common.LoggerFactory;
 import uk.ac.cam.darknet.common.Strings;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 import uk.ac.cam.darknet.exceptions.InvalidAttributeNameException;
-import uk.ac.cam.darknet.exceptions.InvalidAttributeTypeException;
-import uk.ac.cam.darknet.exceptions.InvalidReliabilityException;
-import uk.ac.cam.darknet.exceptions.UnknownAttributeException;
 
 /**
  * A secondary database manager is used to provide database access to the secondary data collectors.
@@ -114,10 +111,5 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 			}
 		}
 		connection.commit();
-	}
-
-	@SuppressWarnings({"javadoc"})
-	public static void main(String args[]) throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException, InvalidAttributeNameException, UnknownAttributeException, InvalidAttributeTypeException, InvalidReliabilityException {
-		// TODO
 	}
 }

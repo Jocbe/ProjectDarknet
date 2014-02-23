@@ -1,8 +1,6 @@
 package uk.ac.cam.darknet.frontend;
 
-import java.util.List;
-
-import uk.ac.cam.darknet.common.Individual;
+import uk.ac.cam.darknet.common.Show;
 
 /**
  * An effect for generating a wall of pictures of all the people in the theatre (i.e. all
@@ -13,7 +11,7 @@ import uk.ac.cam.darknet.common.Individual;
  */
 public class PictureWallEffect implements Effect {
 	@Override
-	public void execute(List<Individual> individuals) {
+	public void execute(Show show) {
 		// TODO Auto-generated method stub
 	}
 }

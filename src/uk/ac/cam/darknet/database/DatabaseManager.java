@@ -17,7 +17,9 @@ import java.util.Hashtable;
 import java.util.List;
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
+import uk.ac.cam.darknet.common.Show;
 import uk.ac.cam.darknet.common.Strings;
+import uk.ac.cam.darknet.common.Venue;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 
 /**
@@ -29,19 +31,22 @@ import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
  */
 public abstract class DatabaseManager {
 	private static String									GET_BY_ID			= "SELECT * FROM individuals WHERE id = ?";
-	private static String									GET_BY_EVENT_DATE	= "SELECT * FROM individuals WHERE event = ?";
+	private static String									GET_BY_SHOW			= "SELECT * FROM individuals WHERE date = ? and venue = ?";
 	private static String									GET_BY_SEAT			= "SELECT * FROM individuals WHERE seat = ?";
 	private static String									GET_BY_EMAIL		= "SELECT * FROM individuals WHERE email = ?";
 	private static String									GET_BY_FNAME		= "SELECT * FROM individuals WHERE fname = ?";
 	private static String									GET_BY_LNAME		= "SELECT * FROM individuals WHERE lname = ?";
 	private static String									GET_ALL_INDIVIDUALS	= "SELECT * FROM individuals";
+	private static String									GET_ALL_SHOWS		= "SELECT shows.date, venues.id, venues.name FROM shows NATURAL JOIN venues";
+	private static String									GET_ALL_VENUES		= "SELECT * FROM venues";
 	protected final Connection								connection;
 	protected final Hashtable<String, AttributeCategories>	globalAttributeTable;
 	private long											id;
 	private String											fname;
 	private String											lname;
 	private String											email;
-	private Date											event;
+	private Date											date;
+	private int												venue;
 	private String											seat;
 
 	/**
@@ -111,7 +116,7 @@ public abstract class DatabaseManager {
 	public synchronized List<Individual> getAllIndividuals() throws SQLException {
 		ArrayList<Individual> toReturn = new ArrayList<Individual>();
 		try (PreparedStatement stmt = connection.prepareStatement(GET_ALL_INDIVIDUALS);) {
-			toReturn = getQueryResults(stmt);
+			toReturn = getIndividualQueryResults(stmt);
 		}
 		return toReturn;
 	}
@@ -147,7 +152,7 @@ public abstract class DatabaseManager {
 		ArrayList<Individual> toReturn = new ArrayList<Individual>();
 		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_FNAME);) {
 			stmt.setString(1, fname);
-			toReturn = getQueryResults(stmt);
+			toReturn = getIndividualQueryResults(stmt);
 		}
 		return toReturn;
 	}
@@ -164,7 +169,7 @@ public abstract class DatabaseManager {
 		ArrayList<Individual> toReturn = new ArrayList<Individual>();
 		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_LNAME);) {
 			stmt.setString(1, lname);
-			toReturn = getQueryResults(stmt);
+			toReturn = getIndividualQueryResults(stmt);
 		}
 		return toReturn;
 	}
@@ -181,7 +186,7 @@ public abstract class DatabaseManager {
 		ArrayList<Individual> toReturn = new ArrayList<Individual>();
 		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_EMAIL);) {
 			stmt.setString(1, email);
-			toReturn = getQueryResults(stmt);
+			toReturn = getIndividualQueryResults(stmt);
 		}
 		return toReturn;
 	}
@@ -198,29 +203,72 @@ public abstract class DatabaseManager {
 		ArrayList<Individual> toReturn = new ArrayList<Individual>();
 		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_SEAT);) {
 			stmt.setString(1, seat);
-			toReturn = getQueryResults(stmt);
+			toReturn = getIndividualQueryResults(stmt);
 		}
 		return toReturn;
 	}
 
 	/**
-	 * Return a list of individuals by the date and time of an event.
+	 * Return a list of individuals that attend a particular show (combination of date and venue).
 	 * 
 	 * @param eventDate
-	 *            The date and time of the event of which all individuals are to be fetched.
-	 * @return A list of individuals, each of which has booked a ticket for the given date.
+	 *            The date and time of the show of which all individuals are to be fetched.
+	 * @param eventVenue
+	 *            The venue ID of the show.
+	 * @return A list of individuals, each of which has booked a ticket for the given show.
 	 * @throws SQLException
 	 */
-	public synchronized List<Individual> getByEventDate(Date eventDate) throws SQLException {
+	public synchronized List<Individual> getByShow(Date eventDate, int eventVenue) throws SQLException {
 		ArrayList<Individual> toReturn = new ArrayList<Individual>();
-		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_EVENT_DATE);) {
+		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_SHOW);) {
 			stmt.setTimestamp(1, dateToSQLTimestamp(eventDate));
-			toReturn = getQueryResults(stmt);
+			stmt.setInt(2, eventVenue);
+			toReturn = getIndividualQueryResults(stmt);
 		}
 		return toReturn;
 	}
 
-	private ArrayList<Individual> getQueryResults(PreparedStatement stmt) throws SQLException {
+	/**
+	 * Get all the shows in the system.
+	 * 
+	 * @return A list of all the shows in the system.
+	 * @throws SQLException
+	 */
+	public ArrayList<Show> getAllShows() throws SQLException {
+		ArrayList<Show> toReturn = new ArrayList<Show>();
+		Show next;
+		try (PreparedStatement stmt = connection.prepareStatement(GET_ALL_SHOWS);) {
+			try (ResultSet resultSet = stmt.executeQuery();) {
+				while (resultSet.next()) {
+					next = new Show(resultSet.getTimestamp(1), new Venue(resultSet.getInt(2), resultSet.getString(3)));
+					toReturn.add(next);
+				}
+			}
+		}
+		return toReturn;
+	}
+
+	/**
+	 * Returns a list of all venues in the system.
+	 * 
+	 * @return A list of venues in the system.
+	 * @throws SQLException
+	 */
+	public ArrayList<Venue> getAllVenues() throws SQLException {
+		ArrayList<Venue> toReturn = new ArrayList<Venue>();
+		Venue next;
+		try (PreparedStatement stmt = connection.prepareStatement(GET_ALL_VENUES);) {
+			try (ResultSet resultSet = stmt.executeQuery();) {
+				while (resultSet.next()) {
+					next = new Venue(resultSet.getInt(1), resultSet.getString(2));
+					toReturn.add(next);
+				}
+			}
+		}
+		return toReturn;
+	}
+
+	private ArrayList<Individual> getIndividualQueryResults(PreparedStatement stmt) throws SQLException {
 		ArrayList<Individual> toReturn = new ArrayList<Individual>();
 		Individual next;
 		try (ResultSet resultSet = stmt.executeQuery();) {
@@ -239,9 +287,10 @@ public abstract class DatabaseManager {
 			fname = result.getString(2);
 			lname = result.getString(3);
 			email = result.getString(4);
-			event = result.getTimestamp(5);
-			seat = result.getString(6);
-			return new Individual(id, fname, lname, email, event, seat, globalAttributeTable);
+			date = result.getTimestamp(5);
+			venue = result.getInt(6);
+			seat = result.getString(7);
+			return new Individual(id, fname, lname, email, date, venue, seat, globalAttributeTable);
 		} else {
 			return null;
 		}

@@ -6,14 +6,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.regex.Pattern;
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
-import uk.ac.cam.darknet.common.Strings;
+import uk.ac.cam.darknet.common.LoggerFactory;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 
 /**
@@ -23,18 +22,23 @@ import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
  * @author Ibtehaj Nadeem
  */
 public class PrimaryDatabaseManager extends DatabaseManager {
-	private static final String	CREATE_PRIMARY_TABLE	= "CREATE CACHED TABLE individuals (id BIGINT GENERATED ALWAYS AS IDENTITY(START WITH 1000000) PRIMARY KEY, fname VARCHAR(25) NOT NULL, lname VARCHAR(25) NOT NULL, email VARCHAR(254), event TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, seat VARCHAR(10), UNIQUE (fname, lname, email, event, seat))";
-	private static final String	INSERT_INDIVIDUAL		= "INSERT INTO individuals (id, fname, lname, email, event, seat) VALUES (DEFAULT, ?, ?, ?, ?, ?)";
-	private static final String	GET_NEW_ID				= "SELECT MAX(id) FROM individuals";
-	private static final String	DELETE_INDIVIDUAL		= "DELETE FROM individuals WHERE id = ?";
-	private static final String	UPDATE_INDIVIDUAL		= "UPDATE individuals SET fname = ?, lname = ?, email = ?, event = ?, seat = ? WHERE id = ?";
-	private static final String	EMAIL_PATTERN			= "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@" + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
+	private static final String	CREATE_VENUES_TABLE			= "CREATE TABLE venues (id INTEGER GENERATED ALWAYS AS IDENTITY(START WITH 1) PRIMARY KEY, name VARCHAR(50) NOT NULL)";
+	private static final String	CREATE_SHOWS_TABLE			= "CREATE TABLE shows (date TIMESTAMP(0) WITHOUT TIME ZONE, venue INTEGER, FOREIGN KEY (venue) REFERENCES venues(id), PRIMARY KEY (date, venue))";
+	private static final String	CREATE_INDIVIDUALS_TABLE	= "CREATE CACHED TABLE individuals (id BIGINT GENERATED ALWAYS AS IDENTITY(START WITH 1000000) PRIMARY KEY, fname VARCHAR(50) NOT NULL, lname VARCHAR(50) NOT NULL, email VARCHAR(254), date TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, venue INTEGER NOT NULL, seat VARCHAR(10), UNIQUE (fname, lname, email, date, venue, seat), FOREIGN KEY (date, venue) REFERENCES shows(date, venue))";
+	private static final String	INSERT_INDIVIDUAL			= "INSERT INTO individuals (id, fname, lname, email, date, venue, seat) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?)";
+	private static final String	INSERT_VENUE				= "INSERT INTO venues (id, name) VALUES (DEFAULT, ?)";
+	private static final String	INSERT_SHOW					= "INSERT INTO shows (date, venue) VALUES (?, ?)";
+	private static final String	GET_NEW_INDIVIDUAL_ID		= "SELECT MAX(id) FROM individuals";
+	private static final String	GET_NEW_VENUE_ID			= "SELECT MAX(id) FROM venues";
+	private static final String	DELETE_INDIVIDUAL			= "DELETE FROM individuals WHERE id = ?";
+	private static final String	UPDATE_INDIVIDUAL			= "UPDATE individuals SET fname = ?, lname = ?, email = ?, date = ?, venue = ?, seat = ? WHERE id = ?";
+	private static final String	CHECK_SHOW_EXISTS			= "SELECT COUNT(1) FROM shows WHERE date = ? AND venue = ?";
 	private String				fname;
 	private String				lname;
 	private String				email;
-	private Timestamp			event;
+	private Timestamp			date;
+	private int					venue;
 	private String				seat;
-	private Pattern				pattern					= Pattern.compile(EMAIL_PATTERN);
 
 	/**
 	 * Creates a new <code>PrimaryDatabaseManager</code> with the specified global attribute table
@@ -59,11 +63,29 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 
 	private void createTable() throws SQLException {
 		try (Statement stmt = connection.createStatement();) {
-			stmt.execute(CREATE_PRIMARY_TABLE);
-			connection.commit();
+			try {
+				stmt.execute(CREATE_VENUES_TABLE);
+			} catch (SQLException e) {
+				// Table already exists.
+				LoggerFactory.getLogger().info(e.getMessage());
+			}
+			try {
+				stmt.execute(CREATE_SHOWS_TABLE);
+			} catch (SQLException e) {
+				// Table already exists.
+				LoggerFactory.getLogger().info(e.getMessage());
+			}
+			try {
+				stmt.execute(CREATE_INDIVIDUALS_TABLE);
+			} catch (SQLException e) {
+				// Table already exists.
+				LoggerFactory.getLogger().info(e.getMessage());
+			}
 		} catch (SQLException e) {
-			// Table already exists.
+			connection.rollback();
+			throw e;
 		}
+		connection.commit();
 	}
 
 	/**
@@ -88,13 +110,13 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 			while (iterator.hasNext()) {
 				current = iterator.next();
 				setupLocalFieldParameters(current);
-				if (parametersValid()) {
-					try {
-						executeUnsafeStatement(stmt);
-						numOfIndividualsInserted++;
-					} catch (SQLException e) {
-						// Do not increment numOfIndividualsInserted.
-					}
+				try {
+					createShowIfNotExists(current.getEventDate(), current.getEvenVenue());
+					executeIndividualUpdateStatement(stmt);
+					numOfIndividualsInserted++;
+				} catch (SQLException e) {
+					// Do not increment numOfIndividualsInserted.
+					LoggerFactory.getLogger().info(e.getMessage());
 				}
 			}
 		} catch (SQLException e) {
@@ -122,18 +144,18 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 		long individualId = -1;
 		try (PreparedStatement stmt = connection.prepareStatement(INSERT_INDIVIDUAL);) {
 			setupLocalFieldParameters(individual);
-			if (parametersValid()) {
-				try {
-					executeUnsafeStatement(stmt);
-					try (Statement getId = connection.createStatement()) {
-						try (ResultSet result = getId.executeQuery(GET_NEW_ID);) {
-							if (result.next())
-								individualId = result.getLong(1);
-						}
+			try {
+				createShowIfNotExists(individual.getEventDate(), individual.getEvenVenue());
+				executeIndividualUpdateStatement(stmt);
+				try (Statement getId = connection.createStatement()) {
+					try (ResultSet result = getId.executeQuery(GET_NEW_INDIVIDUAL_ID);) {
+						if (result.next())
+							individualId = result.getLong(1);
 					}
-				} catch (SQLException e) {
-					// Leave individualId as -1.
 				}
+			} catch (SQLException e) {
+				// Leave individualId as -1.
+				LoggerFactory.getLogger().info(e.getMessage());
 			}
 		} catch (SQLException e) {
 			connection.rollback();
@@ -148,17 +170,25 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 	 * 
 	 * @param id
 	 *            The ID of the individual to delete.
+	 * @return A boolean indicating whether the individual was successfully removed.
 	 * @throws SQLException
 	 */
-	public synchronized void deleteIndividual(long id) throws SQLException {
+	public synchronized boolean deleteIndividual(long id) throws SQLException {
+		boolean individualDeleted = true;
 		try (PreparedStatement stmt = connection.prepareStatement(DELETE_INDIVIDUAL);) {
 			stmt.setLong(1, id);
-			stmt.execute();
+			try {
+				stmt.execute();
+			} catch (SQLException e) {
+				individualDeleted = false;
+				LoggerFactory.getLogger().info(e.getMessage());
+			}
 		} catch (SQLException e) {
 			connection.rollback();
 			throw e;
 		}
 		connection.commit();
+		return individualDeleted;
 	}
 
 	/**
@@ -178,13 +208,16 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 	 * @throws SQLException
 	 */
 	public synchronized boolean updateIndividual(long id, Individual newData) throws SQLException {
-		boolean individualValid;
+		boolean individualValid = true;
 		try (PreparedStatement stmt = connection.prepareStatement(UPDATE_INDIVIDUAL);) {
-			stmt.setLong(6, id);
+			stmt.setLong(7, id);
 			setupLocalFieldParameters(newData);
-			individualValid = parametersValid();
-			if (individualValid)
-				executeUnsafeStatement(stmt);
+			try {
+				executeIndividualUpdateStatement(stmt);
+			} catch (SQLException e) {
+				individualValid = false;
+				LoggerFactory.getLogger().info(e.getMessage());
+			}
 		} catch (SQLException e) {
 			connection.rollback();
 			throw e;
@@ -193,31 +226,75 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 		return individualValid;
 	}
 
+	/**
+	 * Create a new venue.
+	 * 
+	 * @param name
+	 *            name of the venue to create.
+	 * @return The ID of the newly created venue, or -1 on error.
+	 * @throws SQLException
+	 */
+	public synchronized int createVenue(String name) throws SQLException {
+		int venueId = -1;
+		try (PreparedStatement stmt = connection.prepareStatement(INSERT_VENUE);) {
+			stmt.setString(1, name);
+			try {
+				stmt.execute();
+				try (Statement getId = connection.createStatement()) {
+					try (ResultSet result = getId.executeQuery(GET_NEW_VENUE_ID);) {
+						if (result.next())
+							venueId = result.getInt(1);
+					}
+				}
+			} catch (SQLException e) {
+				LoggerFactory.getLogger().info(e.getMessage());
+			}
+		} catch (SQLException e) {
+			connection.rollback();
+			throw e;
+		}
+		connection.commit();
+		return venueId;
+	}
+
+	private void createShowIfNotExists(Date date, int venue) throws SQLException {
+		try (PreparedStatement stmt = connection.prepareStatement(CHECK_SHOW_EXISTS)) {
+			stmt.setTimestamp(1, dateToSQLTimestamp(date));
+			stmt.setInt(2, venue);
+			try (ResultSet resultSet = stmt.executeQuery();) {
+				if (resultSet.next()) {
+					if (resultSet.getInt(1) == 1) {
+						return;
+					} else {
+						createShow(date, venue);
+					}
+				}
+			}
+		}
+	}
+
+	private void createShow(Date date, int venue) throws SQLException {
+		try (PreparedStatement stmt = connection.prepareStatement(INSERT_SHOW);) {
+			stmt.setTimestamp(1, dateToSQLTimestamp(date));
+			stmt.setInt(2, venue);
+			stmt.execute();
+		}
+	}
+
 	private void setupPreparedStatementParameters(PreparedStatement stmt) throws SQLException {
 		stmt.setString(1, fname);
 		stmt.setString(2, lname);
 		stmt.setString(3, email);
-		stmt.setTimestamp(4, event);
-		stmt.setString(5, seat);
+		stmt.setTimestamp(4, date);
+		stmt.setInt(5, venue);
+		stmt.setString(6, seat);
 	}
 
 	// This method does not catch SQL exceptions. Thus, if it is called from within a loop then all
 	// changes will be rolled back if only one statement execution fails.
-	private void executeUnsafeStatement(PreparedStatement stmt) throws SQLException {
+	private void executeIndividualUpdateStatement(PreparedStatement stmt) throws SQLException {
 		setupPreparedStatementParameters(stmt);
 		stmt.executeUpdate();
-	}
-
-	// This method catches and ignores SQL exceptions. Individual exceptions will not affect a batch
-	// update.
-	@SuppressWarnings("unused")
-	private void executeSafeStatement(PreparedStatement stmt) {
-		try {
-			setupPreparedStatementParameters(stmt);
-			stmt.executeUpdate();
-		} catch (SQLException e) {
-			// Ignore SQL exceptions.
-		}
 	}
 
 	private void setupLocalFieldParameters(Individual toStore) {
@@ -236,46 +313,19 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 		} else {
 			email = toStore.getEmail().trim().equals("") ? null : toStore.getEmail().trim().toLowerCase();
 		}
-		event = dateToSQLTimestamp(toStore.getEventDate());
 		if (toStore.getSeat() == null) {
 			seat = null;
 		} else {
 			seat = toStore.getSeat().trim().equals("") ? null : toStore.getSeat().trim();
 		}
+		date = dateToSQLTimestamp(toStore.getEventDate());
+		venue = toStore.getEvenVenue();
 	}
 
-	private boolean parametersValid() {
-		if (fname == null || lname == null)
-			return false;
-		if (fname.length() > 25 || lname.length() > 25)
-			return false;
-		if (email != null && email.length() > 254)
-			return false;
-		if (email != null && (!pattern.matcher(email).matches()))
-			return false;
-		if (seat != null && seat.length() > 10)
-			return false;
-		return true;
-	}
-
-	@SuppressWarnings({"javadoc", "deprecation", "unused"})
+	@SuppressWarnings({"javadoc"})
 	public static void main(String args[]) throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException {
 		PrimaryDatabaseManager instance = new PrimaryDatabaseManager(null);
-		ArrayList<Individual> individuals = new ArrayList<Individual>();
-		String[] fnames = {"Claire", "Denise", "Richard", "Travis", "Sheila"};
-		String[] lnames = {"Manzella", "Salazar", "Connally", "Briggs", "Brewer"};
-		String[] emails = {"c.manzella241@gmail.com", "", "", "", "sheilambrewer@teleworm.us"};
-		String[] seats = {"A01", "B52", null, "C04", "D14"};
-		long b = System.currentTimeMillis();
-		for (int i = 5000; i < 5010; i++) {
-			individuals.add(Individual.getNewIndividual(fnames[i % 5], lnames[i % 5], emails[i % 5], new java.util.Date(2014, 0, 0), Integer.toString(i), null));
-		}
-		instance.storeIndividual(individuals);
-		long a = System.currentTimeMillis();
-		individuals = (ArrayList<Individual>) instance.getAllIndividuals();
-		for (Individual i : individuals) {
-			System.out.println("Individual " + i.getId() + ": " + i.getFirstName() + " " + i.getLastName());
-		}
-		System.out.println("Done in " + (a - b) + "ms");
+		instance.createShowIfNotExists(new java.util.Date(0, 10, 0), 1);
+		instance.connection.close();
 	}
 }

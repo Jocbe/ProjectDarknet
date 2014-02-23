@@ -17,7 +17,8 @@ public class Individual {
 	private final String		firstName;
 	private final String		lastName;
 	private final String		email;
-	private final Date			eventDate;
+	private final Date			date;
+	private final int			venue;
 	private final String		seat;
 
 	/**
@@ -35,15 +36,17 @@ public class Individual {
 	 *            The individual's last name.
 	 * @param email
 	 *            The individual's email, if any.
-	 * @param eventDate
+	 * @param date
 	 *            The date of the event the ticket was booked for, if any.
+	 * @param venue
+	 *            The ID of the venue this individual will be visiting.
 	 * @param seat
 	 *            The reserved seat of the booking, if any.
 	 * @param globalAttributeTable
 	 *            The global table mapping all available attribute names to their global attribute
 	 *            types.
 	 */
-	public Individual(final long id, final String firstName, final String lastName, final String email, final Date eventDate, final String seat, Hashtable<String, AttributeCategories> globalAttributeTable) {
+	public Individual(final long id, final String firstName, final String lastName, final String email, final Date date, final int venue, final String seat, Hashtable<String, AttributeCategories> globalAttributeTable) {
 		// TODO: Add all the primary attributes.
 		/*
 		 * Event Name, Event Date/Time, Seat, Price, Ticket Type, Date Confirmed, Sales Channel
@@ -52,7 +55,8 @@ public class Individual {
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.email = email;
-		this.eventDate = eventDate;
+		this.date = date;
+		this.venue = venue;
 		this.seat = seat;
 		this.properties = new Properties(globalAttributeTable);
 	}
@@ -71,8 +75,10 @@ public class Individual {
 	 *            The last name of the new individual.
 	 * @param email
 	 *            The email address of the new individual, expressed as a string.
-	 * @param eventDate
+	 * @param date
 	 *            The date and time of the event the individual booked.
+	 * @param venue
+	 *            The ID of the venue this individual will be visiting.
 	 * @param seat
 	 *            The seat number of the individual booked, if any.
 	 * @param globalAttributeTable
@@ -80,8 +86,8 @@ public class Individual {
 	 * @return An individual suitable to be passed to <code>PrimaryDatabaseManager.store()</code>
 	 *         for storage into the database.
 	 */
-	public static Individual getNewIndividual(String firstName, String lastName, String email, Date eventDate, String seat, Hashtable<String, AttributeCategories> globalAttributeTable) {
-		return new Individual(0, firstName, lastName, email, eventDate, seat, globalAttributeTable);
+	public static Individual getNewIndividual(String firstName, String lastName, String email, Date date, int venue, String seat, Hashtable<String, AttributeCategories> globalAttributeTable) {
+		return new Individual(0, firstName, lastName, email, date, venue, seat, globalAttributeTable);
 	}
 
 	/**
@@ -127,7 +133,16 @@ public class Individual {
 	 * @return The date of the event for which this individual is bought a ticket.
 	 */
 	public Date getEventDate() {
-		return eventDate;
+		return date;
+	}
+
+	/**
+	 * Get the date of the show the individual is attending.
+	 * 
+	 * @return The date of the event for which this individual is bought a ticket.
+	 */
+	public int getEvenVenue() {
+		return venue;
 	}
 
 	/**

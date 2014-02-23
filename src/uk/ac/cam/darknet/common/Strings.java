@@ -25,7 +25,7 @@ public class Strings {
 	public static final String	NULL_GLOBAL_TABLE_EXN		= "The global attribute table cannot be null.";
 
 	// Date formats - DatabaseManager, LoggerFactory
-	public static final String	DB_DATE_FORMAT				= "yyyy-MM-dd HH-mm-ss";
+	public static final String	DB_DATE_FORMAT				= "yyyy-MM-dd HH:mm:ss";
 	public static final String	LOGGER_DATE_FORMAT			= "yyyy-mm-dd_hh:mm:ss";
 
 	// GUI

@@ -3,6 +3,7 @@ package uk.ac.cam.darknet.backend;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
@@ -13,12 +14,16 @@ import java.util.logging.Logger;
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
 import uk.ac.cam.darknet.common.LoggerFactory;
-import uk.ac.cam.darknet.database.DatabaseManager;
+import uk.ac.cam.darknet.database.SecondaryDatabaseManager;
+import uk.ac.cam.darknet.exceptions.InvalidAttributeTypeException;
+import uk.ac.cam.darknet.exceptions.InvalidReliabilityException;
+import uk.ac.cam.darknet.exceptions.UnknownAttributeException;
 import uk.ac.cam.darknet.storage.ImageStorage;
 
 import com.restfb.Connection;
 import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
+import com.restfb.FacebookClient.AccessToken;
 import com.restfb.Parameter;
 import com.restfb.types.Photo;
 import com.restfb.types.User;
@@ -42,12 +47,14 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 	
 	private List<Individual> targets;
 	
-	private String accessToken;
-	private String appId = "145634995501895"; //TODO: Register app on FB & change this ID (currently using graph explorer ID)
+	private AccessToken accessToken;
+	private String appId = "1472924302921478";
+	private String appSecret = "aea3fa35cf8c02a310ed3f2145cd830e";
 	
 	
-	public FacebookDataCollector(DatabaseManager databaseManager) {
+	public FacebookDataCollector(SecondaryDatabaseManager databaseManager) {
 		super(databaseManager);
+		
 		// TODO Auto-generated constructor stub
 	}
 
@@ -55,49 +62,70 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 	public void run() {
 		if(targets == null) {
 			log.warning("Aborting Facebook data collection as collector was not intialized yet");
-			//return;
-			//TODO: remove default target
-			targets = new ArrayList<Individual>();
-			targets.add(new Individual(0L, "John", "Smith", "john@smith.ex", new Date(), "0", null));
+			return;
+			
+//			targets = new ArrayList<Individual>();
+//			targets.add(Individual.getNewIndividual("John", "Smith", "john@smith.ex", new Date(), 0, "0", getAttributeTable()));
 		}
 		
-		if(accessToken == null || accessToken.length() < 1) {
+		if(accessToken == null || accessToken.getExpires().before(new Date()) || accessToken.getAccessToken().length() < 1) {
 			//TODO: get access token
+			accessToken = new DefaultFacebookClient().obtainAppAccessToken(appId, appSecret);
+			System.out.println("Token: " + accessToken);
+			
 		}
 		
-		FacebookClient client = new DefaultFacebookClient("CAACEdEose0cBAItJ4MhB7YJmZArUtQgWsOZCXCgFE0wNRpImMNILbspcPk9JtoGxejQ4ZBjy2Xdnli7Fqjx49GQkai7N1Wau0wjw0savoZBrrZBSCflestDFPNX1Pnh0KHzFyGLZC0v9ExXbJRJGZBC7ZCyEAPyeTioi76CwFbxzAigCYW06juMtNxNlybRberwZD");
+//		FacebookClient client = new DefaultFacebookClient("CAACEdEose0cBAGaO8Grihntt2uAgPzkll88dpVWT2kU7cr4ZA3zQ8u4sLwyN1ZCo7raIfBK8iw6vnKuwC43ZBut8swNISOhlgZCyqRTSoE7xLmZCluHbh0fZCKroK2s9ok5CMQNUAsW0lP3s5bnqxXbKMZCWeQ5WKLdGImAOJ7dLLeRAIsKR5S6tRBaTiKsKlD5eZAeVAUZBR1wZDZD");
+		//FacebookClient client = new DefaultFacebookClient("CAACEdEose0cBADC6Q0PLbvXt3njijciVruFWZBpQDGm5F8FOjA2s5WEOg4pWyuQRjBcoHuiejlToLZApK3YMVVZC4axFgnoIXMJp80j0bVoWdMmArZBwZCEs5jTQAQ3OHsBsHbBdgUbuhLPxliMUCff3g2MI1ZB3CFOpGNbknU63Xy61kbvXPyl8CdzHsAf1YZD");
+		//FacebookClient client = new DefaultFacebookClient(accessToken.getAccessToken(), appSecret);
+		FacebookClient client = new AuthenticatedFacebookClient();
+		
 		Connection<User> c = client.fetchConnection("me/friends", User.class, Parameter.with("fields", "id,name,picture"));
 		List<User> friends = c.getData();
 		List<Photo> photos;
-		List<String> photoIds = new LinkedList<String>();
+		List<String> photoIds;
 		ImageStorage imageStorage = new ImageStorage();
-		String birthday, hometown, relationshipStatus;
-		List<Education> education;
-		List<Work> work;
-		User completeFriend;
+		String birthday, hometown, relationshipStatus, gender, locale;
+//		List<Education> education;
+//		List<Work> work;
+		User detailedFriend;
+		boolean emailMatch;
+		String email;
 		
 		for(Individual target: targets) {
+			System.out.println("Looking for: " + target.getFirstName() + " " + target.getLastName());
 			for(User f: friends) {
-				completeFriend = client.fetchObject(f.getId(), User.class);
-				if((completeFriend.getFirstName().equalsIgnoreCase(target.getFirstName())
-						&& completeFriend.getLastName().equalsIgnoreCase(target.getLastName()))
-						//|| completeFriend.getEmail().equalsIgnoreCase(target.getEmail())
-						|| true
+				detailedFriend = client.fetchObject(f.getId(), User.class);
+				
+				email = detailedFriend.getEmail();
+				emailMatch = email == null ? false : email.equalsIgnoreCase(target.getEmail());
+				
+				if((detailedFriend.getFirstName().equalsIgnoreCase(target.getFirstName())
+						&& detailedFriend.getLastName().equalsIgnoreCase(target.getLastName()))
+						|| emailMatch
+//						|| true
 						) {
 					
-					//TODO: try {
-						photos = client.fetchConnection(f.getId() + "/photos", Photo.class).getData();
-						//birthday = f.getBirthday();
+					photoIds = new LinkedList<String>();
+					
+					//try {
 						//education = f.getEducation();
 						//work = f.getWork();
 						//hometown = f.getHometownName();
-						//relationshipStatus = f.getRelationshipStatus();
 						//Intersting?: f.getLocation()
 					//} 
 					
+					
+					relationshipStatus = detailedFriend.getRelationshipStatus();
+					birthday = detailedFriend.getBirthday();
+					locale = detailedFriend.getLocale();
+					gender = detailedFriend.getGender();
+					//TODO: add try block around anything that is fetching data from FB
+					photos = client.fetchConnection(f.getId() + "/photos", Photo.class).getData();
 					for(Photo p: photos) {
 						try {
 							photoIds.add(imageStorage.saveImage(new URL(p.getSource())));
+							System.out.println("adding photo: " + p.getSource());
 						} catch (MalformedURLException e) {
 							log.warning("MalformedURLException while trying to store image! URL: "
 									+ p.getSource() + ". Message: " + e.getMessage());
@@ -107,29 +135,34 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 						}
 					}
 					
-					// TODO: Store images photoIds in database for User target 
-					
+					// Store photos in DB if any were found
+					if(photoIds.size() > 0) {
+						try {
+							target.getProperties().put("fb_photos", photoIds, 0.8);
+							if(relationshipStatus != null) target.getProperties().put("fb_relationshipStatus", relationshipStatus, 0.8);
+							if(birthday != null) target.getProperties().put("fb_birthday", birthday, 0.8);
+							if(gender != null) target.getProperties().put("fb_gender", gender, 0.8);
+							if(locale != null) target.getProperties().put("fb_locale", locale, 1.0);
+						} catch (UnknownAttributeException
+								| InvalidAttributeTypeException
+								| InvalidReliabilityException e) {
+							
+							log.severe("Exception (" + e.getClass() + ") while trying to store list of Facebook photos " +
+									"in the database: " + e.getMessage());
+						}
+					}
 					break;
 				}
 			}
 		}
 		
+		try {
+			databaseManager.storeAttributes(targets);
+		} catch (SQLException e) {
+			log.severe("SQLException while trying to store Facebook data on all given targets. Message:" +
+					e.getMessage());
+		}
 		
-		
-		String id;
-		
-		System.out.println(friends.size());
-		/*for(User u: friends) {
-			System.out.print(u.getName());
-			id = u.getId();
-			
-			List<Photo> p = client.fetchConnection(id + "/photos", Photo.class).getData();
-			
-			//User f = client.fetchObject(id, User.class);
-			if(p.size() > 0) System.out.print("  " + p.size() + ": " + p.get(0).getSource());
-			
-			System.out.println();
-		}*/
 	}
 
 	@Override
@@ -139,13 +172,24 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 
 	@Override
 	public Hashtable<String, AttributeCategories> getAttributeTable() {
-		// TODO Auto-generated method stub
-		return null;
+		Hashtable<String, AttributeCategories> atts = new Hashtable<String, AttributeCategories>();
+		atts.put("fb_photos", AttributeCategories.PHOTOS);
+		atts.put("fb_gender", AttributeCategories.GENDER);
+		atts.put("fb_locale", AttributeCategories.LOCALE);
+		atts.put("fb_birthday", AttributeCategories.BIRTHDAY);
+		atts.put("fb_relationshipStatus", AttributeCategories.RELATIONSHIP_STATUS);
+		return atts;
 	}
 
 	@Override
 	public String getCollectorId() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	private class AuthenticatedFacebookClient extends DefaultFacebookClient {
+		public AuthenticatedFacebookClient() {
+			super("CAACEdEose0cBAGaO8Grihntt2uAgPzkll88dpVWT2kU7cr4ZA3zQ8u4sLwyN1ZCo7raIfBK8iw6vnKuwC43ZBut8swNISOhlgZCyqRTSoE7xLmZCluHbh0fZCKroK2s9ok5CMQNUAsW0lP3s5bnqxXbKMZCWeQ5WKLdGImAOJ7dLLeRAIsKR5S6tRBaTiKsKlD5eZAeVAUZBR1wZDZD");
+		}
 	}
 }

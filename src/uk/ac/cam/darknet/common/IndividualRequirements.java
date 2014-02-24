@@ -55,6 +55,11 @@ public class IndividualRequirements {
 		return show;
 	}
 	
+	/**
+	 * Returns the underlying hashtable of required categories.
+	 * 
+	 * @return The underlying hashtable of required categories
+	 */
 	public Hashtable<AttributeCategories, Double> getRequiredCategories() {
 		return requiredCategories;
 	}

@@ -13,12 +13,15 @@ import java.util.Random;
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.AttributeReliabilityPair;
 import uk.ac.cam.darknet.common.Individual;
+import uk.ac.cam.darknet.common.IndividualRequirements;
 import uk.ac.cam.darknet.common.LoggerFactory;
+import uk.ac.cam.darknet.common.Show;
 import uk.ac.cam.darknet.common.Strings;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 import uk.ac.cam.darknet.exceptions.InvalidAttributeNameException;
 import uk.ac.cam.darknet.exceptions.InvalidAttributeTypeException;
 import uk.ac.cam.darknet.exceptions.InvalidReliabilityException;
+import uk.ac.cam.darknet.exceptions.RequestNotSatisfiableException;
 import uk.ac.cam.darknet.exceptions.UnknownAttributeException;
 
 /**
@@ -118,12 +121,13 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 		connection.commit();
 	}
 
-	public static void main(String[] args) throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException, InvalidAttributeNameException, UnknownAttributeException, InvalidAttributeTypeException, InvalidReliabilityException {
+	@SuppressWarnings({"javadoc", "deprecation"})
+	public static void main(String[] args) throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException, InvalidAttributeNameException, UnknownAttributeException, InvalidAttributeTypeException, InvalidReliabilityException, RequestNotSatisfiableException {
 		Hashtable<String, AttributeCategories> globalAttributeTable = new Hashtable<String, AttributeCategories>();
+		globalAttributeTable.put("test3", AttributeCategories.ALIAS);
+		globalAttributeTable.put("test4", AttributeCategories.ALIAS);
 		globalAttributeTable.put("test1", AttributeCategories.AGE);
 		globalAttributeTable.put("test2", AttributeCategories.AGE);
-		globalAttributeTable.put("test3", AttributeCategories.AGE);
-		globalAttributeTable.put("test4", AttributeCategories.AGE);
 		SecondaryDatabaseManager instance = new SecondaryDatabaseManager(globalAttributeTable);
 		java.util.Date date = new java.util.Date(2014, 0, 0);
 		ArrayList<Individual> individuals = (ArrayList<Individual>) instance.getByShow(date, 1);
@@ -134,11 +138,19 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 			if (random.nextDouble() < 0.1)
 				i.getProperties().put("test2", (byte) random.nextInt(100), random.nextDouble());
 			if (random.nextDouble() < 0.1)
-				i.getProperties().put("test3", (byte) random.nextInt(100), random.nextDouble());
+				i.getProperties().put("test3", "alias" + random.nextInt(100), random.nextDouble());
 			if (random.nextDouble() < 0.1)
-				i.getProperties().put("test4", (byte) random.nextInt(100), random.nextDouble());
+				i.getProperties().put("test4", "alias" + random.nextInt(100), random.nextDouble());
 		}
-		instance.storeAttributes(individuals);
+		// instance.storeAttributes(individuals);
+		Show show = instance.getAllShows().get(0);
+		IndividualRequirements requirements = new IndividualRequirements(show);
+		requirements.addRequirement(AttributeCategories.AGE, 0);
+		requirements.addRequirement(AttributeCategories.ALIAS, 0);
+		ArrayList<Individual> individuals1 = (ArrayList<Individual>) instance.getSuitableIndividuals(requirements);
+		for (Individual i : individuals1) {
+			System.out.println(i.getId());
+		}
 		instance.closeConnection();
 	}
 }

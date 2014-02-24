@@ -26,6 +26,7 @@ import uk.ac.cam.darknet.common.Show;
 import uk.ac.cam.darknet.common.Strings;
 import uk.ac.cam.darknet.common.Venue;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
+import uk.ac.cam.darknet.exceptions.RequestNotSatisfiableException;
 import com.sun.xml.internal.ws.org.objectweb.asm.Type;
 
 /**
@@ -45,8 +46,12 @@ public abstract class DatabaseManager {
 	private static final String								GET_ALL_INDIVIDUALS	= "SELECT * FROM individuals";
 	private static final String								GET_ALL_SHOWS		= "SELECT shows.date, venues.id, venues.name FROM shows NATURAL JOIN venues";
 	private static final String								GET_ALL_VENUES		= "SELECT * FROM venues";
-	private static final String								CREATE_FILTER		= "DECLARE LOCAL TEMPORARY TABLE filter AS (SELECT id FROM INDIVIDUALS WHERE date = ? AND venue = ?) WITH DATA";
-	private static final String								DROP_FILTER			= "DROP TABLE IF EXISTS session.filter";
+	private static final String								CREATE_FILTER_TABLE	= "DECLARE LOCAL TEMPORARY TABLE filter AS (SELECT id FROM INDIVIDUALS WHERE date = '%1$s' AND venue = %2$d) WITH DATA";
+	private static final String								DROP_FILTER_TABLE	= "DROP TABLE IF EXISTS session.filter";
+	private static final String								CREATE_TEMP_TABLE	= "DECLARE LOCAL TEMPORARY TABLE temp%1$d AS (%2$s) WITH DATA";
+	private static final String								DROP_TEMP_TABLE		= "DROP TABLE IF EXISTS session.temp%1$d";
+	private static final String								SELECT_FILTERED		= "SELECT DISTINCT individuals.* FROM individuals";
+	private static final String								FILTER_JOIN			= " JOIN temp%1$d on temp%1$d.id = individuals.id";
 	private static final String								ATTRIBUTE_PATTERN	= "[a-zA-Z0-9_]+";
 	protected final Connection								connection;
 	protected final Hashtable<String, AttributeCategories>	globalAttributeTable;
@@ -305,47 +310,89 @@ public abstract class DatabaseManager {
 	 * 
 	 * @param requirements
 	 *            The requirements that the effect places on the individuals.
-	 * @return
+	 * @return A list of individuals that satisfy the given requirements, arranged in no particular
+	 *         order.
 	 * @throws SQLException
+	 * @throws RequestNotSatisfiableException
 	 */
-//	public synchronized List<Individual> getSuitableIndividuals(IndividualRequirements requirements) throws SQLException {
-//		ArrayList<String> attributes = new ArrayList<String>();
-//		Enumeration<AttributeCategories> categories = requirements.getRequiredCategories().keys();
-//		AttributeCategories currentCategory;
-//		double currentMinReliability;
-//		Statement auxStatement = connection.createStatement();
-//		try (PreparedStatement stmt = connection.prepareStatement(CREATE_FILTER);) {
-//			stmt.setTimestamp(1, dateToSQLTimestamp(requirements.getShow().getDate()));
-//			stmt.setInt(2, requirements.getShow().getVenue().getId());
-//			stmt.execute();
-//			while (categories.hasMoreElements()) {
-//				currentCategory = categories.nextElement();
-//				currentMinReliability = requirements.getRequiredCategories().get(currentCategory);
-//				filterAttributes(currentCategory, attributes);
-//
-//			}
-//		} finally {
-//			auxStatement.execute(DROP_FILTER);
-//			auxStatement.close();
-//		}
-//		return null;
-//	}
-//
-//	private void filterAttributes(AttributeCategories filter, ArrayList<String> attributes) {
-//		attributes.clear();
-//		Enumeration<String> allAttributes = globalAttributeTable.keys();
-//		String currentAttribute;
-//		while (allAttributes.hasMoreElements()) {
-//			currentAttribute = allAttributes.nextElement();
-//			if (globalAttributeTable.get(currentAttribute) == filter)
-//				attributes.add(currentAttribute);
-//		}
-//	}
+	public synchronized List<Individual> getSuitableIndividuals(IndividualRequirements requirements) throws SQLException, RequestNotSatisfiableException {
+		ArrayList<String> attributes = new ArrayList<String>();
+		ArrayList<Individual> toReturn;
+		Enumeration<AttributeCategories> categories = requirements.getRequiredCategories().keys();
+		AttributeCategories currentCategory;
+		double currentMinReliability;
+		int tableCounter = 0;
+		String statement = SELECT_FILTERED;
+		try (Statement stmt = connection.createStatement();) {
+			stmt.execute(String.format(CREATE_FILTER_TABLE, formatDate(requirements.getShow().getDate()), requirements.getShow().getVenue().getId()));
+			while (categories.hasMoreElements()) {
+				currentCategory = categories.nextElement();
+				currentMinReliability = requirements.getRequiredCategories().get(currentCategory);
+				filterAttributes(currentCategory, attributes);
+				if (attributes.isEmpty())
+					throw new RequestNotSatisfiableException(Strings.REQUEST_NOT_SATISFIABLE);
+				createTemporaryTable(attributes, currentMinReliability, tableCounter++);
+			}
+			for (int i = 0; i < tableCounter; i++) {
+				statement += String.format(FILTER_JOIN, i);
+			}
+			toReturn = getIndividualQueryResults(stmt, statement);
+		} finally {
+			try (Statement stmt = connection.createStatement();) {
+				stmt.execute(DROP_FILTER_TABLE);
+				for (int i = 0; i < tableCounter; i++) {
+					stmt.execute(String.format(DROP_TEMP_TABLE, i));
+				}
+			}
+		}
+		return toReturn;
+	}
+
+	private void createTemporaryTable(ArrayList<String> attributes, double minReliability, int tableCounter) throws SQLException {
+		ArrayList<String> subQueries = new ArrayList<String>();
+		String finalSubQuery;
+		String statement;
+		for (String a : attributes) {
+			subQueries.add("(SELECT id FROM " + a + " WHERE reliability >= " + minReliability + ")");
+		}
+		finalSubQuery = subQueries.get(0);
+		for (int i = 1; i < subQueries.size(); i++) {
+			finalSubQuery += " UNION " + subQueries.get(i);
+		}
+		statement = String.format(CREATE_TEMP_TABLE, tableCounter, finalSubQuery);
+		try (Statement stmt = connection.createStatement();) {
+			stmt.execute(statement);
+		}
+	}
+
+	private void filterAttributes(AttributeCategories filter, ArrayList<String> attributes) {
+		attributes.clear();
+		Enumeration<String> allAttributes = globalAttributeTable.keys();
+		String currentAttribute;
+		while (allAttributes.hasMoreElements()) {
+			currentAttribute = allAttributes.nextElement();
+			if (globalAttributeTable.get(currentAttribute) == filter)
+				attributes.add(currentAttribute);
+		}
+	}
 
 	private ArrayList<Individual> getIndividualQueryResults(PreparedStatement stmt) throws SQLException {
 		ArrayList<Individual> toReturn = new ArrayList<Individual>();
 		Individual next;
 		try (ResultSet resultSet = stmt.executeQuery();) {
+			next = createIndividual(resultSet);
+			while (next != null) {
+				toReturn.add(next);
+				next = createIndividual(resultSet);
+			}
+		}
+		return toReturn;
+	}
+
+	private ArrayList<Individual> getIndividualQueryResults(Statement stmt, String query) throws SQLException {
+		ArrayList<Individual> toReturn = new ArrayList<Individual>();
+		Individual next;
+		try (ResultSet resultSet = stmt.executeQuery(query);) {
 			next = createIndividual(resultSet);
 			while (next != null) {
 				toReturn.add(next);

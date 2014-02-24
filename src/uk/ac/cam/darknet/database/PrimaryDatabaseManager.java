@@ -323,7 +323,7 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 		venue = toStore.getEvenVenue();
 	}
 
-	@SuppressWarnings({"javadoc"})
+	@SuppressWarnings({"javadoc", "deprecation", "unused"})
 	public static void main(String args[]) throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException {
 		PrimaryDatabaseManager instance = new PrimaryDatabaseManager(null);
 		java.util.Date date = new java.util.Date(2014, 0, 0);

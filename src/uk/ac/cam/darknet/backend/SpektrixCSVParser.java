@@ -82,7 +82,7 @@ public class SpektrixCSVParser {
 	public static void main(String args[]) throws IOException, SQLException,
 			ParseException, ClassNotFoundException, ConfigFileNotFoundException {
 		SpektrixCSVParser parser = new SpektrixCSVParser();
-		List<Individual> audience = parser.loadfromCSV(args[0]);
+		List<Individual> audience = parser.loadfromCSV(args[0], 0);
 		DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT, Locale.UK);
 		Individual i = audience.get(0);
 		System.out.println(i.getFirstName());

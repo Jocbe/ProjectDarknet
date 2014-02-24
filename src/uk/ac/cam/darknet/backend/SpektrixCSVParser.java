@@ -46,7 +46,7 @@ public class SpektrixCSVParser {
 	 * @throws SQLException
 	 * @throws ParseException
 	 */
-	public List<Individual> loadfromCSV(String pathname) throws IOException,
+	public List<Individual> loadfromCSV(String pathname, int venue) throws IOException,
 			SQLException, ParseException {
 		List<Individual> audience = new ArrayList<Individual>();
 		InputStream csvStream = new FileInputStream(new File(pathname));
@@ -60,7 +60,7 @@ public class SpektrixCSVParser {
 				if (nextLine != null) {
 					Date eventDate = df.parse(nextLine[5]);
 					Individual ind = Individual.getNewIndividual(nextLine[1],
-							nextLine[2], nextLine[3], eventDate, nextLine[6],
+							nextLine[2], nextLine[3], eventDate, venue, nextLine[6],
 							table);
 					audience.add(ind);
 				}

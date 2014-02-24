@@ -4,10 +4,12 @@ import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.AttributeReliabilityPair;
 import uk.ac.cam.darknet.common.Individual;
@@ -15,6 +17,9 @@ import uk.ac.cam.darknet.common.LoggerFactory;
 import uk.ac.cam.darknet.common.Strings;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 import uk.ac.cam.darknet.exceptions.InvalidAttributeNameException;
+import uk.ac.cam.darknet.exceptions.InvalidAttributeTypeException;
+import uk.ac.cam.darknet.exceptions.InvalidReliabilityException;
+import uk.ac.cam.darknet.exceptions.UnknownAttributeException;
 
 /**
  * A secondary database manager is used to provide database access to the secondary data collectors.
@@ -22,7 +27,7 @@ import uk.ac.cam.darknet.exceptions.InvalidAttributeNameException;
  * @author Ibtehaj Nadeem
  */
 public class SecondaryDatabaseManager extends DatabaseManager {
-	private static final String	CREATE_SECONDARY_TABLE	= "CREATE CACHED TABLE %1$s (id BIGINT, attribute %2$s, reliability DOUBLE PRECISION, FOREIGN KEY (id) REFERENCES individuals(id), CHECK (reliability >= 0 AND reliability <= 1), UNIQUE(id, attribute))";
+	private static final String	CREATE_SECONDARY_TABLE	= "CREATE CACHED TABLE %1$s (id BIGINT NOT NULL, attribute %2$s NOT NULL, reliability DOUBLE PRECISION NOT NULL, FOREIGN KEY (id) REFERENCES individuals(id), CHECK (reliability >= 0 AND reliability <= 1))";
 	private static final String	INSERT_ATTRIBUTE		= "INSERT INTO %1$s (id, attribute, reliability) VALUES (?, ?, ?)";
 
 	/**
@@ -111,5 +116,29 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 			}
 		}
 		connection.commit();
+	}
+
+	public static void main(String[] args) throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException, InvalidAttributeNameException, UnknownAttributeException, InvalidAttributeTypeException, InvalidReliabilityException {
+		Hashtable<String, AttributeCategories> globalAttributeTable = new Hashtable<String, AttributeCategories>();
+		globalAttributeTable.put("test1", AttributeCategories.AGE);
+		globalAttributeTable.put("test2", AttributeCategories.AGE);
+		globalAttributeTable.put("test3", AttributeCategories.AGE);
+		globalAttributeTable.put("test4", AttributeCategories.AGE);
+		SecondaryDatabaseManager instance = new SecondaryDatabaseManager(globalAttributeTable);
+		java.util.Date date = new java.util.Date(2014, 0, 0);
+		ArrayList<Individual> individuals = (ArrayList<Individual>) instance.getByShow(date, 1);
+		Random random = new Random();
+		for (Individual i : individuals) {
+			if (random.nextDouble() < 0.1)
+				i.getProperties().put("test1", (byte) random.nextInt(100), random.nextDouble());
+			if (random.nextDouble() < 0.1)
+				i.getProperties().put("test2", (byte) random.nextInt(100), random.nextDouble());
+			if (random.nextDouble() < 0.1)
+				i.getProperties().put("test3", (byte) random.nextInt(100), random.nextDouble());
+			if (random.nextDouble() < 0.1)
+				i.getProperties().put("test4", (byte) random.nextInt(100), random.nextDouble());
+		}
+		instance.storeAttributes(individuals);
+		instance.closeConnection();
 	}
 }

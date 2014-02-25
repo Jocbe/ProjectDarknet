@@ -43,7 +43,7 @@ public class PictureWallEffect extends Effect {
 	public void execute(Show show) {
 		IndividualRequirements req = new IndividualRequirements(show);
 		try {
-			req.addRequirement(AttributeCategories.PHOTOS, .75);
+			req.addRequirement(AttributeCategories.PHOTOS, 0.0);
 			List<Individual> individuals = this.dm.getSuitableIndividuals(req);
 			ImageStorage imgStore = new ImageStorage();
 
@@ -133,7 +133,7 @@ public class PictureWallEffect extends Effect {
 	
 	public static void main(String[] args) throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException, InvalidAttributeNameException{
 		Hashtable<String,AttributeCategories> globalAttributeTable = new Hashtable<String,AttributeCategories>();
-		DatabaseManager dm = new SecondaryDatabaseManager(globalAttributeTable);
+		SecondaryDatabaseManager dm = new SecondaryDatabaseManager(globalAttributeTable);
 		PictureWallEffect pwe = new PictureWallEffect(dm);
 		Show show = dm.getAllShows().get(2);
 		pwe.execute(show);

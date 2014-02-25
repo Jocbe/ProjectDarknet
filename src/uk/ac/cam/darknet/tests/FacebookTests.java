@@ -39,20 +39,23 @@ public class FacebookTests {
 		
 		List<Individual> is = new LinkedList<Individual>();
 		
+		Date eventDate = new Date(100000L);
 		System.out.println("Populating sample target list");
-		is.add(Individual.getNewIndividual("Fizz", "Sang", "", new Date(), 1, "", atts));
-		is.add(Individual.getNewIndividual("Ellie", "Rbnsn", "", new Date(), 1, "", atts));
-		is.add(Individual.getNewIndividual("Hayley", "Kasperczyk", "", new Date(), 1, "", atts));
-		is.add(Individual.getNewIndividual("Rose", "Lewenstein", "", new Date(), 1, "", atts));
-		is.add(Individual.getNewIndividual("William", "Drew", "", new Date(), 1, "", atts));
-		is.add(Individual.getNewIndividual("Wendy", "Kibble", "", new Date(), 1, "", atts));
-		is.add(Individual.getNewIndividual("Tassos", "Stevens", "", new Date(), 1, "", atts));
-		is.add(Individual.getNewIndividual("Wolfram", "Kosch", "", new Date(), 1, "", atts));
+		is.add(Individual.getNewIndividual("Fizz", "Sang", "", eventDate, 1, "fb_test", atts));
+		is.add(Individual.getNewIndividual("Ellie", "Rbnsn", "", eventDate, 1, "fb_test", atts));
+		is.add(Individual.getNewIndividual("Hayley", "Kasperczyk", "", eventDate, 1, "fb_test", atts));
+		is.add(Individual.getNewIndividual("Rose", "Lewenstein", "", eventDate, 1, "fb_test", atts));
+		is.add(Individual.getNewIndividual("William", "Drew", "", eventDate, 1, "fb_test", atts));
+		is.add(Individual.getNewIndividual("Wendy", "Kibble", "", eventDate, 1, "fb_test", atts));
+		is.add(Individual.getNewIndividual("Tassos", "Stevens", "", eventDate, 1, "fb_test", atts));
+		is.add(Individual.getNewIndividual("Wolfram", "Kosch", "", eventDate, 1, "fb_test", atts));
 		
 		System.out.println("Trying to create pdbm");
 		PrimaryDatabaseManager pdbm = new PrimaryDatabaseManager(atts);
 		System.out.println("Trying to store individuals...");
 		pdbm.storeIndividual(is);
+		
+		is = pdbm.getBySeat("fb_test");
 		
 		System.out.println("Now setting up fbdc...");
 		fbdc.setup(is);

@@ -62,5 +62,11 @@ public class FacebookTests {
 		
 		System.out.println("...and running it.");
 		fbdc.run();
+		
+		System.out.println("Cleaning up...");
+		pdbm.closeConnection();
+		sdbm.closeConnection();
+		
+		System.out.println("Done.");
 	}
 }

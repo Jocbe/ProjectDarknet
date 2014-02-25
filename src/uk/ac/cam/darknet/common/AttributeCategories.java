@@ -18,10 +18,6 @@ public enum AttributeCategories {
 	 */
 	PHOTO(String.class),
 	/**
-	 * A list of photos (<code>LinkedList<String></code>)
-	 */
-	PHOTOS(LinkedList.class),
-	/**
 	 * The age of individuals 
 	 */
 	AGE(Byte.class),

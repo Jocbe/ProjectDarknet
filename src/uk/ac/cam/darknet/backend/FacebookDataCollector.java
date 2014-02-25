@@ -54,8 +54,6 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 	
 	public FacebookDataCollector(SecondaryDatabaseManager databaseManager) {
 		super(databaseManager);
-		
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -92,7 +90,6 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 
 		List<User> friends = c.getData();
 		List<Photo> photos = null;
-		List<String> photoIds;
 		ImageStorage imageStorage = new ImageStorage();
 		String birthday, relationshipStatus, gender, locale;
 		User detailedFriend;
@@ -140,8 +137,6 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 						&& f.getLastName().equalsIgnoreCase(target.getLastName()))
 						|| emailMatch) {
 					
-					photoIds = new LinkedList<String>();
-					
 					// Get some potentially interesting data about target
 					relationshipStatus = f.getRelationshipStatus();
 					birthday = f.getBirthday();
@@ -173,32 +168,35 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 					// If photos were found, store them on the hard drive
 					for(Photo p: photos) {
 						try {
-							photoIds.add(imageStorage.saveImage(new URL(p.getSource())));
-							System.out.println("adding photo: " + p.getSource());
+							//photoIds.add(imageStorage.saveImage(new URL(p.getSource())));
+							target.addAttribute("fb_photo", imageStorage.saveImage(new URL(p.getSource())), 0.8);
+							System.out.println("added photo: " + p.getSource());
 						} catch (MalformedURLException e) {
 							log.warning("MalformedURLException while trying to store image! URL: "
 									+ p.getSource() + ". Message: " + e.getMessage());
 						} catch (IOException e) {
 							log.warning("IOException while trying to store image! URL: "
 									+ p.getSource() + ". Message: " + e.getMessage());
-						}
-					}
-					
-					// Store all data in the individual's properties before moving on to next target
-					if(photoIds.size() > 0) {
-						try {
-							target.getProperties().put("fb_photos", photoIds, 0.8);
-							if(relationshipStatus != null) target.getProperties().put("fb_relationshipStatus", relationshipStatus, 0.8);
-							if(birthday != null) target.getProperties().put("fb_birthday", birthday, 0.8);
-							if(gender != null) target.getProperties().put("fb_gender", gender, 0.8);
-							if(locale != null) target.getProperties().put("fb_locale", locale, 1.0);
 						} catch (UnknownAttributeException
 								| InvalidAttributeTypeException
 								| InvalidReliabilityException e) {
-							
-							log.severe("Exception (" + e.getClass() + ") while trying to store list of Facebook photos " +
-									"in the database: " + e.getMessage());
+
+							log.severe(e.getClass() + " while trying to add photo to individual. Message: " + e.getMessage());
 						}
+					}
+					
+					// Store all other data besides photos in the individual's properties before moving on to next target
+					try {
+						if(relationshipStatus != null) target.getProperties().put("fb_relationshipStatus", relationshipStatus, 0.8);
+						if(birthday != null) target.getProperties().put("fb_birthday", birthday, 0.8);
+						if(gender != null) target.getProperties().put("fb_gender", gender, 0.8);
+						if(locale != null) target.getProperties().put("fb_locale", locale, 1.0);
+					} catch (UnknownAttributeException
+							| InvalidAttributeTypeException
+							| InvalidReliabilityException e) {
+						
+						log.severe("Exception (" + e.getClass() + ") while trying to store the individual's attributes: " 
+								+ e.getMessage());
 					}
 					break;
 				}
@@ -231,7 +229,7 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 	@Override
 	public Hashtable<String, AttributeCategories> getAttributeTable() {
 		Hashtable<String, AttributeCategories> atts = new Hashtable<String, AttributeCategories>();
-		atts.put("fb_photos", AttributeCategories.PHOTOS);
+		atts.put("fb_photo", AttributeCategories.PHOTO);
 		atts.put("fb_gender", AttributeCategories.GENDER);
 		atts.put("fb_locale", AttributeCategories.LOCALE);
 		atts.put("fb_birthday", AttributeCategories.BIRTHDAY);

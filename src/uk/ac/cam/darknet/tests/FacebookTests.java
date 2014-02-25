@@ -18,7 +18,7 @@ import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 import uk.ac.cam.darknet.exceptions.InvalidAttributeNameException;
 
 public class FacebookTests {
-	@Test
+	//@Test
 	public void runFacebookDataCollector() {
 		FacebookDataCollector fbdc = new FacebookDataCollector(null);
 		
@@ -31,25 +31,33 @@ public class FacebookTests {
 		
 		Hashtable<String, AttributeCategories> atts = fbdc.getAttributeTable();
 		
+		System.out.println("Trying to create sdbm...");
 		SecondaryDatabaseManager sdbm = new SecondaryDatabaseManager(atts);
 		
+		System.out.println("Trying to create fbdc...");
 		fbdc = new FacebookDataCollector(sdbm);
 		
 		List<Individual> is = new LinkedList<Individual>();
 		
-		is.add(Individual.getNewIndividual("Fizz", "Sang", "", new Date(), 0, "", atts));
-		is.add(Individual.getNewIndividual("Ellie", "Rbnsn", "", new Date(), 0, "", atts));
-		is.add(Individual.getNewIndividual("Hayley", "Kasperczyk", "", new Date(), 0, "", atts));
-		is.add(Individual.getNewIndividual("Rose", "Lewenstein", "", new Date(), 0, "", atts));
-		is.add(Individual.getNewIndividual("William", "Drew", "", new Date(), 0, "", atts));
-		is.add(Individual.getNewIndividual("Wendy", "Kibble", "", new Date(), 0, "", atts));
-		is.add(Individual.getNewIndividual("Tassos", "Stevens", "", new Date(), 0, "", atts));
-		is.add(Individual.getNewIndividual("Wolfram", "Kosch", "", new Date(), 0, "", atts));
+		System.out.println("Populating sample target list");
+		is.add(Individual.getNewIndividual("Fizz", "Sang", "", new Date(), 1, "", atts));
+		is.add(Individual.getNewIndividual("Ellie", "Rbnsn", "", new Date(), 1, "", atts));
+		is.add(Individual.getNewIndividual("Hayley", "Kasperczyk", "", new Date(), 1, "", atts));
+		is.add(Individual.getNewIndividual("Rose", "Lewenstein", "", new Date(), 1, "", atts));
+		is.add(Individual.getNewIndividual("William", "Drew", "", new Date(), 1, "", atts));
+		is.add(Individual.getNewIndividual("Wendy", "Kibble", "", new Date(), 1, "", atts));
+		is.add(Individual.getNewIndividual("Tassos", "Stevens", "", new Date(), 1, "", atts));
+		is.add(Individual.getNewIndividual("Wolfram", "Kosch", "", new Date(), 1, "", atts));
 		
+		System.out.println("Trying to create pdbm");
 		PrimaryDatabaseManager pdbm = new PrimaryDatabaseManager(atts);
+		System.out.println("Trying to store individuals...");
 		pdbm.storeIndividual(is);
 		
+		System.out.println("Now setting up fbdc...");
 		fbdc.setup(is);
+		
+		System.out.println("...and running it.");
 		fbdc.run();
 	}
 }

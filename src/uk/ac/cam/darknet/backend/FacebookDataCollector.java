@@ -4,17 +4,18 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import javax.swing.JOptionPane;
+
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
 import uk.ac.cam.darknet.common.LoggerFactory;
 import uk.ac.cam.darknet.database.SecondaryDatabaseManager;
+import uk.ac.cam.darknet.exceptions.AuthorizationFailedException;
 import uk.ac.cam.darknet.exceptions.InvalidAttributeTypeException;
 import uk.ac.cam.darknet.exceptions.InvalidReliabilityException;
 import uk.ac.cam.darknet.exceptions.UnknownAttributeException;
@@ -22,13 +23,9 @@ import uk.ac.cam.darknet.storage.ImageStorage;
 
 import com.restfb.Connection;
 import com.restfb.DefaultFacebookClient;
-import com.restfb.FacebookClient;
-import com.restfb.FacebookClient.AccessToken;
 import com.restfb.Parameter;
 import com.restfb.types.Photo;
 import com.restfb.types.User;
-import com.restfb.types.User.Education;
-import com.restfb.types.User.Work;
 
 /**
  * Secondary data collector which gets data from Facebook's public API.
@@ -47,9 +44,12 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 	
 	private List<Individual> targets;
 	
-	private AccessToken accessToken;
-	private String appId = "1472924302921478";
-	private String appSecret = "aea3fa35cf8c02a310ed3f2145cd830e";
+	//private AccessToken accessToken;
+	
+	private DefaultFacebookClient client;
+	private final String appId = "1472924302921478";
+	private final String appSecret = "aea3fa35cf8c02a310ed3f2145cd830e";
+	private String token;
 	
 	
 	public FacebookDataCollector(SecondaryDatabaseManager databaseManager) {
@@ -60,68 +60,117 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 
 	@Override
 	public void run() {
-		if(targets == null) {
+		if(targets == null || token == null) {
 			log.warning("Aborting Facebook data collection as collector was not intialized yet");
 			return;
-			
-//			targets = new ArrayList<Individual>();
-//			targets.add(Individual.getNewIndividual("John", "Smith", "john@smith.ex", new Date(), 0, "0", getAttributeTable()));
 		}
 		
-		if(accessToken == null || accessToken.getExpires().before(new Date()) || accessToken.getAccessToken().length() < 1) {
-			//TODO: get access token
-			accessToken = new DefaultFacebookClient().obtainAppAccessToken(appId, appSecret);
-			System.out.println("Token: " + accessToken);
-			
-		}
+		// TODO: find better authentication method
+		client = new DefaultFacebookClient(token);//,appSecret);
+		Connection<User> c = null;
+		int error;
 		
-//		FacebookClient client = new DefaultFacebookClient("CAACEdEose0cBAGaO8Grihntt2uAgPzkll88dpVWT2kU7cr4ZA3zQ8u4sLwyN1ZCo7raIfBK8iw6vnKuwC43ZBut8swNISOhlgZCyqRTSoE7xLmZCluHbh0fZCKroK2s9ok5CMQNUAsW0lP3s5bnqxXbKMZCWeQ5WKLdGImAOJ7dLLeRAIsKR5S6tRBaTiKsKlD5eZAeVAUZBR1wZDZD");
-		//FacebookClient client = new DefaultFacebookClient("CAACEdEose0cBADC6Q0PLbvXt3njijciVruFWZBpQDGm5F8FOjA2s5WEOg4pWyuQRjBcoHuiejlToLZApK3YMVVZC4axFgnoIXMJp80j0bVoWdMmArZBwZCEs5jTQAQ3OHsBsHbBdgUbuhLPxliMUCff3g2MI1ZB3CFOpGNbknU63Xy61kbvXPyl8CdzHsAf1YZD");
-		//FacebookClient client = new DefaultFacebookClient(accessToken.getAccessToken(), appSecret);
-		FacebookClient client = new AuthenticatedFacebookClient();
-		
-		Connection<User> c = client.fetchConnection("me/friends", User.class, Parameter.with("fields", "id,name,picture"));
+		error = 0;
+		do{
+			try{
+				c = client.fetchConnection("me/friends", User.class, Parameter.with("fields", "id,name"));
+				error = 0;
+			} catch(Exception e) {
+				error++;
+				log.warning("Exception (" + error + ") (" + e.getClass() + ") while trying to fetch friends. Message: "
+						+ e.getMessage());
+				JOptionPane.showMessageDialog(null, "Invalid user token (try " + error + "/3).", "Invalid Token", JOptionPane.ERROR_MESSAGE);
+				if(error >= 3) return;
+				try{
+					reauthenticate();
+					client = new DefaultFacebookClient(token);//,appSecret);
+				}catch(Exception e2){
+					log.warning("Reauthentication failed due to invalid input");
+				}
+			}	
+		} while(error > 0);
+
 		List<User> friends = c.getData();
-		List<Photo> photos;
+		List<Photo> photos = null;
 		List<String> photoIds;
 		ImageStorage imageStorage = new ImageStorage();
-		String birthday, hometown, relationshipStatus, gender, locale;
-//		List<Education> education;
-//		List<Work> work;
+		String birthday, relationshipStatus, gender, locale;
 		User detailedFriend;
+		List<User> friendsDetailed = new LinkedList<User>();
 		boolean emailMatch;
 		String email;
 		
+		// Get more details on all friends
+		for(User f: friends) {
+			// Try to get friends' details; need to take into consideration an invalid
+			// user token (ex. when stale). Reauthentication needed in that case.
+			error = 0;
+			do{
+				try{
+					detailedFriend = client.fetchObject(f.getId(), User.class);						
+					error = 0;
+					friendsDetailed.add(detailedFriend);
+				} catch(Exception e) {
+					error++;
+					log.warning("Exception (" + error + ") (" + e.getClass() + ") while trying to fetch a friend. Message: "
+							+ e.getMessage());
+					JOptionPane.showMessageDialog(null, "Invalid user token (try " + error + "/3).", "Invalid Token", JOptionPane.ERROR_MESSAGE);
+					if(error >= 3) return;
+					try{
+						reauthenticate();
+						client = new DefaultFacebookClient(token);//,appSecret);
+					}catch(Exception e2){
+						log.warning("Reauthentication failed due to invalid input");
+					}
+				}	
+			} while(error > 0);
+		}
+		
+		// Now iterate through targets and check if they are present in friend list of facebook
 		for(Individual target: targets) {
 			System.out.println("Looking for: " + target.getFirstName() + " " + target.getLastName());
-			for(User f: friends) {
-				detailedFriend = client.fetchObject(f.getId(), User.class);
-				
-				email = detailedFriend.getEmail();
+			for(User f: friendsDetailed) {
+
+				// Try to get email address from facebook
+				email = f.getEmail();
 				emailMatch = email == null ? false : email.equalsIgnoreCase(target.getEmail());
 				
-				if((detailedFriend.getFirstName().equalsIgnoreCase(target.getFirstName())
-						&& detailedFriend.getLastName().equalsIgnoreCase(target.getLastName()))
-						|| emailMatch
-//						|| true
-						) {
+				// See if the current target matches the current friend (by full name or email) 
+				if((f.getFirstName().equalsIgnoreCase(target.getFirstName())
+						&& f.getLastName().equalsIgnoreCase(target.getLastName()))
+						|| emailMatch) {
 					
 					photoIds = new LinkedList<String>();
 					
-					//try {
-						//education = f.getEducation();
-						//work = f.getWork();
-						//hometown = f.getHometownName();
-						//Intersting?: f.getLocation()
-					//} 
+					// Get some potentially interesting data about target
+					relationshipStatus = f.getRelationshipStatus();
+					birthday = f.getBirthday();
+					locale = f.getLocale();
+					gender = f.getGender();
 					
+					// Now fetch 25 (max) photos of the target, if possible. Again an invalid token
+					// must be considered.
+					error = 0;
+					do{
+						try{
+							photos = client.fetchConnection(f.getId() + "/photos", Photo.class).getData();
+							error = 0;
+						} catch(Exception e) {
+							error++;
+							log.warning("Exception (" + error + ") (" + e.getClass() + ") while trying to fetch photos. Message: "
+									+ e.getMessage());
+							JOptionPane.showMessageDialog(null, "Invalid user token (try " + error + "/3).", "Invalid Token", JOptionPane.ERROR_MESSAGE);
+							if(error >= 3) return;
+							try{
+								reauthenticate();
+								client = new DefaultFacebookClient(token);//,appSecret);
+							}catch(Exception e2){
+								log.warning("Reauthentication failed due to invalid input");
+							}
+						}	
+					} while(error > 0);
 					
-					relationshipStatus = detailedFriend.getRelationshipStatus();
-					birthday = detailedFriend.getBirthday();
-					locale = detailedFriend.getLocale();
-					gender = detailedFriend.getGender();
-					//TODO: add try block around anything that is fetching data from FB
-					photos = client.fetchConnection(f.getId() + "/photos", Photo.class).getData();
+					// If photos were found, store them on the hard drive
 					for(Photo p: photos) {
 						try {
 							photoIds.add(imageStorage.saveImage(new URL(p.getSource())));
@@ -135,7 +184,7 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 						}
 					}
 					
-					// Store photos in DB if any were found
+					// Store all data in the individual's properties before moving on to next target
 					if(photoIds.size() > 0) {
 						try {
 							target.getProperties().put("fb_photos", photoIds, 0.8);
@@ -156,6 +205,7 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 			}
 		}
 		
+		// Finally, store all the data collected in the database
 		try {
 			databaseManager.storeAttributes(targets);
 		} catch (SQLException e) {
@@ -167,6 +217,14 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 
 	@Override
 	public void setup(List<Individual> individuals) {
+		// This does 2 things: authenticates and sets up the list of individuals to be targeted
+		try {
+			reauthenticate();
+			
+		} catch (AuthorizationFailedException e) {
+			JOptionPane.showMessageDialog(null, "Invalid user token! Exiting.", "Invalid Token", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
 		targets = individuals;
 	}
 
@@ -183,13 +241,23 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 
 	@Override
 	public String getCollectorId() {
-		// TODO Auto-generated method stub
-		return null;
+		return("facebook_default");
 	}
 	
-	private class AuthenticatedFacebookClient extends DefaultFacebookClient {
-		public AuthenticatedFacebookClient() {
-			super("CAACEdEose0cBAGaO8Grihntt2uAgPzkll88dpVWT2kU7cr4ZA3zQ8u4sLwyN1ZCo7raIfBK8iw6vnKuwC43ZBut8swNISOhlgZCyqRTSoE7xLmZCluHbh0fZCKroK2s9ok5CMQNUAsW0lP3s5bnqxXbKMZCWeQ5WKLdGImAOJ7dLLeRAIsKR5S6tRBaTiKsKlD5eZAeVAUZBR1wZDZD");
+	
+	public void reauthenticate() throws AuthorizationFailedException {
+		
+		// Takes care of authentication. At the moment user needs to input a valid user
+		// token manually, due to issues with automatically obtaining such a token from
+		// within a desktop application.
+		
+		String manualToken = JOptionPane.showInputDialog(null, "Please enter Facebook user token:");
+		
+		if(manualToken == null || manualToken.length() < 1) {
+			throw new AuthorizationFailedException();
 		}
+		
+		token = manualToken;
 	}
+	
 }

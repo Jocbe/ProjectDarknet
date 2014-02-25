@@ -11,7 +11,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,8 +25,10 @@ import uk.ac.cam.darknet.common.Show;
 import uk.ac.cam.darknet.common.Strings;
 import uk.ac.cam.darknet.common.Venue;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
+import uk.ac.cam.darknet.exceptions.InvalidAttributeTypeException;
+import uk.ac.cam.darknet.exceptions.InvalidReliabilityException;
 import uk.ac.cam.darknet.exceptions.RequestNotSatisfiableException;
-import com.sun.xml.internal.ws.org.objectweb.asm.Type;
+import uk.ac.cam.darknet.exceptions.UnknownAttributeException;
 
 /**
  * Any implementation of this abstract class has methods to search for individuals. Both the data
@@ -36,7 +37,7 @@ import com.sun.xml.internal.ws.org.objectweb.asm.Type;
  * 
  * @author Ibtehaj Nadeem
  */
-public abstract class DatabaseManager {
+public class DatabaseManager {
 	private static final String								GET_BY_ID			= "SELECT * FROM individuals WHERE id = ?";
 	private static final String								GET_BY_SHOW			= "SELECT * FROM individuals WHERE date = ? AND venue = ?";
 	private static final String								GET_BY_SEAT			= "SELECT * FROM individuals WHERE seat = ?";
@@ -52,6 +53,7 @@ public abstract class DatabaseManager {
 	private static final String								DROP_TEMP_TABLE		= "DROP TABLE IF EXISTS session.temp%1$d";
 	private static final String								SELECT_FILTERED		= "SELECT DISTINCT individuals.* FROM individuals";
 	private static final String								FILTER_JOIN			= " JOIN temp%1$d on temp%1$d.id = individuals.id";
+	private static final String								GET_ATTRIBUTE		= "SELECT attribute, reliability FROM %1$s WHERE id = ?";
 	private static final String								ATTRIBUTE_PATTERN	= "[a-zA-Z0-9_]+";
 	protected final Connection								connection;
 	protected final Hashtable<String, AttributeCategories>	globalAttributeTable;
@@ -305,6 +307,45 @@ public abstract class DatabaseManager {
 	}
 
 	/**
+	 * This method adds all the attributes stored about each individual to their respective
+	 * <code>Properties</code> objects.
+	 * 
+	 * @param individuals
+	 *            The list of individuals for which to get attributes.
+	 * @throws SQLException
+	 * @throws InvalidReliabilityException
+	 * @throws InvalidAttributeTypeException
+	 * @throws UnknownAttributeException
+	 */
+	public void getAllAttributes(List<Individual> individuals) throws SQLException, UnknownAttributeException, InvalidAttributeTypeException, InvalidReliabilityException {
+		Enumeration<String> attributes = globalAttributeTable.keys();
+		String currentAttributeName;
+		double currentReliability;
+		Object currentAttribute;
+		// First clear the attributes of the individuals to avoid duplicate entries.
+		for (Individual currentIndividual : individuals) {
+			currentIndividual.clearAttributes();
+		}
+		// Now go through the global attribute table attribute-by-attribute, and, for each
+		// individual, add the information in the database to the individual's properties.
+		while (attributes.hasMoreElements()) {
+			currentAttributeName = attributes.nextElement();
+			try (PreparedStatement stmt = connection.prepareStatement(String.format(GET_ATTRIBUTE, currentAttributeName));) {
+				for (Individual currentIndividual : individuals) {
+					stmt.setLong(1, currentIndividual.getId());
+					try (ResultSet resultSet = stmt.executeQuery();) {
+						while (resultSet.next()) {
+							currentAttribute = resultSet.getObject(1, globalAttributeTable.get(currentAttributeName).getAttributeType());
+							currentReliability = resultSet.getDouble(2);
+							currentIndividual.addAttribute(currentAttributeName, globalAttributeTable.get(currentAttributeName).getAttributeType().cast(currentAttribute), currentReliability);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	/**
 	 * Returns a list of suitable individuals for an effect. The list will be sorted roughly by the
 	 * overall suitability, from most suitable to least suitable.
 	 * 
@@ -314,8 +355,11 @@ public abstract class DatabaseManager {
 	 *         order.
 	 * @throws SQLException
 	 * @throws RequestNotSatisfiableException
+	 * @throws InvalidReliabilityException
+	 * @throws InvalidAttributeTypeException
+	 * @throws UnknownAttributeException
 	 */
-	public synchronized List<Individual> getSuitableIndividuals(IndividualRequirements requirements) throws SQLException, RequestNotSatisfiableException {
+	public synchronized List<Individual> getSuitableIndividuals(IndividualRequirements requirements) throws SQLException, RequestNotSatisfiableException, UnknownAttributeException, InvalidAttributeTypeException, InvalidReliabilityException {
 		ArrayList<String> attributes = new ArrayList<String>();
 		ArrayList<Individual> toReturn;
 		Enumeration<AttributeCategories> categories = requirements.getRequiredCategories().keys();
@@ -345,6 +389,9 @@ public abstract class DatabaseManager {
 				}
 			}
 		}
+		if (toReturn.size() == 0)
+			throw new RequestNotSatisfiableException(Strings.REQUEST_NOT_SATISFIABLE);
+		getAllAttributes(toReturn);
 		return toReturn;
 	}
 
@@ -454,39 +501,6 @@ public abstract class DatabaseManager {
 			return false;
 		} else {
 			return true;
-		}
-	}
-
-	protected int getSQLType(AttributeCategories category) {
-		if (category.getAttributeType() == Byte.class) {
-			return Types.TINYINT;
-		} else if (category.getAttributeType() == Short.class) {
-			return Types.SMALLINT;
-		} else if (category.getAttributeType() == Integer.class) {
-			return Types.INTEGER;
-		} else if (category.getAttributeType() == Long.class) {
-			return Types.BIGINT;
-		} else if (category.getAttributeType() == Boolean.class) {
-			return Types.BOOLEAN;
-		} else {
-			return Types.OTHER;
-		}
-	}
-
-	protected String getSQLTypeString(int SQLType) {
-		switch (SQLType) {
-			case Types.TINYINT :
-				return "TINYINT";
-			case Types.SMALLINT :
-				return "SMALLINT";
-			case Types.INTEGER :
-				return "INTEGER";
-			case Types.BIGINT :
-				return "BIGINT";
-			case Type.BOOLEAN :
-				return "BOOLEAN";
-			default :
-				return "OTHER";
 		}
 	}
 }

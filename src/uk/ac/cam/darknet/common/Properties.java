@@ -1,7 +1,9 @@
 package uk.ac.cam.darknet.common;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.List;
 import uk.ac.cam.darknet.exceptions.InvalidAttributeTypeException;
 import uk.ac.cam.darknet.exceptions.InvalidReliabilityException;
 import uk.ac.cam.darknet.exceptions.UnknownAttributeException;
@@ -19,8 +21,8 @@ import uk.ac.cam.darknet.exceptions.UnknownAttributeException;
  * 
  */
 public class Properties {
-	private final Hashtable<String, AttributeCategories>	globalAttributeTable;
-	private Hashtable<String, AttributeReliabilityPair>		properties;
+	private final Hashtable<String, AttributeCategories>		globalAttributeTable;
+	private Hashtable<String, List<AttributeReliabilityPair>>	hashtable;
 
 	/**
 	 * Constructs a new <code>Properties</code> object with the given attribute table. This object
@@ -34,7 +36,7 @@ public class Properties {
 	 */
 	public Properties(final Hashtable<String, AttributeCategories> globalAttributeTable) {
 		this.globalAttributeTable = globalAttributeTable;
-		this.properties = new Hashtable<String, AttributeReliabilityPair>();
+		this.hashtable = new Hashtable<String, List<AttributeReliabilityPair>>();
 	}
 
 	/**
@@ -64,49 +66,56 @@ public class Properties {
 		if (!attributeCategory.isObjectCompatible(value))
 			throw new InvalidAttributeTypeException(String.format(Strings.INVALID_TYPE_EXN, key, attributeCategory.getClassName()));
 		// If both checks are passed, add the new key-value pair.
-		properties.put(key, new AttributeReliabilityPair(value, reliability));
+		AttributeReliabilityPair newAttrRel = new AttributeReliabilityPair(value, reliability);
+		if (hashtable.containsKey(key)) {
+			hashtable.get(key).add(newAttrRel);
+		} else {
+			ArrayList<AttributeReliabilityPair> newList = new ArrayList<AttributeReliabilityPair>();
+			newList.add(newAttrRel);
+			hashtable.put(key, newList);
+		}
 	}
 
 	/**
-	 * The value to which the specified attribute name is mapped, or null if this map contains no
-	 * mapping for the attribute.
+	 * Returns a list of all the attributes stored in this object under the given name.
 	 * 
 	 * @param key
-	 *            The attribute name whose associated value is to be returned.
-	 * @return The value to which the specified attribute name is mapped, or null if this map
-	 *         contains no mapping for the attribute.
+	 *            The attribute name whose associated list of values is to be returned.
+	 * @return The list of values to which the specified attribute name is mapped, or null if this
+	 *         map contains no mapping for the attribute.
 	 */
-	public synchronized AttributeReliabilityPair get(String key) {
-		return properties.get(key);
+	public synchronized List<AttributeReliabilityPair> get(String key) {
+		return hashtable.get(key);
 	}
 
 	/**
-	 * Removes the key-value pair specified by the given key from this <code>Properties</code>
-	 * object. This method does nothing if the key is not in the object.
+	 * Removes all the attributes stored under the given key. If there are no such attributes,
+	 * nothing is changed.
 	 * 
 	 * @param key
 	 *            The key of the key-value pair to remove.
 	 */
 	public synchronized void remove(String key) {
-		properties.remove(key);
+		hashtable.remove(key);
 	}
 
 	/**
-	 * Clears this <code>Properties</code> object so that it contains no more key-value pairs.
+	 * Clears this <code>Properties</code> object so that it contains no more attributes.
 	 */
 	public synchronized void clear() {
-		properties.clear();
+		hashtable.clear();
 	}
 
 	/**
-	 * Tests whether a given attribute is contained in this <code>Properties</code> object.
+	 * Tests whether a given attribute (i.e. at least one) is contained in this
+	 * <code>Properties</code> object.
 	 * 
 	 * @param key
 	 *            The name of the attribute whose presence should be checked.
 	 * @return True if the key is contained, false otherwise.
 	 */
 	public synchronized boolean containsAttribute(String key) {
-		return properties.containsKey(key);
+		return hashtable.containsKey(key);
 	}
 
 	/**
@@ -114,8 +123,8 @@ public class Properties {
 	 * 
 	 * @return an enumeration of the values in this <code>Properties</code> object.
 	 */
-	public synchronized Enumeration<AttributeReliabilityPair> elements() {
-		return properties.elements();
+	public synchronized Enumeration<List<AttributeReliabilityPair>> elements() {
+		return hashtable.elements();
 	}
 
 	/**
@@ -124,6 +133,6 @@ public class Properties {
 	 * @return an enumeration of the keys in this <code>Properties</code> object.
 	 */
 	public synchronized Enumeration<String> keys() {
-		return properties.keys();
+		return hashtable.keys();
 	}
 }

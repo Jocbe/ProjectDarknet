@@ -11,7 +11,7 @@ import twitter4j.TwitterFactory;
 import twitter4j.User;
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
-import uk.ac.cam.darknet.database.DatabaseManager;
+import uk.ac.cam.darknet.database.SecondaryDatabaseManager;
 
 /**
  * Secondary data collector which gets data from Twitter's API
@@ -27,7 +27,7 @@ public class TwitterDataCollector extends SecondaryDataCollector {
 	
 	private List<Individual> individuals;
 	
-	public TwitterDataCollector(DatabaseManager databaseManager) {
+	public TwitterDataCollector(SecondaryDatabaseManager databaseManager) {
 		super(databaseManager);
 		// TODO Auto-generated constructor stub
 	}
@@ -89,7 +89,6 @@ public class TwitterDataCollector extends SecondaryDataCollector {
 
 	@Override
 	public String getCollectorId() {
-		// TODO Auto-generated method stub
-		return null;
+		return("twitter_default");
 	}
 }

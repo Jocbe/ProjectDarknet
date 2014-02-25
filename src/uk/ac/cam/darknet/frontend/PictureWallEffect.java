@@ -13,6 +13,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import uk.ac.cam.darknet.common.AttributeCategories;
+import uk.ac.cam.darknet.common.AttributeReliabilityPair;
 import uk.ac.cam.darknet.common.Individual;
 import uk.ac.cam.darknet.common.IndividualRequirements;
 import uk.ac.cam.darknet.common.Properties;
@@ -21,8 +22,10 @@ import uk.ac.cam.darknet.database.DatabaseManager;
 import uk.ac.cam.darknet.database.SecondaryDatabaseManager;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 import uk.ac.cam.darknet.exceptions.InvalidAttributeNameException;
+import uk.ac.cam.darknet.exceptions.InvalidAttributeTypeException;
 import uk.ac.cam.darknet.exceptions.InvalidReliabilityException;
 import uk.ac.cam.darknet.exceptions.RequestNotSatisfiableException;
+import uk.ac.cam.darknet.exceptions.UnknownAttributeException;
 import uk.ac.cam.darknet.storage.ImageStorage;
 
 /**
@@ -35,6 +38,9 @@ import uk.ac.cam.darknet.storage.ImageStorage;
 public class PictureWallEffect extends Effect {
 	
 	//Setup method, DatabaseManager
+	/**
+	 * @param dm
+	 */
 	public PictureWallEffect(DatabaseManager dm){
 		super(dm);
 	}
@@ -49,7 +55,10 @@ public class PictureWallEffect extends Effect {
 
 			List<String> photoids = new LinkedList<String>();
 			for (int i=0; i<individuals.size(); i++){
-				 photoids.addAll((LinkedList)individuals.get(i).getProperties().get("fb_photos").getAttribute());
+				 List<AttributeReliabilityPair> pairs = individuals.get(i).getProperties().get("fb_photos");
+				 for (int j=0; j<pairs.size(); j++){
+					 photoids.add((String) pairs.get(i).getAttribute());
+				 }
 			}
 			
 			BufferedImage[] photos = new BufferedImage[photoids.size()];
@@ -102,6 +111,12 @@ public class PictureWallEffect extends Effect {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnknownAttributeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidAttributeTypeException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

@@ -85,7 +85,7 @@ public class DatabaseManager {
 		// } else {
 		this.globalAttributeTable = globalAttributeTable;
 		// }
-		connection = connectToDB(Strings.getBaseDir() + "/res/dbconfig.txt");
+		connection = connectToDB(/*Strings.getBaseDir() +*/ "res/dbconfig.txt");
 		connection.setAutoCommit(false);
 	}
 

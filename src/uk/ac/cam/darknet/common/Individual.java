@@ -193,7 +193,7 @@ public class Individual {
 	 * specified by the attribute category, an <code>InvalidAttributeType</code> exception will be
 	 * thrown. This method delegates the request to the underlying <code>Properties</code> object.
 	 * 
-	 * @param key
+	 * @param attributeName
 	 *            The name of the attribute to add.
 	 * @param value
 	 *            The corresponding object.
@@ -204,21 +204,21 @@ public class Individual {
 	 * @throws InvalidAttributeTypeException
 	 * @throws InvalidReliabilityException
 	 */
-	public void addAttribute(String key, Object value, double reliability) throws UnknownAttributeException, InvalidAttributeTypeException, InvalidReliabilityException {
-		properties.put(key, value, reliability);
+	public void addAttribute(String attributeName, Object value, double reliability) throws UnknownAttributeException, InvalidAttributeTypeException, InvalidReliabilityException {
+		properties.put(attributeName, value, reliability);
 	}
 
 	/**
 	 * Returns a list of all the attributes stored in this object under the given name. This method
 	 * delegates the request to the underlying <code>Properties</code> object.
 	 * 
-	 * @param key
+	 * @param attributeName
 	 *            The attribute name whose associated list of values is to be returned.
 	 * @return The list of values to which the specified attribute name is mapped, or null if this
 	 *         map contains no mapping for the attribute.
 	 */
-	public List<AttributeReliabilityPair> getAttribute(String key) {
-		return properties.get(key);
+	public List<AttributeReliabilityPair> getAttribute(String attributeName) {
+		return properties.get(attributeName);
 	}
 
 	/**
@@ -226,11 +226,11 @@ public class Individual {
 	 * nothing is changed. This method delegates the request to the underlying
 	 * <code>Properties</code> object.
 	 * 
-	 * @param key
+	 * @param attributeName
 	 *            The key of the key-value pair to remove.
 	 */
-	public void removeAttribute(String key) {
-		properties.remove(key);
+	public void removeAttribute(String attributeName) {
+		properties.remove(attributeName);
 	}
 
 	/**
@@ -245,11 +245,11 @@ public class Individual {
 	 * Tests whether a given attribute (i.e. at least one) is contained in this individual's
 	 * <code>Properties</code> object.
 	 * 
-	 * @param key
+	 * @param attributeName
 	 *            The name of the attribute whose presence should be checked.
 	 * @return True if the key is contained, false otherwise.
 	 */
-	public boolean containsAttribute(String key) {
-		return properties.containsAttribute(key);
+	public boolean containsAttribute(String attributeName) {
+		return properties.containsAttribute(attributeName);
 	}
 }

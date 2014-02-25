@@ -9,7 +9,6 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.AttributeReliabilityPair;
 import uk.ac.cam.darknet.common.Individual;
@@ -123,42 +122,21 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 	@SuppressWarnings({"javadoc"})
 	public static void main(String[] args) throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException, InvalidAttributeNameException, UnknownAttributeException, InvalidAttributeTypeException, InvalidReliabilityException, RequestNotSatisfiableException {
 		Hashtable<String, AttributeCategories> globalAttributeTable = new Hashtable<String, AttributeCategories>();
-		globalAttributeTable.put("test1", AttributeCategories.ALIAS);
-		globalAttributeTable.put("test2", AttributeCategories.AGE);
+		globalAttributeTable.put("fb_gender", AttributeCategories.GENDER);
+		globalAttributeTable.put("fb_birthday", AttributeCategories.BIRTHDAY);
 		SecondaryDatabaseManager instance = new SecondaryDatabaseManager(globalAttributeTable);
+		ArrayList<Individual> individuals;
 		Show show = instance.getAllShows().get(2);
-		ArrayList<Individual> individuals = (ArrayList<Individual>) instance.getByShow(show);
-		Random random = new Random();
-		for (Individual i : individuals) {
-			if (random.nextDouble() < 1)
-				i.addAttribute("test1", "aliasA" + (i.getId() - 1000000), random.nextDouble());
-			if (random.nextDouble() < 1)
-				i.addAttribute("test1", "aliasB" + (i.getId() - 1000000), random.nextDouble());
-			if (random.nextDouble() < 1)
-				i.addAttribute("test2", (byte) (i.getId() - 1000000), random.nextDouble());
-			if (random.nextDouble() < 1)
-				i.addAttribute("test2", (byte) (-(i.getId() - 1000000)), random.nextDouble());
-		}
-		// instance.storeAttributes(individuals);
 		IndividualRequirements requirements = new IndividualRequirements(show);
-		requirements.addRequirement(AttributeCategories.ALIAS, 0.5);
-		requirements.addRequirement(AttributeCategories.AGE, 0.5);
+		requirements.addRequirement(AttributeCategories.GENDER, 0.5);
+		requirements.addRequirement(AttributeCategories.BIRTHDAY, 0.5);
 		individuals = (ArrayList<Individual>) instance.getSuitableIndividuals(requirements);
+		String gender;
+		String dob;
 		for (Individual i : individuals) {
-			if (i.containsAttribute("test1")) {
-				System.out.print("Individual " + i.getId() + ": ALIAS ");
-				for (AttributeReliabilityPair a : i.getAttribute("test1")) {
-					System.out.print(a.getAttribute() + " ");
-				}
-				System.out.print("\n");
-			}
-			if (i.containsAttribute("test2")) {
-				System.out.print("Individual " + i.getId() + ": AGE ");
-				for (AttributeReliabilityPair a : i.getAttribute("test2")) {
-					System.out.print(a.getAttribute() + " ");
-				}
-				System.out.print("\n");
-			}
+			gender = (String) i.getAttribute("fb_gender").get(0).getAttribute();
+			dob = (String) i.getAttribute("fb_birthday").get(0).getAttribute();
+			System.out.println("Individual " + i.getId() + ", called " + i.getFirstName() + " " + i.getLastName() + ", is " + gender + " and has birthday " + dob + ".");
 		}
 		instance.closeConnection();
 	}

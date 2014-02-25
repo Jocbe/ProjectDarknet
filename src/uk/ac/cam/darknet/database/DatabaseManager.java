@@ -9,20 +9,24 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.regex.Pattern;
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
+import uk.ac.cam.darknet.common.IndividualRequirements;
 import uk.ac.cam.darknet.common.Show;
 import uk.ac.cam.darknet.common.Strings;
 import uk.ac.cam.darknet.common.Venue;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
+import uk.ac.cam.darknet.exceptions.RequestNotSatisfiableException;
 import com.sun.xml.internal.ws.org.objectweb.asm.Type;
 
 /**
@@ -33,15 +37,21 @@ import com.sun.xml.internal.ws.org.objectweb.asm.Type;
  * @author Ibtehaj Nadeem
  */
 public abstract class DatabaseManager {
-	private static String									GET_BY_ID			= "SELECT * FROM individuals WHERE id = ?";
-	private static String									GET_BY_SHOW			= "SELECT * FROM individuals WHERE date = ? and venue = ?";
-	private static String									GET_BY_SEAT			= "SELECT * FROM individuals WHERE seat = ?";
-	private static String									GET_BY_EMAIL		= "SELECT * FROM individuals WHERE email = ?";
-	private static String									GET_BY_FNAME		= "SELECT * FROM individuals WHERE fname = ?";
-	private static String									GET_BY_LNAME		= "SELECT * FROM individuals WHERE lname = ?";
-	private static String									GET_ALL_INDIVIDUALS	= "SELECT * FROM individuals";
-	private static String									GET_ALL_SHOWS		= "SELECT shows.date, venues.id, venues.name FROM shows NATURAL JOIN venues";
-	private static String									GET_ALL_VENUES		= "SELECT * FROM venues";
+	private static final String								GET_BY_ID			= "SELECT * FROM individuals WHERE id = ?";
+	private static final String								GET_BY_SHOW			= "SELECT * FROM individuals WHERE date = ? AND venue = ?";
+	private static final String								GET_BY_SEAT			= "SELECT * FROM individuals WHERE seat = ?";
+	private static final String								GET_BY_EMAIL		= "SELECT * FROM individuals WHERE email = ?";
+	private static final String								GET_BY_FNAME		= "SELECT * FROM individuals WHERE fname = ?";
+	private static final String								GET_BY_LNAME		= "SELECT * FROM individuals WHERE lname = ?";
+	private static final String								GET_ALL_INDIVIDUALS	= "SELECT * FROM individuals";
+	private static final String								GET_ALL_SHOWS		= "SELECT shows.date, venues.id, venues.name FROM shows NATURAL JOIN venues";
+	private static final String								GET_ALL_VENUES		= "SELECT * FROM venues";
+	private static final String								CREATE_FILTER_TABLE	= "DECLARE LOCAL TEMPORARY TABLE filter AS (SELECT id FROM INDIVIDUALS WHERE date = '%1$s' AND venue = %2$d) WITH DATA";
+	private static final String								DROP_FILTER_TABLE	= "DROP TABLE IF EXISTS session.filter";
+	private static final String								CREATE_TEMP_TABLE	= "DECLARE LOCAL TEMPORARY TABLE temp%1$d AS (%2$s) WITH DATA";
+	private static final String								DROP_TEMP_TABLE		= "DROP TABLE IF EXISTS session.temp%1$d";
+	private static final String								SELECT_FILTERED		= "SELECT DISTINCT individuals.* FROM individuals";
+	private static final String								FILTER_JOIN			= " JOIN temp%1$d on temp%1$d.id = individuals.id";
 	private static final String								ATTRIBUTE_PATTERN	= "[a-zA-Z0-9_]+";
 	protected final Connection								connection;
 	protected final Hashtable<String, AttributeCategories>	globalAttributeTable;
@@ -110,6 +120,15 @@ public abstract class DatabaseManager {
 		connectionUrl = prefix + "//" + host + ":" + port + "/" + alias;
 		Class.forName("org.hsqldb.jdbc.JDBCDriver");
 		return DriverManager.getConnection(connectionUrl, username, password);
+	}
+
+	/**
+	 * Closes the underlying database connection. This object should not be reused afterwards.
+	 * 
+	 * @throws SQLException
+	 */
+	public synchronized void closeConnection() throws SQLException {
+		connection.close();
 	}
 
 	/**
@@ -236,7 +255,8 @@ public abstract class DatabaseManager {
 	/**
 	 * Return a list of individuals that attend a particular show (combination of date and venue).
 	 * 
-	 * @param show The show for which to find infividuals.
+	 * @param show
+	 *            The show for which to find infividuals.
 	 * @return A list of individuals, each of which has booked a ticket for the given show.
 	 * @throws SQLException
 	 */
@@ -250,7 +270,7 @@ public abstract class DatabaseManager {
 	 * @return A list of all the shows in the system.
 	 * @throws SQLException
 	 */
-	public ArrayList<Show> getAllShows() throws SQLException {
+	public synchronized List<Show> getAllShows() throws SQLException {
 		ArrayList<Show> toReturn = new ArrayList<Show>();
 		Show next;
 		try (PreparedStatement stmt = connection.prepareStatement(GET_ALL_SHOWS);) {
@@ -270,7 +290,7 @@ public abstract class DatabaseManager {
 	 * @return A list of venues in the system.
 	 * @throws SQLException
 	 */
-	public ArrayList<Venue> getAllVenues() throws SQLException {
+	public synchronized List<Venue> getAllVenues() throws SQLException {
 		ArrayList<Venue> toReturn = new ArrayList<Venue>();
 		Venue next;
 		try (PreparedStatement stmt = connection.prepareStatement(GET_ALL_VENUES);) {
@@ -282,6 +302,78 @@ public abstract class DatabaseManager {
 			}
 		}
 		return toReturn;
+	}
+
+	/**
+	 * Returns a list of suitable individuals for an effect. The list will be sorted roughly by the
+	 * overall suitability, from most suitable to least suitable.
+	 * 
+	 * @param requirements
+	 *            The requirements that the effect places on the individuals.
+	 * @return A list of individuals that satisfy the given requirements, arranged in no particular
+	 *         order.
+	 * @throws SQLException
+	 * @throws RequestNotSatisfiableException
+	 */
+	public synchronized List<Individual> getSuitableIndividuals(IndividualRequirements requirements) throws SQLException, RequestNotSatisfiableException {
+		ArrayList<String> attributes = new ArrayList<String>();
+		ArrayList<Individual> toReturn;
+		Enumeration<AttributeCategories> categories = requirements.getRequiredCategories().keys();
+		AttributeCategories currentCategory;
+		double currentMinReliability;
+		int tableCounter = 0;
+		String statement = SELECT_FILTERED;
+		try (Statement stmt = connection.createStatement();) {
+			stmt.execute(String.format(CREATE_FILTER_TABLE, formatDate(requirements.getShow().getDate()), requirements.getShow().getVenue().getId()));
+			while (categories.hasMoreElements()) {
+				currentCategory = categories.nextElement();
+				currentMinReliability = requirements.getRequiredCategories().get(currentCategory);
+				filterAttributes(currentCategory, attributes);
+				if (attributes.isEmpty())
+					throw new RequestNotSatisfiableException(Strings.REQUEST_NOT_SATISFIABLE);
+				createTemporaryTable(attributes, currentMinReliability, tableCounter++);
+			}
+			for (int i = 0; i < tableCounter; i++) {
+				statement += String.format(FILTER_JOIN, i);
+			}
+			toReturn = getIndividualQueryResults(stmt, statement);
+		} finally {
+			try (Statement stmt = connection.createStatement();) {
+				stmt.execute(DROP_FILTER_TABLE);
+				for (int i = 0; i < tableCounter; i++) {
+					stmt.execute(String.format(DROP_TEMP_TABLE, i));
+				}
+			}
+		}
+		return toReturn;
+	}
+
+	private void createTemporaryTable(ArrayList<String> attributes, double minReliability, int tableCounter) throws SQLException {
+		ArrayList<String> subQueries = new ArrayList<String>();
+		String finalSubQuery;
+		String statement;
+		for (String a : attributes) {
+			subQueries.add("(SELECT id FROM " + a + " WHERE reliability >= " + minReliability + ")");
+		}
+		finalSubQuery = subQueries.get(0);
+		for (int i = 1; i < subQueries.size(); i++) {
+			finalSubQuery += " UNION " + subQueries.get(i);
+		}
+		statement = String.format(CREATE_TEMP_TABLE, tableCounter, finalSubQuery);
+		try (Statement stmt = connection.createStatement();) {
+			stmt.execute(statement);
+		}
+	}
+
+	private void filterAttributes(AttributeCategories filter, ArrayList<String> attributes) {
+		attributes.clear();
+		Enumeration<String> allAttributes = globalAttributeTable.keys();
+		String currentAttribute;
+		while (allAttributes.hasMoreElements()) {
+			currentAttribute = allAttributes.nextElement();
+			if (globalAttributeTable.get(currentAttribute) == filter)
+				attributes.add(currentAttribute);
+		}
 	}
 
 	private ArrayList<Individual> getIndividualQueryResults(PreparedStatement stmt) throws SQLException {
@@ -297,13 +389,26 @@ public abstract class DatabaseManager {
 		return toReturn;
 	}
 
+	private ArrayList<Individual> getIndividualQueryResults(Statement stmt, String query) throws SQLException {
+		ArrayList<Individual> toReturn = new ArrayList<Individual>();
+		Individual next;
+		try (ResultSet resultSet = stmt.executeQuery(query);) {
+			next = createIndividual(resultSet);
+			while (next != null) {
+				toReturn.add(next);
+				next = createIndividual(resultSet);
+			}
+		}
+		return toReturn;
+	}
+
 	private Individual createIndividual(ResultSet result) throws SQLException {
 		if (result.next()) {
 			id = result.getLong(1);
 			fname = result.getString(2);
 			lname = result.getString(3);
 			email = result.getString(4);
-			date = result.getTimestamp(5);
+			date = (Date) result.getTimestamp(5);
 			venue = result.getInt(6);
 			seat = result.getString(7);
 			return new Individual(id, fname, lname, email, date, venue, seat, globalAttributeTable);

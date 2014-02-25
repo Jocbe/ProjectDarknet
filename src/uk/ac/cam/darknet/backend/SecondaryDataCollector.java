@@ -5,6 +5,7 @@ import java.util.List;
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
 import uk.ac.cam.darknet.database.DatabaseManager;
+import uk.ac.cam.darknet.database.SecondaryDatabaseManager;
 
 /**
  * Secondary data collectors harvest data from various sources (mostly the Internet) such as
@@ -14,8 +15,7 @@ import uk.ac.cam.darknet.database.DatabaseManager;
  * 
  */
 public abstract class SecondaryDataCollector implements DataCollector {
-	@SuppressWarnings("unused")
-	protected DatabaseManager							databaseManager;
+	protected SecondaryDatabaseManager					databaseManager;
 	protected Hashtable<String, AttributeCategories>	attributeTable;
 
 	/**
@@ -60,7 +60,7 @@ public abstract class SecondaryDataCollector implements DataCollector {
 		// 0) Create the DatabaseManager(s) with an empty global attribute
 		// table.
 		// 1) Create all the secondary data collectors.
-		// 2) By calling the getTypeTable() method on each one, add all the
+		// 2) By calling the getAttributeTable() method on each one, add all the
 		// attributes to the global attribute table.
 		return attributeTable;
 	}
@@ -86,7 +86,7 @@ public abstract class SecondaryDataCollector implements DataCollector {
 	 * @param databaseManager
 	 *            The database manager to use to write to the database.
 	 */
-	public SecondaryDataCollector(DatabaseManager databaseManager) {
+	public SecondaryDataCollector(SecondaryDatabaseManager databaseManager) {
 		this.databaseManager = databaseManager;
 	}
 }

@@ -9,7 +9,6 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.AttributeReliabilityPair;
 import uk.ac.cam.darknet.common.Individual;
@@ -30,7 +29,7 @@ import uk.ac.cam.darknet.exceptions.UnknownAttributeException;
  * @author Ibtehaj Nadeem
  */
 public class SecondaryDatabaseManager extends DatabaseManager {
-	private static final String	CREATE_SECONDARY_TABLE	= "CREATE CACHED TABLE %1$s (id BIGINT NOT NULL, attribute %2$s NOT NULL, reliability DOUBLE PRECISION NOT NULL, FOREIGN KEY (id) REFERENCES individuals(id), CHECK (reliability >= 0 AND reliability <= 1))";
+	private static final String	CREATE_SECONDARY_TABLE	= "CREATE CACHED TABLE %1$s (id BIGINT NOT NULL, attribute OTHER NOT NULL, reliability DOUBLE PRECISION NOT NULL, FOREIGN KEY (id) REFERENCES individuals(id), CHECK (reliability >= 0 AND reliability <= 1))";
 	private static final String	INSERT_ATTRIBUTE		= "INSERT INTO %1$s (id, attribute, reliability) VALUES (?, ?, ?)";
 
 	/**
@@ -58,13 +57,11 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 	private void createTables() throws SQLException, InvalidAttributeNameException {
 		Enumeration<String> attributeNames = globalAttributeTable.keys();
 		String currentAttributeName;
-		AttributeCategories currentCategory;
 		while (attributeNames.hasMoreElements()) {
 			currentAttributeName = attributeNames.nextElement();
-			currentCategory = globalAttributeTable.get(currentAttributeName);
 			if (isAttributeNameValid(currentAttributeName)) {
 				try (Statement stmt = connection.createStatement();) {
-					stmt.execute(String.format(CREATE_SECONDARY_TABLE, currentAttributeName, getSQLTypeString(getSQLType(currentCategory))));
+					stmt.execute(String.format(CREATE_SECONDARY_TABLE, currentAttributeName));
 				} catch (SQLException e) {
 					// Table already exists.
 					LoggerFactory.getLogger().info(e.getMessage());
@@ -91,7 +88,7 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 		Iterator<Individual> iterator;
 		String currentAttributeName;
 		Individual currentIndividual;
-		AttributeReliabilityPair currentAttrRel;
+		List<AttributeReliabilityPair> currentAttrList;
 		// Note that the time spent executing this method is dominated by SQL. Iterate
 		// over attribute names first rather than individuals to exploit prepared statements.
 		while (attributeNames.hasMoreElements()) {
@@ -100,16 +97,17 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 				iterator = individuals.iterator();
 				while (iterator.hasNext()) {
 					currentIndividual = iterator.next();
-					if (currentIndividual.getProperties().containsAttribute(currentAttributeName)) {
-						currentAttrRel = currentIndividual.getProperties().get(currentAttributeName);
+					if (currentIndividual.containsAttribute(currentAttributeName)) {
 						stmt.setLong(1, currentIndividual.getId());
-						stmt.setObject(2, currentAttrRel.getAttribute(), getSQLType(globalAttributeTable.get(currentAttributeName)));
-						stmt.setDouble(3, currentAttrRel.getReliability());
-						try {
-							stmt.execute();
-						} catch (SQLException e) {
-							// Attribute already present.
-							LoggerFactory.getLogger().info(e.getMessage());
+						currentAttrList = currentIndividual.getAttribute(currentAttributeName);
+						for (AttributeReliabilityPair currentAttrRel : currentAttrList) {
+							stmt.setObject(2, currentAttrRel.getAttribute());
+							stmt.setDouble(3, currentAttrRel.getReliability());
+							try {
+								stmt.execute();
+							} catch (SQLException e) {
+								LoggerFactory.getLogger().info(e.getMessage());
+							}
 						}
 					}
 				}
@@ -121,35 +119,24 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 		connection.commit();
 	}
 
-	@SuppressWarnings({"javadoc", "deprecation"})
+	@SuppressWarnings({"javadoc"})
 	public static void main(String[] args) throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException, InvalidAttributeNameException, UnknownAttributeException, InvalidAttributeTypeException, InvalidReliabilityException, RequestNotSatisfiableException {
 		Hashtable<String, AttributeCategories> globalAttributeTable = new Hashtable<String, AttributeCategories>();
-		globalAttributeTable.put("test3", AttributeCategories.ALIAS);
-		globalAttributeTable.put("test4", AttributeCategories.ALIAS);
-		globalAttributeTable.put("test1", AttributeCategories.AGE);
-		globalAttributeTable.put("test2", AttributeCategories.AGE);
+		globalAttributeTable.put("fb_gender", AttributeCategories.GENDER);
+		globalAttributeTable.put("fb_birthday", AttributeCategories.BIRTHDAY);
 		SecondaryDatabaseManager instance = new SecondaryDatabaseManager(globalAttributeTable);
-		java.util.Date date = new java.util.Date(2014, 0, 0);
-		ArrayList<Individual> individuals = (ArrayList<Individual>) instance.getByShow(date, 1);
-		Random random = new Random();
-		for (Individual i : individuals) {
-			if (random.nextDouble() < 0.1)
-				i.getProperties().put("test1", (byte) random.nextInt(100), random.nextDouble());
-			if (random.nextDouble() < 0.1)
-				i.getProperties().put("test2", (byte) random.nextInt(100), random.nextDouble());
-			if (random.nextDouble() < 0.1)
-				i.getProperties().put("test3", "alias" + random.nextInt(100), random.nextDouble());
-			if (random.nextDouble() < 0.1)
-				i.getProperties().put("test4", "alias" + random.nextInt(100), random.nextDouble());
-		}
-		// instance.storeAttributes(individuals);
-		Show show = instance.getAllShows().get(0);
+		ArrayList<Individual> individuals;
+		Show show = instance.getAllShows().get(2);
 		IndividualRequirements requirements = new IndividualRequirements(show);
-		requirements.addRequirement(AttributeCategories.AGE, 0);
-		requirements.addRequirement(AttributeCategories.ALIAS, 0);
-		ArrayList<Individual> individuals1 = (ArrayList<Individual>) instance.getSuitableIndividuals(requirements);
-		for (Individual i : individuals1) {
-			System.out.println(i.getId());
+		requirements.addRequirement(AttributeCategories.GENDER, 0.5);
+		requirements.addRequirement(AttributeCategories.BIRTHDAY, 0.5);
+		individuals = (ArrayList<Individual>) instance.getSuitableIndividuals(requirements);
+		String gender;
+		String dob;
+		for (Individual i : individuals) {
+			gender = (String) i.getAttribute("fb_gender").get(0).getAttribute();
+			dob = (String) i.getAttribute("fb_birthday").get(0).getAttribute();
+			System.out.println("Individual " + i.getId() + ", called " + i.getFirstName() + " " + i.getLastName() + ", is " + gender + " and has birthday " + dob + ".");
 		}
 		instance.closeConnection();
 	}

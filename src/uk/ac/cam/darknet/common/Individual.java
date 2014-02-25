@@ -2,6 +2,10 @@ package uk.ac.cam.darknet.common;
 
 import java.util.Date;
 import java.util.Hashtable;
+import java.util.List;
+import uk.ac.cam.darknet.exceptions.InvalidAttributeTypeException;
+import uk.ac.cam.darknet.exceptions.InvalidReliabilityException;
+import uk.ac.cam.darknet.exceptions.UnknownAttributeException;
 
 /**
  * A class for storing a person with their data. The common attribute types that are provided by the
@@ -180,5 +184,72 @@ public class Individual {
 	@Override
 	public int hashCode() {
 		return super.hashCode();
+	}
+
+	/**
+	 * This method adds an attribute to this <code>Properties</code> object. The key must be a valid
+	 * attribute present in this object's global attribute table. If this is not the case, an
+	 * <code>UnknownAttributeException</code> will be thrown. If the type of the object is not as
+	 * specified by the attribute category, an <code>InvalidAttributeType</code> exception will be
+	 * thrown. This method delegates the request to the underlying <code>Properties</code> object.
+	 * 
+	 * @param attributeName
+	 *            The name of the attribute to add.
+	 * @param attributeValue
+	 *            The corresponding object.
+	 * @param attributeReliability
+	 *            The reliability of the attribute. This must be a number between 0.0 (no
+	 *            confidence) and 1.0 (complete certainty).
+	 * @throws UnknownAttributeException
+	 * @throws InvalidAttributeTypeException
+	 * @throws InvalidReliabilityException
+	 */
+	public void addAttribute(String attributeName, Object attributeValue, double attributeReliability) throws UnknownAttributeException, InvalidAttributeTypeException, InvalidReliabilityException {
+		properties.put(attributeName, attributeValue, attributeReliability);
+	}
+
+	/**
+	 * Returns a list of all the attributes stored in this object under the given name. This method
+	 * delegates the request to the underlying <code>Properties</code> object.
+	 * 
+	 * @param attributeName
+	 *            The attribute name whose associated list of values is to be returned.
+	 * @return The list of values to which the specified attribute name is mapped, or null if this
+	 *         map contains no mapping for the attribute.
+	 */
+	public List<AttributeReliabilityPair> getAttribute(String attributeName) {
+		return properties.get(attributeName);
+	}
+
+	/**
+	 * Removes all the attributes stored under the given key. If there are no such attributes,
+	 * nothing is changed. This method delegates the request to the underlying
+	 * <code>Properties</code> object.
+	 * 
+	 * @param attributeName
+	 *            The key of the key-value pair to remove.
+	 */
+	public void removeAttribute(String attributeName) {
+		properties.remove(attributeName);
+	}
+
+	/**
+	 * Clears this individual's <code>Properties</code> object so that it contains no more
+	 * attributes.
+	 */
+	public void clearAttributes() {
+		properties.clear();
+	}
+
+	/**
+	 * Tests whether a given attribute (i.e. at least one) is contained in this individual's
+	 * <code>Properties</code> object.
+	 * 
+	 * @param attributeName
+	 *            The name of the attribute whose presence should be checked.
+	 * @return True if the key is contained, false otherwise.
+	 */
+	public boolean containsAttribute(String attributeName) {
+		return properties.containsAttribute(attributeName);
 	}
 }

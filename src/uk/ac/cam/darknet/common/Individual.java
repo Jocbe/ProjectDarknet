@@ -195,17 +195,17 @@ public class Individual {
 	 * 
 	 * @param attributeName
 	 *            The name of the attribute to add.
-	 * @param value
+	 * @param attributeValue
 	 *            The corresponding object.
-	 * @param reliability
+	 * @param attributeReliability
 	 *            The reliability of the attribute. This must be a number between 0.0 (no
 	 *            confidence) and 1.0 (complete certainty).
 	 * @throws UnknownAttributeException
 	 * @throws InvalidAttributeTypeException
 	 * @throws InvalidReliabilityException
 	 */
-	public void addAttribute(String attributeName, Object value, double reliability) throws UnknownAttributeException, InvalidAttributeTypeException, InvalidReliabilityException {
-		properties.put(attributeName, value, reliability);
+	public void addAttribute(String attributeName, Object attributeValue, double attributeReliability) throws UnknownAttributeException, InvalidAttributeTypeException, InvalidReliabilityException {
+		properties.put(attributeName, attributeValue, attributeReliability);
 	}
 
 	/**

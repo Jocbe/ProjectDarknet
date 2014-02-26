@@ -4,7 +4,10 @@ import java.util.logging.Logger;
 import org.junit.Test;
 import uk.ac.cam.darknet.common.LoggerFactory;
 
-@SuppressWarnings("javadoc")
+/**
+ * @author Johann Beleites
+ *
+ */
 public class CommonTests {
 	@Test
 	public void LoggerTest() {

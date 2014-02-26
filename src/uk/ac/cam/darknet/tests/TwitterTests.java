@@ -10,7 +10,7 @@ import twitter4j.TwitterFactory;
 import uk.ac.cam.darknet.backend.TwitterDataCollector;
 
 /**
- * @author The Doctor
+ * @author Johann Beleites
  * 
  * Tests for the TwitterDataCollector [Demo class]
  *

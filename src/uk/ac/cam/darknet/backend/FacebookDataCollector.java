@@ -30,6 +30,7 @@ import com.restfb.types.User;
 /**
  * Secondary data collector which gets data from Facebook's public API.
  *  
+ *  @author Johann Beleites
  */
 public class FacebookDataCollector extends SecondaryDataCollector {
 	

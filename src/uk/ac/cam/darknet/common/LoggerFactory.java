@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 /**
  * Factory for a logger to ensure there is only one logger in the system.
  * 
- * @author Author
+ * @author Johann Beleites
  */
 public class LoggerFactory {
 	private static Logger logger;

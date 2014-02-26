@@ -1,12 +1,10 @@
 package uk.ac.cam.darknet.backend;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.lang.Thread;
 import java.util.Hashtable;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Arrays;
+import java.util.Set;
+import java.lang.Class;
+import java.lang.reflect.Constructor;
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.database.*;
 /**
@@ -22,13 +20,40 @@ public class DataCollectionManager {
 	 * @param args
 	 */
 
+  private int threadCount;
   private ManualPrimaryDataCollector mpdc;
-  private SecondaryDataCollector tempsdc;
   private PrimaryDatabaseManager pdm;
   private SecondaryDatabaseManager sdm;
-  private List<String> argList;
-  private List<SecondaryDataCollector> sdcsToRun;
-  private Hashtable<String, AttributeCategories> globalAttributeTable = new Hashtable<String, AttributeCategories>();
+  private Hashtable<String, AttributeCategories> globalAttributeTable;
+
+  public void DataCollectionManager() {
+    globalAttributeTable = new Hashtable<String, AttributeCategories>();
+    pdm = new PrimaryDatabaseManager(globalAttributeTable);
+    sdm = new SecondaryDatabaseManager(globalAttributeTable);
+    threadCount = 0;
+  }
+
+  // Method to run secondary data collector in new thread.
+  void startCollector(Class<SecondaryDataCollector> sdcObject) {
+    // Obtain the constructor object for the class object supplied.
+    Class[] args = new Class[1];
+    args[0] = sdm.getClass();
+    final Constructor<SecondaryDataCollector> sdcCstr = sdcObject.getConstructor(args);
+    Thread t = new Thread() {
+      @Override
+      public void run() {
+        // Create a new instance of the secondary data collector corresponding to sdcObject.
+        final SecondaryDataCollector sdc = sdcCstr.newInstance(sdm);
+        // TODO where to get the individuals for setting up??
+        // TODO Setup the collector.
+        // TODO Query - will this run() method interfere with "public void run()" above?
+        sdc.run();
+      }
+    };
+    t.start();
+    // Update the thread counter.
+    threadCount++;
+  }
    
   // Update the globalAttributeTable with all attributes found in the specified
   // SecondaryDataCollector.
@@ -42,7 +67,7 @@ public class DataCollectionManager {
     Hashtable<String, AttributeCategories> tempAttributeTable = sdc.getAttributeTable();
 
     // Generate a set of all keys in tempAttributeTable.
-    Set<String> keys = sdc.keySet();
+    Set<String> keys = tempAttributeTable.keySet();
 
     // Prefix each key with collectorId before adding its Hashtable entry to
     // the globalAttributeTable.
@@ -53,39 +78,26 @@ public class DataCollectionManager {
 
 	public static void main(String[] args) {
 
-    pdm = new PrimaryDatabaseManager(globalAttributeTable);
-    sdm = new SecondaryDatabaseManager(globalAttributeTable);
+    // Create instance of DataCollectionManager from which to launch everything else.
+    final DataCollectionManager dcm = new DataCollectionManager();
 
-    // Create the ManualPrimaryDataCollector.
-    mpdc = new ManualPrimaryDataCollector(pdm);
+    // Populate globalAttributeTable.
+    // More elegant way desired, but so far reflection seems like it will not work.
+    FacebookDataCollector fdc = new FacebookDataCollector(dcm.sdm);
+    dcm.updateTable(fdc);
+    TwitterDataCollector tdc = new TwitterDataCollector(dcm.sdm);
+    dcm.updateTable(tdc);
 
-    // Convert args to a list.
-    argList = Arrays.asList(args);
+    // Create the ManualPrimaryDataCollector in a new thread..
+    Thread guiThread = new Thread() {
+      @Override
+      public void run() {
+        dcm.mpdc = new ManualPrimaryDataCollector(dcm.pdm);
+        dcm.mpdc.run();
+      }
+    };
+    guiThread.start();
 
-    // Create secondary data collectors according to the arguments present.
-    // Add an if statement for each new secondary data collector added to the system.
-
-    // Facebook.
-    if (argList.contains("-f")) {
-      FacebookDataCollector fdc = new FacebookDataCollector(globalAttributeTable);
-      sdcsToRun.add(fdc);
-    }
-
-    // Twitter.
-    if (argList.contains("-t")) {
-      TwitterDataCollector tdc = new TwitterDataCollector(globalAttributeTable);
-      sdcsToRun.add(tdc);
-    }
-
-    // Update globalAttributeTable for each desired SecondaryDataCollector.
-    for (SecondaryDataCollector sdc : sdcsToRun) {
-      updateTable(sdc);
-    }
-    
-    // Run the data collectors.
-    mpdc.run();
-    for (SecondaryDataCollector sdc : sdcsToRun) {
-      sdc.run();
-    }
+    // TODO action after guiThread is finished.
 	}
 }

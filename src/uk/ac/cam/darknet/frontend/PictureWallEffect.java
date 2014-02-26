@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
@@ -81,26 +82,8 @@ public class PictureWallEffect extends Effect {
 				int[] colwidth = new int[numcols];
 				BufferedImage[] colPhotos = new BufferedImage[numcols];
 				for (int i = 0; i < numcols; i++) {
-					int heightTotal = 0;
-					for (int j = 0; j < 5; j++) {
-						heightTotal += photos[i + j].getHeight();
-						int width = photos[i + j].getWidth();
-						if (width > colwidth[i]) {
-							colwidth[i] = width;
-						}
-					}
-					int heightCurr = 0;
-					BufferedImage colImage = new BufferedImage(colwidth[i],
-							heightTotal, BufferedImage.TYPE_INT_RGB);
-					for (int j = 0; j < 5; j++) {
-						Graphics2D g2d = colImage.createGraphics();
-						g2d.drawImage(photos[i + j], 0, heightCurr, null);
-						heightCurr += photos[i + j].getHeight();
-						g2d.dispose();
-					}
-					colPhotos[i] = colImage;
+					colPhotos[i] = concatenateByHeight(Arrays.copyOfRange(photos, i, i+5));
 				}
-
 				// assemble columns into 1 image
 				image = concatenateByWidth(colPhotos);
 			} else {
@@ -150,6 +133,30 @@ public class PictureWallEffect extends Effect {
 			Graphics2D g2d = image.createGraphics();
 			g2d.drawImage(photos[i], widthCurr, 0, null);
 			widthCurr += photos[i].getWidth();
+			g2d.dispose();
+		}
+		return image;
+	}
+	
+	private BufferedImage concatenateByHeight(BufferedImage[] photos) {
+		int heightTotal = 0;
+		int width = 0;
+		for (int i = 0; i < photos.length; i++) {
+			heightTotal += photos[i].getHeight();
+			int w = photos[i].getWidth();
+			if (w > width) {
+				width = w;
+			}
+		}
+		int heightCurr = 0;
+//		System.out.println("w: " + widthTotal + "  h: " + height);
+		BufferedImage image = new BufferedImage(width, heightTotal,
+				BufferedImage.TYPE_INT_RGB);
+		for (int i = 0; i < photos.length; i++) {
+//			System.out.println(i);
+			Graphics2D g2d = image.createGraphics();
+			g2d.drawImage(photos[i], 0, heightCurr, null);
+			heightCurr += photos[i].getHeight();
 			g2d.dispose();
 		}
 		return image;
@@ -204,7 +211,7 @@ public class PictureWallEffect extends Effect {
 		buffImg = ImageIO.read(img);
 		photos[5] = buffImg;
 
-		buffImg = pwe.concatenateByWidth(photos);
+		buffImg = pwe.concatenateByHeight(photos);
 
 		ImageIO.write(buffImg, "png", new File("storage/pictureEffectTest.png"));
 		*/

@@ -41,9 +41,12 @@ public class PictureWallEffect extends Effect {
 	private String filename;
 	private int colSize = 5;
 
-	// Setup method, DatabaseManager
+
 	/**
+	 * Constructs PictureWallEffect
+	 * 
 	 * @param dm
+	 * 		appropriate DatabaseManager
 	 */
 	public PictureWallEffect(DatabaseManager dm) {
 		super(dm);
@@ -57,6 +60,7 @@ public class PictureWallEffect extends Effect {
 	 * @param filename
 	 * 		filename to use when storing the file (without filename Extension)
 	 */
+	@Setup
 	public void setup(String pathname, String filename) {
 		this.pathname = pathname;
 		this.filename = filename;

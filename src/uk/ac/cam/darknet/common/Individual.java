@@ -146,7 +146,7 @@ public class Individual {
 	 * 
 	 * @return The date of the event for which this individual is bought a ticket.
 	 */
-	public int getEvenVenue() {
+	public int getEventVenue() {
 		return venue;
 	}
 

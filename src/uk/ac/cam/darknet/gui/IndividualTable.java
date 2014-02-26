@@ -76,7 +76,7 @@ public class IndividualTable extends JTable {
 		final String lastName = i.getLastName();
 		final String email = i.getEmail();
 		final String eventDate;
-		final String venueID = String.valueOf(i.getEvenVenue());
+		final String venueID = String.valueOf(i.getEventVenue());
 		// Handle cases with no date specified
 		if (i.getEventDate() != null) {
 			final SimpleDateFormat sdf = new SimpleDateFormat(

@@ -6,8 +6,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.UUID;
+
 import javax.imageio.ImageIO;
-import uk.ac.cam.darknet.common.Strings;
 
 /**
  * Stores an image given as an URL, file or a awt.Image and returns its
@@ -42,13 +42,7 @@ public class ImageStorage {
 	 * <code>bin/</code> is.
 	 */
 	public ImageStorage() {
-		// Get URL of this class and get rid of the file:/ at the beginning and
-		// replace %20 with space
-		final String classURL = this.getClass().getResource("").toString()
-				.replaceAll("file:/", "").replace("%20", " ");
-		// Get out of the project and bin class and go into storage/
-		this.storagePath = classURL.replaceAll(Strings.STORAGE_CLASS_REL_URL,
-				Strings.STORAGE_REL_URL);  
+		storagePath = "storage/";
 	}
 
 	/**

@@ -5,7 +5,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.LinkedList;
@@ -17,7 +16,6 @@ import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.AttributeReliabilityPair;
 import uk.ac.cam.darknet.common.Individual;
 import uk.ac.cam.darknet.common.IndividualRequirements;
-import uk.ac.cam.darknet.common.Properties;
 import uk.ac.cam.darknet.common.Show;
 import uk.ac.cam.darknet.database.DatabaseManager;
 import uk.ac.cam.darknet.database.SecondaryDatabaseManager;
@@ -39,6 +37,8 @@ import uk.ac.cam.darknet.storage.ImageStorage;
 public class PictureWallEffect extends Effect {
 
 	private String pathname;
+	private String filename;
+	private int colSize;
 
 	// Setup method, DatabaseManager
 	/**
@@ -48,8 +48,15 @@ public class PictureWallEffect extends Effect {
 		super(dm);
 	}
 
-	public void setup(String pathname) {
+	/**
+	 * @param pathname
+	 * @param filename
+	 * @param colSize
+	 */
+	public void setup(String pathname, String filename, int colSize) {
 		this.pathname = pathname;
+		this.filename = filename;
+		this.colSize = colSize;
 	}
 
 	@Override
@@ -77,38 +84,31 @@ public class PictureWallEffect extends Effect {
 
 			BufferedImage image;
 			if (photos.length > 5) {
-				// assemble into columns of 5
-				int numcols = photos.length / 5; // individuals.size() / 5;
+				// assemble into columns of colSize
+				int numcols = photos.length / colSize; // individuals.size() / 5;
 				int[] colwidth = new int[numcols];
 				BufferedImage[] colPhotos = new BufferedImage[numcols];
 				for (int i = 0; i < numcols; i++) {
-					colPhotos[i] = concatenateByHeight(Arrays.copyOfRange(photos, 5*i, 5*i+5));
+					colPhotos[i] = concatenateByHeight(Arrays.copyOfRange(photos, colSize*i, colSize*i+colSize));
 				}
-				// assemble columns into 1 image
+				// merge columns
 				image = concatenateByWidth(colPhotos);
 			} else {
 				image = concatenateByWidth(photos);
 			}
 
-			// ummm pathname?? need input?
-			ImageIO.write(image, "png", new File("pictureEffect.png"));
+			ImageIO.write(image, "png", new File(pathname+filename+".png"));
 		} catch (InvalidReliabilityException e) {
-			// TODO
-			e.printStackTrace();
+			System.err.println("Invalid Reliability of Photo");
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (RequestNotSatisfiableException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (UnknownAttributeException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (InvalidAttributeTypeException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

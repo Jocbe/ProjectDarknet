@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -321,21 +320,5 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 		}
 		date = dateToSQLTimestamp(toStore.getEventDate());
 		venue = toStore.getEvenVenue();
-	}
-
-	@SuppressWarnings({"javadoc", "deprecation", "unused"})
-	public static void main(String args[]) throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException {
-		PrimaryDatabaseManager instance = new PrimaryDatabaseManager(null);
-		java.util.Date date = new java.util.Date(2014, 0, 0);
-		ArrayList<Individual> individuals = new ArrayList<Individual>();
-		String[] fnames = {"Claire", "Denise", "Richard", "Travis", "Sheila"};
-		String[] lnames = {"Manzella", "Salazar", "Connally", "Briggs", "Brewer"};
-		String[] emails = {"c.manzella241@gmail.com", "", "", "", "sheilambrewer@teleworm.us"};
-		String[] seats = {"A01", "B52", null, "C04", "D14"};
-		for (int i = 0; i < 128; i++) {
-			individuals.add(Individual.getNewIndividual(fnames[i % 5], lnames[i % 5], emails[i % 5], date, 1, Integer.toString(i), null));
-		}
-		instance.storeIndividual(individuals);
-		instance.closeConnection();
 	}
 }

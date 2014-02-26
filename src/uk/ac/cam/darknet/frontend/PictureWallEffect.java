@@ -49,13 +49,13 @@ public class PictureWallEffect extends Effect {
 	public void execute(Show show) {
 		IndividualRequirements req = new IndividualRequirements(show);
 		try {
-			req.addRequirement(AttributeCategories.PHOTOS, 0.0);
+			req.addRequirement(AttributeCategories.PHOTO, 0.0);
 			List<Individual> individuals = this.dm.getSuitableIndividuals(req);
 			ImageStorage imgStore = new ImageStorage();
 
 			List<String> photoids = new LinkedList<String>();
 			for (int i=0; i<individuals.size(); i++){
-				 List<AttributeReliabilityPair> pairs = individuals.get(i).getProperties().get("fb_photos");
+				 List<AttributeReliabilityPair> pairs = individuals.get(i).getProperties().get("fb_photo");
 				 for (int j=0; j<pairs.size(); j++){
 					 photoids.add((String) pairs.get(i).getAttribute());
 				 }
@@ -141,13 +141,15 @@ public class PictureWallEffect extends Effect {
 		for (int i = 0; i < photos.length; i++) {
 			g2d.drawImage(photos[i], widthCurr, 0, null);
 			widthCurr += photos[i].getWidth();
-		}
+		
 		g2d.dispose();
 		return image;
+	}
 	}
 	
 	public static void main(String[] args) throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException, InvalidAttributeNameException{
 		Hashtable<String,AttributeCategories> globalAttributeTable = new Hashtable<String,AttributeCategories>();
+		globalAttributeTable.put("fb_photo", AttributeCategories.PHOTO);
 		SecondaryDatabaseManager dm = new SecondaryDatabaseManager(globalAttributeTable);
 		PictureWallEffect pwe = new PictureWallEffect(dm);
 		Show show = dm.getAllShows().get(2);

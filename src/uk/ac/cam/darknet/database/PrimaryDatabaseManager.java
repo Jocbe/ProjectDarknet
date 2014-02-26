@@ -111,7 +111,7 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 				current = iterator.next();
 				setupLocalFieldParameters(current);
 				try {
-					createShowIfNotExists(current.getEventDate(), current.getEvenVenue());
+					createShowIfNotExists(current.getEventDate(), current.getEventVenue());
 					executeIndividualUpdateStatement(stmt);
 					numOfIndividualsInserted++;
 				} catch (SQLException e) {
@@ -145,7 +145,7 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 		try (PreparedStatement stmt = connection.prepareStatement(INSERT_INDIVIDUAL);) {
 			setupLocalFieldParameters(individual);
 			try {
-				createShowIfNotExists(individual.getEventDate(), individual.getEvenVenue());
+				createShowIfNotExists(individual.getEventDate(), individual.getEventVenue());
 				executeIndividualUpdateStatement(stmt);
 				try (Statement getId = connection.createStatement()) {
 					try (ResultSet result = getId.executeQuery(GET_NEW_INDIVIDUAL_ID);) {
@@ -319,6 +319,6 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 			seat = toStore.getSeat().trim().equals("") ? null : toStore.getSeat().trim();
 		}
 		date = dateToSQLTimestamp(toStore.getEventDate());
-		venue = toStore.getEvenVenue();
+		venue = toStore.getEventVenue();
 	}
 }

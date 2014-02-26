@@ -15,7 +15,7 @@ import com.itextpdf.text.pdf.PdfWriter;
 /**
  * An effect for generating a report for each individual.
  * 
- * @author Augustin Zidek
+ * @author Johann Beleites
  * 
  */
 public class ReportEffect extends Effect {

@@ -22,7 +22,7 @@ import uk.ac.cam.darknet.exceptions.InvalidAttributeNameException;
  * 
  * Test whether the FacebookDataCollector works as desired
  * 
- * @author The Doctor
+ * @author Johann Beleites
  *
  */
 public class FacebookTests {

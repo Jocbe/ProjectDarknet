@@ -37,12 +37,18 @@ import uk.ac.cam.darknet.storage.ImageStorage;
  */
 public class PictureWallEffect extends Effect {
 	
+	private String pathname;
+	
 	//Setup method, DatabaseManager
 	/**
 	 * @param dm
 	 */
 	public PictureWallEffect(DatabaseManager dm){
 		super(dm);
+	}
+	
+	public void setup(String pathname){
+		this.pathname = pathname;
 	}
 
 	@Override
@@ -147,6 +153,16 @@ public class PictureWallEffect extends Effect {
 		return image;
 	}
 	
+	/**
+	 * Method solely for testing the PicuteWallEffect
+	 * 
+	 * @param args
+	 * @throws ClassNotFoundException
+	 * @throws ConfigFileNotFoundException
+	 * @throws IOException
+	 * @throws SQLException
+	 * @throws InvalidAttributeNameException
+	 */
 	public static void main(String[] args) throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException, InvalidAttributeNameException{
 		Hashtable<String,AttributeCategories> globalAttributeTable = new Hashtable<String,AttributeCategories>();
 		globalAttributeTable.put("fb_photo", AttributeCategories.PHOTO);

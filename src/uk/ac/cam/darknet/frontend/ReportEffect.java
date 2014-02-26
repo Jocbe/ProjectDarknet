@@ -1,16 +1,11 @@
 package uk.ac.cam.darknet.frontend;
 
-
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-
+import java.util.ArrayList;
+import java.util.Enumeration;
+import uk.ac.cam.darknet.common.Individual;
+import uk.ac.cam.darknet.common.IndividualRequirements;
 import uk.ac.cam.darknet.common.Show;
 import uk.ac.cam.darknet.database.DatabaseManager;
-
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.pdf.PdfWriter;
 
 /**
  * An effect for generating a report for each individual.
@@ -19,27 +14,34 @@ import com.itextpdf.text.pdf.PdfWriter;
  * 
  */
 public class ReportEffect extends Effect {
-	public ReportEffect(DatabaseManager dm){
+	private String	outputPath;
+
+	public ReportEffect(DatabaseManager dm) {
 		super(dm);
 	}
-	
+
 	@Override
 	public void execute(Show show) {
-		String path = "report.pdf";
-		
-		Document doc = new Document();
+		ArrayList<Individual> individuals;
+		IndividualRequirements requirements = new IndividualRequirements(show);
+		Enumeration<String> attributes;
+		String currentAttribute;
 		try {
-			PdfWriter.getInstance(doc, new FileOutputStream(path));
-			doc.open();
-			doc.add(new Paragraph("Hey space"));
-		} catch (FileNotFoundException | DocumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			doc.close();
+			individuals = (ArrayList<Individual>) dm.getSuitableIndividuals(requirements);
+			for (Individual i : individuals) {
+				attributes = i.getProperties().keys();
+				while (attributes.hasMoreElements()) {
+					currentAttribute = attributes.nextElement();
+					i.getAttribute(currentAttribute);
+				}
+			}
+		} catch (Exception e) {
+			return;
 		}
-		
-		
-		
+	}
+
+	@Override
+	public void setup(String[] args) {
+		outputPath = args[0];
 	}
 }

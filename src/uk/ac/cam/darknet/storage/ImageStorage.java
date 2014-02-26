@@ -48,7 +48,7 @@ public class ImageStorage {
 				.replaceAll("file:/", "").replace("%20", " ");
 		// Get out of the project and bin class and go into storage/
 		this.storagePath = classURL.replaceAll(Strings.STORAGE_CLASS_REL_URL,
-				Strings.STORAGE_REL_URL);
+				Strings.STORAGE_REL_URL);  
 	}
 
 	/**

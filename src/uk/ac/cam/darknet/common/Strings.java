@@ -35,9 +35,15 @@ public class Strings {
 	public static final String	GUI_DATE_FORMAT_ERR			= "The date format is invalid. Use yyyy-MM-dd HH:mm.";
 	public static final String	GUI_DB_ADD_ERR				= "It wasn't possible to add the individual to the database. Have you set all the fields correctly?";
 	public static final String	GUI_DB_READ_ERR				= "It wasn't possible to load individuals from the database.";
-	public static final String	GUI_DB_CONN_ERR				= "Could not connect to the database.";
+	public static final String	GUI_DB_VEN_ERR				= "It wasn't possible to read the list of venues from the database.";
+	public static final String	GUI_DB_CONN_ERR				= "It wasn't possible to connect to the database.";
 	public static final String	GUI_CSV_ADD_ERR				= "It wasn't possible to open or parse the given CSV file. Have you selected the right one :-)?";
 	public static final String	GUI_DB_CSV_ADD_ERR			= "It wasn't possible to load the individuals from the CSV file into the database. Check your CSV file.";
+	public static final String GUI_SET_NEW_VENUE 			= "Please set a name for the new venue.";
+	public static final String GUI_VENUE_ADD_ERR 			= "It wasn't possible to add venue to the database. Check your connection and spelling.";
+	public static final String GUI_DB_DEL_IND_ERR 			= "It wasn't possible to delete this individual. Check your connection.";
+	public static final String GUI_DONT_FILTER 				= "Don't filter";
+	public static final String GUI_NO_VENUE_SEL 			= "No venue selected";
 
 	/**
 	 * @return The URL of the project folder.

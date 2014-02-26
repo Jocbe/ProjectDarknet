@@ -143,8 +143,8 @@ public class PictureWallEffect extends Effect {
 			widthCurr += photos[i].getWidth();
 		
 		g2d.dispose();
-		return image;
 	}
+		return image;
 	}
 	
 	public static void main(String[] args) throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException, InvalidAttributeNameException{

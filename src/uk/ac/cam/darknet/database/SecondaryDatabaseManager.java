@@ -124,19 +124,26 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 		Hashtable<String, AttributeCategories> globalAttributeTable = new Hashtable<String, AttributeCategories>();
 		globalAttributeTable.put("fb_gender", AttributeCategories.GENDER);
 		globalAttributeTable.put("fb_birthday", AttributeCategories.BIRTHDAY);
-		SecondaryDatabaseManager instance = new SecondaryDatabaseManager(globalAttributeTable);
-		ArrayList<Individual> individuals;
-		Show show = instance.getAllShows().get(2);
+		DatabaseManager instance = new DatabaseManager(globalAttributeTable);
+		ArrayList<Show> shows = (ArrayList<Show>) instance.getAllShows();
+		Show show = shows.get(2);
 		IndividualRequirements requirements = new IndividualRequirements(show);
-		requirements.addRequirement(AttributeCategories.GENDER, 0.5);
-		requirements.addRequirement(AttributeCategories.BIRTHDAY, 0.5);
-		individuals = (ArrayList<Individual>) instance.getSuitableIndividuals(requirements);
-		String gender;
-		String dob;
+		//requirements.addRequirement(AttributeCategories.GENDER, 0.5);
+		//requirements.addRequirement(AttributeCategories.BIRTHDAY, 0.5);
+		ArrayList<Individual> individuals = (ArrayList<Individual>) instance.getSuitableIndividuals(requirements);
+		// String gender;
+		// String dob;
+		Enumeration<String> atts;
 		for (Individual i : individuals) {
-			gender = (String) i.getAttribute("fb_gender").get(0).getAttribute();
-			dob = (String) i.getAttribute("fb_birthday").get(0).getAttribute();
-			System.out.println("Individual " + i.getId() + ", called " + i.getFirstName() + " " + i.getLastName() + ", is " + gender + " and has birthday " + dob + ".");
+			atts = i.getProperties().keys();
+			System.out.println("Individual " + i.getId() + ", " + i.getFirstName() + " " + i.getLastName() + ":");
+			while (atts.hasMoreElements()) {
+				System.out.println(" " + atts.nextElement());
+			}
+			// gender = (String) i.getAttribute("fb_gender").get(0).getAttribute();
+			// dob = (String) i.getAttribute("fb_birthday").get(0).getAttribute();
+			// System.out.println("Individual " + i.getId() + ", called " + i.getFirstName() + " " +
+			// i.getLastName() + ", is " + gender + " and has birthday " + dob + ".");
 		}
 		instance.closeConnection();
 	}

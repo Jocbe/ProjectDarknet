@@ -11,7 +11,6 @@ import uk.ac.cam.darknet.exceptions.InvalidReliabilityException;
  * which individuals will be selected when querying the database manager.
  * 
  * @author Ibtehaj Nadeem
- * 
  */
 public class IndividualRequirements {
 	private final Show										show;

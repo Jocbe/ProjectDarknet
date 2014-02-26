@@ -18,7 +18,6 @@ import uk.ac.cam.darknet.exceptions.UnknownAttributeException;
  * have to be returned as <code>Object</code>.
  * 
  * @author Ibtehaj Nadeem
- * 
  */
 public class Properties {
 	private final Hashtable<String, AttributeCategories>		globalAttributeTable;

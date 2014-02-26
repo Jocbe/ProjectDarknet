@@ -14,6 +14,7 @@ import uk.ac.cam.darknet.exceptions.UnknownAttributeException;
  * attribute type available is prefixed with the unique ID of the corresponding collector to avoid
  * name clashes.
  * 
+ * @author Ibtehaj Nadeem
  */
 public class Individual {
 	private final Properties	properties;

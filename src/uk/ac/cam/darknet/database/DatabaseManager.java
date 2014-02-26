@@ -45,14 +45,14 @@ public class DatabaseManager {
 	private static final String								GET_BY_FNAME		= "SELECT * FROM individuals WHERE fname = ?";
 	private static final String								GET_BY_LNAME		= "SELECT * FROM individuals WHERE lname = ?";
 	private static final String								GET_ALL_INDIVIDUALS	= "SELECT * FROM individuals";
-	private static final String								GET_ALL_SHOWS		= "SELECT shows.date, venues.id, venues.name FROM shows NATURAL JOIN venues";
+	private static final String								GET_ALL_SHOWS		= "SELECT shows.date, venues.id, venues.name FROM shows JOIN venues ON venues.id = shows.venue ORDER BY venues.id, shows.date";
 	private static final String								GET_ALL_VENUES		= "SELECT * FROM venues";
-	private static final String								CREATE_FILTER_TABLE	= "DECLARE LOCAL TEMPORARY TABLE filter AS (SELECT id FROM INDIVIDUALS WHERE date = '%1$s' AND venue = %2$d) WITH DATA";
+	private static final String								CREATE_FILTER_TABLE	= "DECLARE LOCAL TEMPORARY TABLE filter AS (SELECT * FROM INDIVIDUALS WHERE date = '%1$s' AND venue = %2$d) WITH DATA";
 	private static final String								DROP_FILTER_TABLE	= "DROP TABLE IF EXISTS session.filter";
 	private static final String								CREATE_TEMP_TABLE	= "DECLARE LOCAL TEMPORARY TABLE temp%1$d AS (%2$s) WITH DATA";
 	private static final String								DROP_TEMP_TABLE		= "DROP TABLE IF EXISTS session.temp%1$d";
-	private static final String								SELECT_FILTERED		= "SELECT DISTINCT individuals.* FROM individuals";
-	private static final String								FILTER_JOIN			= " JOIN temp%1$d on temp%1$d.id = individuals.id";
+	private static final String								SELECT_FILTERED		= "SELECT DISTINCT filter.* FROM filter";
+	private static final String								FILTER_JOIN			= " JOIN temp%1$d ON temp%1$d.id = filter.id";
 	private static final String								GET_ATTRIBUTE		= "SELECT attribute, reliability FROM %1$s WHERE id = ?";
 	private static final String								ATTRIBUTE_PATTERN	= "[a-zA-Z0-9_]+";
 	protected final Connection								connection;
@@ -79,13 +79,15 @@ public class DatabaseManager {
 	 * @throws ClassNotFoundException
 	 * @throws SQLException
 	 */
-	protected DatabaseManager(Hashtable<String, AttributeCategories> globalAttributeTable) throws ConfigFileNotFoundException, IOException, ClassNotFoundException, SQLException {
-		// if (globalAttributeTable == null) {
-		// throw new IllegalArgumentException(Strings.NULL_GLOBAL_TABLE_EXN);
-		// } else {
-		this.globalAttributeTable = globalAttributeTable;
-		// }
-		connection = connectToDB(/*Strings.getBaseDir() +*/ "res/dbconfig.txt");
+	public DatabaseManager(Hashtable<String, AttributeCategories> globalAttributeTable) throws ConfigFileNotFoundException, IOException, ClassNotFoundException, SQLException {
+		if (globalAttributeTable == null) {
+			throw new IllegalArgumentException(Strings.NULL_GLOBAL_TABLE_EXN);
+		} else {
+			this.globalAttributeTable = globalAttributeTable;
+		}
+		connection = connectToDB("res/dbconfig.txt");
+		// Use this line instead for absolute paths.
+		// connection = connectToDB(Strings.getBaseDir() + "/res/dbconfig.txt");
 		connection.setAutoCommit(false);
 	}
 

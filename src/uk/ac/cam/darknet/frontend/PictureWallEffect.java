@@ -65,8 +65,7 @@ public class PictureWallEffect extends Effect {
 				List<AttributeReliabilityPair> pairs = individuals.get(i)
 						.getProperties().get("fb_photo");
 				for (int j = 0; j < pairs.size(); j++) {
-					photoids.add((String) pairs.get(i).getAttribute());
-					System.out.print((String) pairs.get(i).getAttribute()+" ");
+					photoids.add((String) pairs.get(j).getAttribute());
 				}
 			}
 

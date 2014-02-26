@@ -106,16 +106,22 @@ public class PictureWallEffect extends Effect {
 			ImageIO.write(image, "png", new File(pathname + filename + ".png"));
 		} catch (InvalidReliabilityException e) {
 			System.err.println("Invalid Reliability of Photo");
+			return;
 		} catch (SQLException e) {
 			System.err.println("SQL Error");
+			return;
 		} catch (RequestNotSatisfiableException e) {
 			System.err.println("DatabaseManager cannot satisfy Request");
+			return;
 		} catch (IOException e) {
 			System.err.println("Cannot write image");
+			return;
 		} catch (UnknownAttributeException e) {
 			e.printStackTrace();
+			return;
 		} catch (InvalidAttributeTypeException e) {
 			e.printStackTrace();
+			return;
 		}
 
 	}

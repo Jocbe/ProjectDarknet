@@ -26,7 +26,8 @@ public class PictureWallEffectTests {
 		SecondaryDatabaseManager dm = new SecondaryDatabaseManager(
 				globalAttributeTable);
 		PictureWallEffect pwe = new PictureWallEffect(dm);
-		pwe.setup("", "pictureTest");
+		String[] files = {"", "pictureTest"};
+		pwe.setup(files);
 		Show show = dm.getAllShows().get(2);
 		pwe.execute(show);
 		Assert.assertTrue(true);

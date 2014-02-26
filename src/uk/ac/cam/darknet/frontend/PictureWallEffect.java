@@ -32,7 +32,11 @@ import uk.ac.cam.darknet.storage.ImageStorage;
  * An effect for generating a wall of pictures of all the people in the theatre
  * (i.e. all individuals in the database for the given performance).
  * 
- * @author Augustin Zidek
+ * Setup method should take in a String array with 2 arguments: the "pathname" of
+ * the directory the picture should be stored in and the "filename" (without
+ * extension) the picture should be stores as
+ * 
+ * @author Farah Patel
  * 
  */
 public class PictureWallEffect extends Effect {
@@ -41,29 +45,20 @@ public class PictureWallEffect extends Effect {
 	private String filename;
 	private int colSize = 5;
 
-
 	/**
 	 * Constructs PictureWallEffect
 	 * 
 	 * @param dm
-	 * 		appropriate DatabaseManager
+	 *            appropriate DatabaseManager
 	 */
 	public PictureWallEffect(DatabaseManager dm) {
 		super(dm);
 	}
 
-	/**
-	 * Setup method for PictureWall Effect that indicates where to store the image produced
-	 * 
-	 * @param pathname
-	 * 		path to directory where the image should be stored
-	 * @param filename
-	 * 		filename to use when storing the file (without filename Extension)
-	 */
-	@Setup
-	public void setup(String pathname, String filename) {
-		this.pathname = pathname;
-		this.filename = filename;
+	@Override
+	public void setup(String args[]) {
+		this.pathname = args[0];
+		this.filename = args[1];
 	}
 
 	@Override
@@ -82,8 +77,8 @@ public class PictureWallEffect extends Effect {
 					photoids.add((String) pairs.get(j).getAttribute());
 				}
 			}
-			
-			//randomize photos
+
+			// randomize photos
 			Collections.shuffle(photoids);
 
 			BufferedImage[] photos = new BufferedImage[photoids.size()];
@@ -91,7 +86,6 @@ public class PictureWallEffect extends Effect {
 				photos[i] = (BufferedImage) imgStore.retreiveImage(photoids
 						.get(i));
 			}
-			
 
 			BufferedImage image;
 			if (photos.length > 5) {
@@ -100,7 +94,8 @@ public class PictureWallEffect extends Effect {
 				int[] colwidth = new int[numcols];
 				BufferedImage[] colPhotos = new BufferedImage[numcols];
 				for (int i = 0; i < numcols; i++) {
-					colPhotos[i] = concatenateByHeight(Arrays.copyOfRange(photos, colSize*i, colSize*i+colSize));
+					colPhotos[i] = concatenateByHeight(Arrays.copyOfRange(
+							photos, colSize * i, colSize * i + colSize));
 				}
 				// merge columns
 				image = concatenateByWidth(colPhotos);
@@ -108,7 +103,7 @@ public class PictureWallEffect extends Effect {
 				image = concatenateByWidth(photos);
 			}
 
-			ImageIO.write(image, "png", new File(pathname+filename+".png"));
+			ImageIO.write(image, "png", new File(pathname + filename + ".png"));
 		} catch (InvalidReliabilityException e) {
 			System.err.println("Invalid Reliability of Photo");
 		} catch (SQLException e) {
@@ -146,7 +141,7 @@ public class PictureWallEffect extends Effect {
 		}
 		return image;
 	}
-	
+
 	private BufferedImage concatenateByHeight(BufferedImage[] photos) {
 		int heightTotal = 0;
 		int width = 0;
@@ -187,7 +182,8 @@ public class PictureWallEffect extends Effect {
 		SecondaryDatabaseManager dm = new SecondaryDatabaseManager(
 				globalAttributeTable);
 		PictureWallEffect pwe = new PictureWallEffect(dm);
-		pwe.setup("", "pictureTest");
+		String[] files = {"", "pictureTest"};
+		pwe.setup(files);
 		Show show = dm.getAllShows().get(2);
 		pwe.execute(show);
 

@@ -75,7 +75,7 @@ public class PictureWallEffect extends Effect {
 			BufferedImage image;
 			if (photos.length > 5) {
 				// assemble into columns of 5
-				int numcols = individuals.size() / 5;
+				int numcols = photos.length / 5; //individuals.size() / 5;
 				int[] colwidth = new int[numcols];
 				BufferedImage[] colPhotos = new BufferedImage[numcols];
 				for (int i = 0; i < numcols; i++) {
@@ -141,6 +141,7 @@ public class PictureWallEffect extends Effect {
 			}
 		}
 		int widthCurr = 0;
+		System.out.println("w: " + widthTotal + "  h: " + height);
 		BufferedImage image = new BufferedImage(widthTotal, height,
 				BufferedImage.TYPE_INT_RGB);
 		Graphics2D g2d = image.createGraphics();

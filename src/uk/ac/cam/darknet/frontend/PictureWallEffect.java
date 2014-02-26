@@ -66,6 +66,7 @@ public class PictureWallEffect extends Effect {
 						.getProperties().get("fb_photo");
 				for (int j = 0; j < pairs.size(); j++) {
 					photoids.add((String) pairs.get(i).getAttribute());
+					System.out.print((String) pairs.get(i).getAttribute()+" ");
 				}
 			}
 
@@ -82,7 +83,7 @@ public class PictureWallEffect extends Effect {
 				int[] colwidth = new int[numcols];
 				BufferedImage[] colPhotos = new BufferedImage[numcols];
 				for (int i = 0; i < numcols; i++) {
-					colPhotos[i] = concatenateByHeight(Arrays.copyOfRange(photos, i, i+5));
+					colPhotos[i] = concatenateByHeight(Arrays.copyOfRange(photos, 5*i, 5*i+5));
 				}
 				// assemble columns into 1 image
 				image = concatenateByWidth(colPhotos);
@@ -184,7 +185,7 @@ public class PictureWallEffect extends Effect {
 
 		pwe.execute(show);
 
-		/*BufferedImage[] photos = new BufferedImage[6];
+		/*BufferedImage[] photos = new BufferedImage[10];
 		File img = new File("storage/10A_0008.JPG");
 		BufferedImage buffImg = new BufferedImage(1536, 1024,
 				BufferedImage.TYPE_INT_ARGB);
@@ -210,12 +211,41 @@ public class PictureWallEffect extends Effect {
 		buffImg = new BufferedImage(1536, 1024, BufferedImage.TYPE_INT_ARGB);
 		buffImg = ImageIO.read(img);
 		photos[5] = buffImg;
+		img = new File("storage/16A_0014.JPG");
+		buffImg = new BufferedImage(1536, 1024, BufferedImage.TYPE_INT_ARGB);
+		buffImg = ImageIO.read(img);
+		photos[6] = buffImg;
+		img = new File("storage/17A_0015.JPG");
+		buffImg = new BufferedImage(1536, 1024, BufferedImage.TYPE_INT_ARGB);
+		buffImg = ImageIO.read(img);
+		photos[7] = buffImg;
+		img = new File("storage/18A_0016.JPG");
+		buffImg = new BufferedImage(1536, 1024, BufferedImage.TYPE_INT_ARGB);
+		buffImg = ImageIO.read(img);
+		photos[8] = buffImg;
+		img = new File("storage/19A_0017.JPG");
+		buffImg = new BufferedImage(1536, 1024, BufferedImage.TYPE_INT_ARGB);
+		buffImg = ImageIO.read(img);
+		photos[9] = buffImg;
 
-		buffImg = pwe.concatenateByHeight(photos);
+		BufferedImage image;
+		if (photos.length > 5) {
+			// assemble into columns of 5
+			int numcols = photos.length / 5; // individuals.size() / 5;
+			int[] colwidth = new int[numcols];
+			BufferedImage[] colPhotos = new BufferedImage[numcols];
+			for (int i = 0; i < numcols; i++) {
+				colPhotos[i] = pwe.concatenateByHeight(Arrays.copyOfRange(photos, 5*i, 5*i+5));
+			}
+			// assemble columns into 1 image
+			image = pwe.concatenateByWidth(colPhotos);
+		} else {
+			image = pwe.concatenateByWidth(photos);
+		}
+		
+		ImageIO.write(image, "png", new File("storage/pictureEffectTest.png"));
 
-		ImageIO.write(buffImg, "png", new File("storage/pictureEffectTest.png"));
 		*/
-
 	}
 
 }

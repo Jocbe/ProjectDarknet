@@ -10,7 +10,7 @@ import uk.ac.cam.darknet.database.DatabaseManager;
 /**
  * An effect for generating a report for each individual.
  * 
- * @author Johann Beleites
+ * @author 
  * 
  */
 public class ReportEffect extends Effect {

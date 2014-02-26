@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,7 +39,7 @@ public class PictureWallEffect extends Effect {
 
 	private String pathname;
 	private String filename;
-	private int colSize;
+	private int colSize = 5;
 
 	// Setup method, DatabaseManager
 	/**
@@ -49,14 +50,16 @@ public class PictureWallEffect extends Effect {
 	}
 
 	/**
+	 * Setup method for PictureWall Effect that indicates where to store the image produced
+	 * 
 	 * @param pathname
+	 * 		path to directory where the image should be stored
 	 * @param filename
-	 * @param colSize
+	 * 		filename to use when storing the file (without filename Extension)
 	 */
-	public void setup(String pathname, String filename, int colSize) {
+	public void setup(String pathname, String filename) {
 		this.pathname = pathname;
 		this.filename = filename;
-		this.colSize = colSize;
 	}
 
 	@Override
@@ -75,17 +78,21 @@ public class PictureWallEffect extends Effect {
 					photoids.add((String) pairs.get(j).getAttribute());
 				}
 			}
+			
+			//randomize photos
+			Collections.shuffle(photoids);
 
 			BufferedImage[] photos = new BufferedImage[photoids.size()];
 			for (int i = 0; i < photos.length; i++) {
 				photos[i] = (BufferedImage) imgStore.retreiveImage(photoids
 						.get(i));
 			}
+			
 
 			BufferedImage image;
 			if (photos.length > 5) {
 				// assemble into columns of colSize
-				int numcols = photos.length / colSize; // individuals.size() / 5;
+				int numcols = photos.length / colSize;
 				int[] colwidth = new int[numcols];
 				BufferedImage[] colPhotos = new BufferedImage[numcols];
 				for (int i = 0; i < numcols; i++) {
@@ -101,11 +108,11 @@ public class PictureWallEffect extends Effect {
 		} catch (InvalidReliabilityException e) {
 			System.err.println("Invalid Reliability of Photo");
 		} catch (SQLException e) {
-			e.printStackTrace();
+			System.err.println("SQL Error");
 		} catch (RequestNotSatisfiableException e) {
-			e.printStackTrace();
+			System.err.println("DatabaseManager cannot satisfy Request");
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.err.println("Cannot write image");
 		} catch (UnknownAttributeException e) {
 			e.printStackTrace();
 		} catch (InvalidAttributeTypeException e) {
@@ -125,11 +132,9 @@ public class PictureWallEffect extends Effect {
 			}
 		}
 		int widthCurr = 0;
-		System.out.println("w: " + widthTotal + "  h: " + height);
 		BufferedImage image = new BufferedImage(widthTotal, height,
 				BufferedImage.TYPE_INT_RGB);
 		for (int i = 0; i < photos.length; i++) {
-			System.out.println(i);
 			Graphics2D g2d = image.createGraphics();
 			g2d.drawImage(photos[i], widthCurr, 0, null);
 			widthCurr += photos[i].getWidth();
@@ -149,11 +154,9 @@ public class PictureWallEffect extends Effect {
 			}
 		}
 		int heightCurr = 0;
-//		System.out.println("w: " + widthTotal + "  h: " + height);
 		BufferedImage image = new BufferedImage(width, heightTotal,
 				BufferedImage.TYPE_INT_RGB);
 		for (int i = 0; i < photos.length; i++) {
-//			System.out.println(i);
 			Graphics2D g2d = image.createGraphics();
 			g2d.drawImage(photos[i], 0, heightCurr, null);
 			heightCurr += photos[i].getHeight();
@@ -180,71 +183,10 @@ public class PictureWallEffect extends Effect {
 		SecondaryDatabaseManager dm = new SecondaryDatabaseManager(
 				globalAttributeTable);
 		PictureWallEffect pwe = new PictureWallEffect(dm);
+		pwe.setup("", "pictureTest");
 		Show show = dm.getAllShows().get(2);
-
 		pwe.execute(show);
 
-		/*BufferedImage[] photos = new BufferedImage[10];
-		File img = new File("storage/10A_0008.JPG");
-		BufferedImage buffImg = new BufferedImage(1536, 1024,
-				BufferedImage.TYPE_INT_ARGB);
-		buffImg = ImageIO.read(img);
-		photos[0] = buffImg;
-		img = new File("storage/11A_0009.JPG");
-		buffImg = new BufferedImage(1536, 1024, BufferedImage.TYPE_INT_ARGB);
-		buffImg = ImageIO.read(img);
-		photos[1] = buffImg;
-		img = new File("storage/12A_0010.JPG");
-		buffImg = new BufferedImage(1536, 1024, BufferedImage.TYPE_INT_ARGB);
-		buffImg = ImageIO.read(img);
-		photos[2] = buffImg;
-		img = new File("storage/13A_0011.JPG");
-		buffImg = new BufferedImage(1536, 1024, BufferedImage.TYPE_INT_ARGB);
-		buffImg = ImageIO.read(img);
-		photos[3] = buffImg;
-		img = new File("storage/14A_0012.JPG");
-		buffImg = new BufferedImage(1536, 1024, BufferedImage.TYPE_INT_ARGB);
-		buffImg = ImageIO.read(img);
-		photos[4] = buffImg;
-		img = new File("storage/15A_0013.JPG");
-		buffImg = new BufferedImage(1536, 1024, BufferedImage.TYPE_INT_ARGB);
-		buffImg = ImageIO.read(img);
-		photos[5] = buffImg;
-		img = new File("storage/16A_0014.JPG");
-		buffImg = new BufferedImage(1536, 1024, BufferedImage.TYPE_INT_ARGB);
-		buffImg = ImageIO.read(img);
-		photos[6] = buffImg;
-		img = new File("storage/17A_0015.JPG");
-		buffImg = new BufferedImage(1536, 1024, BufferedImage.TYPE_INT_ARGB);
-		buffImg = ImageIO.read(img);
-		photos[7] = buffImg;
-		img = new File("storage/18A_0016.JPG");
-		buffImg = new BufferedImage(1536, 1024, BufferedImage.TYPE_INT_ARGB);
-		buffImg = ImageIO.read(img);
-		photos[8] = buffImg;
-		img = new File("storage/19A_0017.JPG");
-		buffImg = new BufferedImage(1536, 1024, BufferedImage.TYPE_INT_ARGB);
-		buffImg = ImageIO.read(img);
-		photos[9] = buffImg;
-
-		BufferedImage image;
-		if (photos.length > 5) {
-			// assemble into columns of 5
-			int numcols = photos.length / 5; // individuals.size() / 5;
-			int[] colwidth = new int[numcols];
-			BufferedImage[] colPhotos = new BufferedImage[numcols];
-			for (int i = 0; i < numcols; i++) {
-				colPhotos[i] = pwe.concatenateByHeight(Arrays.copyOfRange(photos, 5*i, 5*i+5));
-			}
-			// assemble columns into 1 image
-			image = pwe.concatenateByWidth(colPhotos);
-		} else {
-			image = pwe.concatenateByWidth(photos);
-		}
-		
-		ImageIO.write(image, "png", new File("storage/pictureEffectTest.png"));
-
-		*/
 	}
 
 }

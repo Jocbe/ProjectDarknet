@@ -7,6 +7,7 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import uk.ac.cam.darknet.backend.FacebookDataCollector;
@@ -17,14 +18,25 @@ import uk.ac.cam.darknet.database.SecondaryDatabaseManager;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 import uk.ac.cam.darknet.exceptions.InvalidAttributeNameException;
 
+/**
+ * 
+ * Test whether the FacebookDataCollector works as desired
+ * 
+ * @author The Doctor
+ *
+ */
 public class FacebookTests {
-	//@Test
-	public void runFacebookDataCollector() {
-		FacebookDataCollector fbdc = new FacebookDataCollector(null);
-		
-		fbdc.run();
-	}
 	
+	/**
+	 * 
+	 * Main test for the FacebookDataCollector
+	 * 
+	 * @throws ClassNotFoundException
+	 * @throws ConfigFileNotFoundException
+	 * @throws IOException
+	 * @throws SQLException
+	 * @throws InvalidAttributeNameException
+	 */
 	@Test
 	public void initializeAndRunFacebookDataCollector() throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException, InvalidAttributeNameException {
 		FacebookDataCollector fbdc = new FacebookDataCollector(null);
@@ -61,12 +73,19 @@ public class FacebookTests {
 		fbdc.setup(is);
 		
 		System.out.println("...and running it.");
-		fbdc.run();
+		try{
+			fbdc.run();
+		} catch(Exception e) {
+			System.err.println(e.getClass().getSimpleName() + " while trying to run FacebookDataCollector! Message: "
+					+ e.getMessage());
+			Assert.fail();
+		} finally {
 		
-		System.out.println("Cleaning up...");
-		pdbm.closeConnection();
-		sdbm.closeConnection();
-		
-		System.out.println("Done.");
+			System.out.println("Cleaning up...");
+			pdbm.closeConnection();
+			sdbm.closeConnection();
+			
+			System.out.println("Done.");
+		}
 	}
 }

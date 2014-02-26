@@ -1,5 +1,6 @@
 package uk.ac.cam.darknet.tests;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import twitter4j.IDs;
@@ -8,8 +9,15 @@ import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
 import uk.ac.cam.darknet.backend.TwitterDataCollector;
 
+/**
+ * @author The Doctor
+ * 
+ * Tests for the TwitterDataCollector [Demo class]
+ *
+ */
 public class TwitterTests {
-	//@Test
+	@SuppressWarnings("javadoc")
+	@Test
 	public void getFollowers() {
 		try {
 			Twitter twitter = new TwitterFactory().getInstance();
@@ -31,12 +39,21 @@ public class TwitterTests {
 		} catch (TwitterException te) {
             te.printStackTrace();
             System.out.println("Failed to get followers' ids: " + te.getMessage());
+            Assert.fail();
         }
 	}
 	
+	@SuppressWarnings("javadoc")
 	@Test
 	public void status() {
 		TwitterDataCollector dc = new TwitterDataCollector(null);
 		dc.run();
+	}
+	
+	@SuppressWarnings("javadoc")
+	@Test
+	public void getId() {
+		TwitterDataCollector dc = new TwitterDataCollector(null);
+		System.out.println(dc.getCollectorId());
 	}
 }

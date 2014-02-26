@@ -29,17 +29,10 @@ import com.restfb.types.User;
 
 /**
  * Secondary data collector which gets data from Facebook's public API.
- * 
- * @author Augustin Zidek
- * 
+ *  
  */
 public class FacebookDataCollector extends SecondaryDataCollector {
-	/**
-	 * Create a new Facebook data collector with the specified database manager.
-	 * 
-	 * @param databaseManager
-	 *            The database manager to use to write to the database.
-	 */
+	
 	private static final Logger log = LoggerFactory.getLogger();
 	
 	private List<Individual> targets;
@@ -47,11 +40,19 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 	//private AccessToken accessToken;
 	
 	private DefaultFacebookClient client;
-	private final String appId = "1472924302921478";
-	private final String appSecret = "aea3fa35cf8c02a310ed3f2145cd830e";
+	
+	// appId and appSecret will probably be necessary if a better authentication model is found - not at the moment
+	//private final String appId = "1472924302921478";
+	//private final String appSecret = "";
 	private String token;
 	
 	
+	/**
+	 * Create a new Facebook data collector with the specified database manager.
+	 * 
+	 * @param databaseManager
+	 *            The database manager to use to write to the database.
+	 */
 	public FacebookDataCollector(SecondaryDatabaseManager databaseManager) {
 		super(databaseManager);
 	}
@@ -125,7 +126,7 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 		
 		// Now iterate through targets and check if they are present in friend list of facebook
 		for(Individual target: targets) {
-			System.out.println("Looking for: " + target.getFirstName() + " " + target.getLastName());
+			log.info("Looking for: " + target.getFirstName() + " " + target.getLastName());
 			for(User f: friendsDetailed) {
 
 				// Try to get email address from facebook
@@ -166,11 +167,11 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 					} while(error > 0);
 					
 					// If photos were found, store them on the hard drive
+					log.info("Trying to add " + photos.size() + " photo(s) to target...");
 					for(Photo p: photos) {
 						try {
 							//photoIds.add(imageStorage.saveImage(new URL(p.getSource())));
 							target.addAttribute("fb_photo", imageStorage.saveImage(new URL(p.getSource())), 0.8);
-							System.out.println("added photo: " + p.getSource());
 						} catch (MalformedURLException e) {
 							log.warning("MalformedURLException while trying to store image! URL: "
 									+ p.getSource() + ". Message: " + e.getMessage());
@@ -236,13 +237,16 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 		atts.put("fb_relationshipStatus", AttributeCategories.RELATIONSHIP_STATUS);
 		return atts;
 	}
-
-	@Override
-	public String getCollectorId() {
-		return("facebook_default");
-	}
 	
 	
+	/**
+	 * Will prompt the user to enter a user token at this stage. This token will be used to 
+	 * authenticate all request to facebook. It WILL also accept invalid / stale tokens without
+	 * throwing an exception; those will only be caught later. AuthorizationFailedException will
+	 * only be thrown when the input is less than 1 character long (or null) at this point.
+	 * 
+	 * @throws AuthorizationFailedException
+	 */
 	public void reauthenticate() throws AuthorizationFailedException {
 		
 		// Takes care of authentication. At the moment user needs to input a valid user

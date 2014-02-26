@@ -108,6 +108,8 @@ public class ManualPrimaryDataCollector extends PrimaryDataCollector implements
 		}
 	}
 
+	// TODO: split populate combo boxes and add clear
+
 	/**
 	 * Updates the field shows with data from the database.
 	 */
@@ -645,9 +647,14 @@ public class ManualPrimaryDataCollector extends PrimaryDataCollector implements
 		panel.setLayout(gl_panel);
 	}
 
-	
-	// TODO: Get selected item venues
-	
+	private Venue getSelectedVenue() {
+		// No venue selected
+		if (comboVenues.getSelectedIndex() == 0) {
+			return null;
+		}
+		return venues.get(comboVenues.getSelectedIndex() - 1);
+	}
+
 	/**
 	 * Get the list of all individuals that are already in the database.
 	 * 
@@ -707,13 +714,20 @@ public class ManualPrimaryDataCollector extends PrimaryDataCollector implements
 	 * Load the given csv file.
 	 */
 	private void handleLoadAudience() {
+		// Get the venue
+		final Venue venue = getSelectedVenue();
+		if (venue == null) {
+			JOptionPane.showMessageDialog(frame, Strings.GUI_NO_VENUE_SEL,
+					"No venue selected", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
 		// Get the path to the csv file
 		final String csvFileURL = txtFldCSVFilePath.getText();
 		// Load the list of individuals from the csv file
 		final List<Individual> csvIndividuals;
 		final SpektrixCSVParser csvParser = new SpektrixCSVParser();
 		try {
-			csvIndividuals = csvParser.loadfromCSV(csvFileURL, venue);
+			csvIndividuals = csvParser.loadfromCSV(csvFileURL, venue.getId());
 		}
 		catch (IOException | SQLException | ParseException e) {
 			JOptionPane.showMessageDialog(frame, Strings.GUI_CSV_ADD_ERR,
@@ -747,6 +761,9 @@ public class ManualPrimaryDataCollector extends PrimaryDataCollector implements
 		// Jump to the last added individual
 		final int lastIndividualRow = table.getRowCount() - 1;
 		table.scrollRectToVisible(table.getCellRect(lastIndividualRow, 0, true));
+
+		// Update shows list
+		updateShowsList();
 	}
 
 	/**
@@ -779,36 +796,45 @@ public class ManualPrimaryDataCollector extends PrimaryDataCollector implements
 			return;
 		}
 
+		final Venue venue = getSelectedVenue();
+		if (venue == null) {
+			JOptionPane.showMessageDialog(frame, Strings.GUI_NO_VENUE_SEL,
+					"No venue selected", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+
 		// Save the individual
-		// TODO: Add venue field
 		final Individual newIndividual = Individual.getNewIndividual(firstName,
-				lastName, email, eventDate, 0, seat, null);
+				lastName, email, eventDate, venue.getId(), seat, null);
 		final long ID = saveIndividual(newIndividual);
 
 		// If there was an error
 		if (ID == -1) {
 			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_ADD_ERR,
 					"Database error", JOptionPane.ERROR_MESSAGE);
+			return;
 		}
-		else {
-			// Update the table
-			try {
-				table.displayIndividual(dbm.getById(ID));
-			}
-			catch (SQLException e) {
-				JOptionPane.showMessageDialog(frame, Strings.GUI_DB_CONN_ERR,
-						"Database error", JOptionPane.ERROR_MESSAGE);
-			}
-			// Jump to the added line
-			table.scrollRectToVisible(table.getCellRect(
-					table.getRowCount() - 1, 0, true));
 
-			// Reset the text fields
-			txtFldFirstName.setText("");
-			txtFldSecondName.setText("");
-			txtFldEmail.setText("");
-			txtFldSeat.setText("");
+		// Update the table
+		try {
+			table.displayIndividual(dbm.getById(ID));
 		}
+		catch (SQLException e) {
+			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_CONN_ERR,
+					"Database error", JOptionPane.ERROR_MESSAGE);
+		}
+		// Jump to the added line
+		table.scrollRectToVisible(table.getCellRect(table.getRowCount() - 1, 0,
+				true));
+
+		// Reset the text fields
+		txtFldFirstName.setText("");
+		txtFldSecondName.setText("");
+		txtFldEmail.setText("");
+		txtFldSeat.setText("");
+
+		// Update shows
+		updateShowsList();
 	}
 
 	/**

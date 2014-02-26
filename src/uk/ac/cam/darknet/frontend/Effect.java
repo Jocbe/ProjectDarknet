@@ -34,6 +34,13 @@ public abstract class Effect {
 	 */
 	public abstract void execute(Show show);
 	
+	/**
+	 * Setup method to give Effect Specific arguments
+	 * 
+	 * @param args
+	 * 		look at class Documentation to determine appropriate String arguments
+	 */
+	public abstract void setup(String[] args);
 
 
 }

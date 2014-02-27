@@ -1,6 +1,5 @@
 package uk.ac.cam.darknet.frontend;
 
-import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -11,16 +10,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
-
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.FontFactory;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Phrase;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
 
 import uk.ac.cam.darknet.common.AttributeReliabilityPair;
 import uk.ac.cam.darknet.common.Individual;
@@ -34,6 +23,16 @@ import uk.ac.cam.darknet.exceptions.RequestNotSatisfiableException;
 import uk.ac.cam.darknet.exceptions.UnknownAttributeException;
 import uk.ac.cam.darknet.storage.ImageStorage;
 
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+
 /**
  * An effect for generating a report for each individual.
  * 
@@ -46,6 +45,14 @@ public class ReportEffect extends Effect {
 
 	public ReportEffect(DatabaseManager dm) {
 		super(dm);
+	}
+
+	@Override
+	public List<String> getSetupArgDescriptions() {
+		final List<String> argDescr = new ArrayList<>();
+		argDescr.add("path of the directory the report should be stored in");
+		argDescr.add("filename (without extension) the report should be stored as");
+		return argDescr;
 	}
 
 	@Override
@@ -129,11 +136,13 @@ public class ReportEffect extends Effect {
 							img.scaleToFit(250, 250);
 							table.addCell(img);
 							table.addCell(Double.toString(a.getReliability()));
-						} catch (IOException e) {
+						}
+						catch (IOException e) {
 							System.err.println("Failed to retrieve Image");
 							e.printStackTrace();
 						}
-					} else {
+					}
+					else {
 						data = a.getAttribute().toString();
 						if (data == null || data == "") {
 							data = "No Current Data";
@@ -150,30 +159,38 @@ public class ReportEffect extends Effect {
 				doc.add(table);
 				doc.newPage();
 			}
-		} catch (FileNotFoundException e) {
+		}
+		catch (FileNotFoundException e) {
 			System.err
 					.println("Error in pathname or filename. Check setup method args");
 			return;
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			System.err.println("SQL Error");
 			return;
-		} catch (RequestNotSatisfiableException e) {
+		}
+		catch (RequestNotSatisfiableException e) {
 			System.err.println("DatabaseManager could not satisfy Request");
 			e.printStackTrace();
 			return;
-		} catch (UnknownAttributeException e) {
+		}
+		catch (UnknownAttributeException e) {
 			System.err.println("Unknown Attribute");
 			return;
-		} catch (InvalidAttributeTypeException e) {
+		}
+		catch (InvalidAttributeTypeException e) {
 			System.err.println("Invalid Attribute Type");
 			return;
-		} catch (InvalidReliabilityException e) {
+		}
+		catch (InvalidReliabilityException e) {
 			System.err.println("Invalid Reliability");
 			return;
-		} catch (DocumentException e) {
+		}
+		catch (DocumentException e) {
 			System.err.println("Error creating document to make PDF");
 			return;
-		} finally {
+		}
+		finally {
 			doc.close();
 		}
 	}

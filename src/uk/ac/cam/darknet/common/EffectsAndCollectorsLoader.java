@@ -60,7 +60,7 @@ public class EffectsAndCollectorsLoader {
 		// Get only the effects
 		final List<Class<?>> effectClasses = new ArrayList<>();
 		for (final Class<?> c : frontendClasses) {
-			// If class ectends the Effect and is not Effect itself
+			// If class extends the Effect and is not Effect itself
 			if (Effect.class.isAssignableFrom(c) && !c.equals(Effect.class)) {
 				effectClasses.add(c);
 			}

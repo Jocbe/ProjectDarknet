@@ -283,7 +283,10 @@ public class DataCollectorGUIListener implements ActionListener {
 				else {
 					collector.setup(gui.pdbm.getByShow(show));
 				}
-				collector.run();
+
+				// Start the collector in a new thread
+				Thread collectorThread = new Thread(collector); 
+				collectorThread.run();
 			}
 			catch (InstantiationException | IllegalAccessException
 					| SQLException | IllegalArgumentException

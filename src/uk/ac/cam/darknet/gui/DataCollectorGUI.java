@@ -10,7 +10,6 @@ import java.awt.Insets;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
@@ -33,9 +32,8 @@ import javax.swing.border.TitledBorder;
 import javax.swing.text.DateFormatter;
 
 import uk.ac.cam.darknet.backend.PrimaryDataCollector;
-import uk.ac.cam.darknet.backend.SecondaryDataCollector;
-import uk.ac.cam.darknet.common.AdvancedReflection;
 import uk.ac.cam.darknet.common.AttributeCategories;
+import uk.ac.cam.darknet.common.EffectsAndCollectorsLoader;
 import uk.ac.cam.darknet.common.Individual;
 import uk.ac.cam.darknet.common.Show;
 import uk.ac.cam.darknet.common.Strings;
@@ -96,13 +94,13 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 	 * Creates new primary data collector. The GUI and everything else is
 	 * started using the run method.
 	 * 
-	 * @param databaseManager The primary database manager.
+	 * @param pdbm The primary database manager.
 	 * @param sdbm The secondary database manager.
 	 */
-	public DataCollectorGUI(final PrimaryDatabaseManager databaseManager,
+	public DataCollectorGUI(final PrimaryDatabaseManager pdbm,
 			final SecondaryDatabaseManager sdbm) {
-		super(databaseManager);
-		this.pdbm = databaseManager;
+		super(pdbm);
+		this.pdbm = pdbm;
 		this.sdbm = sdbm;
 		this.listener = new DataCollectorGUIListener(this);
 	}
@@ -128,7 +126,7 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 			// Display them in the table
 			table.displayIndividuals(individualsInDB, venues);
 		}
-		loadCollAndPopulateTable();
+		populateCollectorsTable();
 	}
 
 	/**
@@ -189,28 +187,20 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 	/**
 	 * Fill the collectors table with data
 	 */
-	private void loadCollAndPopulateTable() {
+	private void populateCollectorsTable() {
 		// Read all classes that are in the backend package
-		final Class<?>[] backendClasses;
 		try {
-			backendClasses = AdvancedReflection
-					.getClasses("uk.ac.cam.darknet.backend");
+			final EffectsAndCollectorsLoader loader = new EffectsAndCollectorsLoader();
+			dataCollectors = loader.loadSecondaryCollectors();
 		}
 		catch (ClassNotFoundException | IOException a) {
 			JOptionPane.showMessageDialog(frame, Strings.GUI_NO_COLLECTORS,
 					"No collectors found", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-
-		// Get only the data collectors
-		dataCollectors = new ArrayList<>();
-		for (final Class<?> c : backendClasses) {
-			// If class extends DataCollector and is not a SDC itself
-			if (SecondaryDataCollector.class.isAssignableFrom(c)
-					&& !c.equals(SecondaryDataCollector.class)) {
-				dataCollectors.add(c);
-				tableColl.addCollector(c.getSimpleName());
-			}
+		// Add the collectors into the table
+		for (final Class<?> c : dataCollectors) {
+			tableColl.addCollector(c.getSimpleName());
 		}
 	}
 

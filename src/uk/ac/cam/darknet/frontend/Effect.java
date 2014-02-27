@@ -50,6 +50,8 @@ public abstract class Effect {
 	 * and token, then getSetupArgNames should return list with
 	 * "path to the configuration folder", "Facebook user token".
 	 * 
+	 * The text should make sense when appended to "Please type in the " ...
+	 * 
 	 * @return Descriptions for the setup arguments
 	 */
 	public abstract List<String> getSetupArgDescriptions();

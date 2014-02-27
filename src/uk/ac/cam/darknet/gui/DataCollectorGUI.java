@@ -42,6 +42,7 @@ import uk.ac.cam.darknet.database.PrimaryDatabaseManager;
 import uk.ac.cam.darknet.database.SecondaryDatabaseManager;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 import uk.ac.cam.darknet.exceptions.InvalidAttributeNameException;
+import java.awt.Toolkit;
 
 /**
  * GUI for the primary data collector. Displays the current contents of the
@@ -223,6 +224,9 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 				"yyyy-MM-dd HH:mm"));
 
 		frame = new JFrame();
+		frame.setIconImage(Toolkit.getDefaultToolkit().getImage(
+				DataCollectorGUI.class
+						.getResource("/uk/ac/cam/darknet/gui/icon.png")));
 		frame.setTitle("Primary Data Collector");
 		frame.setBounds(100, 100, 1020, 624);
 		frame.setMinimumSize(new Dimension(1020, 624));

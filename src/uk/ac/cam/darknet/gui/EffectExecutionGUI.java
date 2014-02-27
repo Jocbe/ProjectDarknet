@@ -37,6 +37,8 @@ import uk.ac.cam.darknet.database.SecondaryDatabaseManager;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 import uk.ac.cam.darknet.exceptions.InvalidAttributeNameException;
 import uk.ac.cam.darknet.frontend.Effect;
+import javax.swing.ImageIcon;
+import java.awt.Toolkit;
 
 /**
  * The GUI for effect execution. It allows user to select a show and displays
@@ -132,6 +134,9 @@ public class EffectExecutionGUI {
 	 */
 	private void initializeGUI() {
 		frmEffectsDj = new JFrame();
+		frmEffectsDj.setIconImage(Toolkit.getDefaultToolkit().getImage(
+				EffectExecutionGUI.class
+						.getResource("/uk/ac/cam/darknet/gui/icon.png")));
 		frmEffectsDj.setMinimumSize(new Dimension(486, 524));
 		frmEffectsDj.setTitle("Effects DJ");
 		frmEffectsDj.setBounds(100, 100, 486, 524);
@@ -186,8 +191,6 @@ public class EffectExecutionGUI {
 		panelMain.add(panelEffects, gbc_panelEffects);
 
 		btnRunEffects = new JButton("Run effects");
-		btnRunEffects.setAlignmentX(Component.RIGHT_ALIGNMENT);
-		btnRunEffects.setHorizontalAlignment(SwingConstants.RIGHT);
 		GridBagConstraints gbc_btnRunEffects = new GridBagConstraints();
 		gbc_btnRunEffects.fill = GridBagConstraints.VERTICAL;
 		gbc_btnRunEffects.insets = new Insets(0, 5, 0, 5);
@@ -263,7 +266,8 @@ public class EffectExecutionGUI {
 					// Get the argument descriptions
 					final List<String> argDescriptions = effect
 							.getSetupArgDescriptions();
-					final String[] arguments = new String[argDescriptions.size()];
+					final String[] arguments = new String[argDescriptions
+							.size()];
 
 					// Ask user for all parameters and use the anwers
 					int cnt = 0;

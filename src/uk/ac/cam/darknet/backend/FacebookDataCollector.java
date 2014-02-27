@@ -246,6 +246,10 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 	 * throwing an exception; those will only be caught later. AuthorizationFailedException will
 	 * only be thrown when the input is less than 1 character long (or null) at this point.
 	 * 
+	 * Note: The easiest way to obtain a token (valid for a couple of hours) from Facebook is to
+	 * go to https://developers.facebook.com/tools/explorer and copy and paste the string from
+	 * the 'access token' field into the input prompt displayed by this method.
+	 * 
 	 * @throws AuthorizationFailedException
 	 */
 	public void reauthenticate() throws AuthorizationFailedException {

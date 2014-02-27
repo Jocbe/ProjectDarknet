@@ -2,9 +2,9 @@ package uk.ac.cam.darknet.backend;
 
 import java.util.Hashtable;
 import java.util.List;
+
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
-import uk.ac.cam.darknet.database.DatabaseManager;
 import uk.ac.cam.darknet.database.SecondaryDatabaseManager;
 
 /**

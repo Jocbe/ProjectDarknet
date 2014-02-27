@@ -7,14 +7,15 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 
-import javax.swing.BoxLayout;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
@@ -37,14 +38,18 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.DateFormatter;
 
 import uk.ac.cam.darknet.backend.PrimaryDataCollector;
+import uk.ac.cam.darknet.backend.SecondaryDataCollector;
 import uk.ac.cam.darknet.backend.SpektrixCSVParser;
+import uk.ac.cam.darknet.common.AdvancedReflection;
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
 import uk.ac.cam.darknet.common.Show;
 import uk.ac.cam.darknet.common.Strings;
 import uk.ac.cam.darknet.common.Venue;
 import uk.ac.cam.darknet.database.PrimaryDatabaseManager;
+import uk.ac.cam.darknet.database.SecondaryDatabaseManager;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
+import uk.ac.cam.darknet.exceptions.InvalidAttributeNameException;
 
 /**
  * GUI for the primary data collector. Displays the current contents of the
@@ -72,22 +77,32 @@ public class DataCollectorGUI extends PrimaryDataCollector implements
 	private JButton btnRefresh;
 	private JButton btnNewVenue;
 	private JButton btnDelete;
+	private JButton btnCollectData;
 	private JComboBox<String> comboShowsFilter;
 	private JComboBox<String> comboShowsColl;
 	private JComboBox<String> comboVenues;
-	private PrimaryDatabaseManager dbm;
+	private CollectorsTable tableColl;
+	private JScrollPane scrollPane_1;
+
 	private List<Show> shows;
 	private List<Venue> venues;
+	private List<Class<?>> dataCollectors;
+
+	final PrimaryDatabaseManager pdbm;
+	final SecondaryDatabaseManager sdbm;
 
 	/**
 	 * Creates new primary data collector. The GUI and everything else is
 	 * started using the run method.
 	 * 
 	 * @param databaseManager The primary database manager.
+	 * @param sdbm The secondary database manager.
 	 */
-	public DataCollectorGUI(final PrimaryDatabaseManager databaseManager) {
+	public DataCollectorGUI(final PrimaryDatabaseManager databaseManager,
+			final SecondaryDatabaseManager sdbm) {
 		super(databaseManager);
-		this.dbm = databaseManager;
+		this.pdbm = databaseManager;
+		this.sdbm = sdbm;
 	}
 
 	/**
@@ -99,7 +114,7 @@ public class DataCollectorGUI extends PrimaryDataCollector implements
 		frame.setVisible(true);
 		// If the connection to the database was successful, show all
 		// individuals in the table
-		if (this.dbm == null) {
+		if (this.pdbm == null) {
 			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_CONN_ERR,
 					"Database error", JOptionPane.ERROR_MESSAGE);
 		}
@@ -111,6 +126,7 @@ public class DataCollectorGUI extends PrimaryDataCollector implements
 			// Display them in the table
 			table.displayIndividuals(individualsInDB, venues);
 		}
+		loadCollAndPopulateTable();
 	}
 
 	/**
@@ -118,7 +134,7 @@ public class DataCollectorGUI extends PrimaryDataCollector implements
 	 */
 	private void updateShowsList() {
 		try {
-			shows = dbm.getAllShows();
+			shows = pdbm.getAllShows();
 		}
 		catch (SQLException e) {
 			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_VEN_ERR,
@@ -131,7 +147,7 @@ public class DataCollectorGUI extends PrimaryDataCollector implements
 	 */
 	private void updateVenuesList() {
 		try {
-			venues = dbm.getAllVenues();
+			venues = pdbm.getAllVenues();
 		}
 		catch (SQLException e) {
 			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_VEN_ERR,
@@ -165,6 +181,34 @@ public class DataCollectorGUI extends PrimaryDataCollector implements
 					+ sdf.format(s.getDate());
 			comboShowsFilter.addItem(show);
 			comboShowsColl.addItem(show);
+		}
+	}
+
+	/**
+	 * Fill the collectors table with data
+	 */
+	private void loadCollAndPopulateTable() {
+		// Read all classes that are in the backend package
+		final Class<?>[] backendClasses;
+		try {
+			backendClasses = AdvancedReflection
+					.getClasses("uk.ac.cam.darknet.backend");
+		}
+		catch (ClassNotFoundException | IOException a) {
+			JOptionPane.showMessageDialog(frame, Strings.GUI_NO_COLLECTORS,
+					"No collectors found", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+
+		// Get only the data collectors
+		dataCollectors = new ArrayList<>();
+		for (final Class<?> c : backendClasses) {
+			// If class extends DataCollector and is not a SDC itself
+			if (SecondaryDataCollector.class.isAssignableFrom(c)
+					&& !c.equals(SecondaryDataCollector.class)) {
+				dataCollectors.add(c);
+				tableColl.addCollector(c.getSimpleName());
+			}
 		}
 	}
 
@@ -730,8 +774,11 @@ public class DataCollectorGUI extends PrimaryDataCollector implements
 				229)), "Available collectors", TitledBorder.LEADING,
 				TitledBorder.TOP, null, null));
 
-		final JButton btnCollectData = new JButton("Collect selected data");
+		btnCollectData = new JButton("Collect selected data");
+		btnCollectData.addActionListener(this);
+
 		GroupLayout gl_panel_1 = new GroupLayout(panel_1);
+
 		gl_panel_1
 				.setHorizontalGroup(gl_panel_1
 						.createParallelGroup(Alignment.LEADING)
@@ -786,10 +833,14 @@ public class DataCollectorGUI extends PrimaryDataCollector implements
 												GroupLayout.DEFAULT_SIZE, 203,
 												Short.MAX_VALUE).addGap(7)
 										.addComponent(btnCollectData)));
-		panel_2.setLayout(new BoxLayout(panel_2, BoxLayout.X_AXIS));
+		panel_2.setLayout(null);
 
-		final JScrollPane scrollPane_1 = new JScrollPane();
+		scrollPane_1 = new JScrollPane();
+		scrollPane_1.setBounds(12, 24, 409, 167);
 		panel_2.add(scrollPane_1);
+
+		tableColl = new CollectorsTable();
+		scrollPane_1.setViewportView(tableColl);
 		panel_1.setLayout(gl_panel_1);
 		panel.setLayout(gl_panel);
 	}
@@ -809,7 +860,7 @@ public class DataCollectorGUI extends PrimaryDataCollector implements
 	 */
 	private List<Individual> getDBContent() {
 		try {
-			return dbm.getAllIndividuals();
+			return pdbm.getAllIndividuals();
 		}
 		catch (SQLException e) {
 			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_READ_ERR,
@@ -827,7 +878,7 @@ public class DataCollectorGUI extends PrimaryDataCollector implements
 	private long saveIndividual(final Individual i) {
 		final long status;
 		try {
-			status = dbm.storeIndividual(i);
+			status = pdbm.storeIndividual(i);
 		}
 		catch (SQLException e1) {
 			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_ADD_ERR,
@@ -885,7 +936,7 @@ public class DataCollectorGUI extends PrimaryDataCollector implements
 		// Add the individuals to the database
 		final int audienceCount;
 		try {
-			audienceCount = dbm.storeIndividual(csvIndividuals);
+			audienceCount = pdbm.storeIndividual(csvIndividuals);
 		}
 		catch (SQLException e) {
 			return;
@@ -898,7 +949,7 @@ public class DataCollectorGUI extends PrimaryDataCollector implements
 		// ID's can't be determined prior to adding them to the DB.
 		table.clearTable();
 		try {
-			table.displayIndividuals(dbm.getAllIndividuals(), venues);
+			table.displayIndividuals(pdbm.getAllIndividuals(), venues);
 		}
 		catch (SQLException e) {
 			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_READ_ERR,
@@ -964,7 +1015,7 @@ public class DataCollectorGUI extends PrimaryDataCollector implements
 
 		// Update the table
 		try {
-			table.displayIndividual(dbm.getById(ID), venues);
+			table.displayIndividual(pdbm.getById(ID), venues);
 		}
 		catch (SQLException e) {
 			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_CONN_ERR,
@@ -990,7 +1041,7 @@ public class DataCollectorGUI extends PrimaryDataCollector implements
 	private void handleRefresh() {
 		table.clearTable();
 		try {
-			table.displayIndividuals(dbm.getAllIndividuals(), venues);
+			table.displayIndividuals(pdbm.getAllIndividuals(), venues);
 		}
 		catch (SQLException e1) {
 			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_READ_ERR,
@@ -1037,6 +1088,60 @@ public class DataCollectorGUI extends PrimaryDataCollector implements
 		else if (source == comboShowsFilter) {
 			handleShowsFilter();
 		}
+		// Collect secondary data
+		else if (source == btnCollectData) {
+			handleDataCollection();
+		}
+	}
+
+	private Show getSelectedShow() {
+		// All shows selected
+		if (comboShowsColl.getSelectedIndex() == 0) {
+			return null;
+		}
+		return shows.get(comboShowsColl.getSelectedIndex() - 1);
+	}
+
+	private void handleDataCollection() {
+		// Get the selected show. If null, call collect on all data
+		final Show show = getSelectedShow();
+		// Get the indexes of the checked collectors
+		final List<Integer> checked = tableColl.getCheckedRows();
+		// Select only checked collectors.
+		final List<Class<?>> checkedColl = new ArrayList<>();
+		for (final int i : checked) {
+			checkedColl.add(dataCollectors.get(i));
+		}
+
+		if (checkedColl.size() == 0) {
+			JOptionPane.showMessageDialog(frame, Strings.GUI_SELECT_COLL,
+					"No collectors selected", JOptionPane.INFORMATION_MESSAGE);
+		}
+
+		// Go through all collectors and invoke their run() methods
+		for (final Class<?> collClass : checkedColl) {
+			try {
+				final SecondaryDataCollector collector = (SecondaryDataCollector) collClass
+						.getConstructor(SecondaryDatabaseManager.class)
+						.newInstance(sdbm);
+				if (show == null) {
+					collector.setup(pdbm.getAllIndividuals());
+				}
+				else {
+					collector.setup(pdbm.getByShow(show));
+				}
+				collector.run();
+			}
+			catch (InstantiationException | IllegalAccessException
+					| SQLException | IllegalArgumentException
+					| InvocationTargetException | NoSuchMethodException
+					| SecurityException e) {
+				JOptionPane.showMessageDialog(frame,
+						Strings.GUI_COLLECTORS_ERR, "Error loading collectors",
+						JOptionPane.ERROR_MESSAGE);
+			}
+
+		}
 	}
 
 	/**
@@ -1054,7 +1159,7 @@ public class DataCollectorGUI extends PrimaryDataCollector implements
 		// Get all individuals that are attending this show
 		final List<Individual> filteredIndividuals;
 		try {
-			filteredIndividuals = dbm.getByShow(selectedShow);
+			filteredIndividuals = pdbm.getByShow(selectedShow);
 		}
 		catch (final SQLException e) {
 			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_READ_ERR,
@@ -1078,7 +1183,7 @@ public class DataCollectorGUI extends PrimaryDataCollector implements
 		}
 		// Delete the individual
 		try {
-			dbm.deleteIndividual(selIndividualID);
+			pdbm.deleteIndividual(selIndividualID);
 		}
 		catch (SQLException e) {
 			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_DEL_IND_ERR,
@@ -1102,7 +1207,7 @@ public class DataCollectorGUI extends PrimaryDataCollector implements
 		// Create new venue in the database
 		final int venueID;
 		try {
-			venueID = dbm.createVenue(newVenue);
+			venueID = pdbm.createVenue(newVenue);
 			updateVenuesList();
 		}
 		catch (SQLException e) {
@@ -1124,18 +1229,21 @@ public class DataCollectorGUI extends PrimaryDataCollector implements
 	public static void main(String[] args) {
 		// Start the database manager
 		final Hashtable<String, AttributeCategories> emptyTable = new Hashtable<>();
-		PrimaryDatabaseManager dbm;
+		PrimaryDatabaseManager pdbm;
+		SecondaryDatabaseManager sdbm;
 		try {
-			dbm = new PrimaryDatabaseManager(emptyTable);
+			pdbm = new PrimaryDatabaseManager(emptyTable);
+			sdbm = new SecondaryDatabaseManager(emptyTable);
 		}
 		catch (ClassNotFoundException | ConfigFileNotFoundException
-				| IOException | SQLException e) {
+				| IOException | SQLException | InvalidAttributeNameException e) {
 			System.out.println("MPDataCollector: Exception in main().");
 			e.printStackTrace();
-			dbm = null;
+			pdbm = null;
+			sdbm = null;
 		}
 
-		final DataCollectorGUI pdcGUI = new DataCollectorGUI(dbm);
+		final DataCollectorGUI pdcGUI = new DataCollectorGUI(pdbm, sdbm);
 		pdcGUI.run();
 
 	}

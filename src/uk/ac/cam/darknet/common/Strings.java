@@ -46,6 +46,8 @@ public class Strings {
 	public static final String GUI_NO_VENUE_SEL 			= "No venue selected";
 	public static final String GUI_ALL_SHOWS 				= "Collect for all shows";
 	public static final String GUI_NO_COLLECTORS 			= "No collectors have been found on your system. That IMHO sucks.";
+	public static final String GUI_COLLECTORS_ERR 			= "There has been error executing the collectors. Have you added new collectors into your system?";
+	public static final String GUI_SELECT_COLL 				= "Select collectors that shall be used.";
 
 	/**
 	 * @return The URL of the project folder.

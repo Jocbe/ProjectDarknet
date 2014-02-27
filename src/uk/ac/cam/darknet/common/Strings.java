@@ -45,6 +45,7 @@ public class Strings {
 	public static final String GUI_DONT_FILTER 				= "Don't filter";
 	public static final String GUI_NO_VENUE_SEL 			= "No venue selected";
 	public static final String GUI_ALL_SHOWS 				= "Collect for all shows";
+	public static final String GUI_NO_COLLECTORS 			= "No collectors have been found on your system. That IMHO sucks.";
 
 	/**
 	 * @return The URL of the project folder.

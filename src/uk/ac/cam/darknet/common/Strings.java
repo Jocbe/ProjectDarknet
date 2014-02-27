@@ -44,6 +44,7 @@ public class Strings {
 	public static final String GUI_DB_DEL_IND_ERR 			= "It wasn't possible to delete this individual. Check your connection.";
 	public static final String GUI_DONT_FILTER 				= "Don't filter";
 	public static final String GUI_NO_VENUE_SEL 			= "No venue selected";
+	public static final String GUI_ALL_SHOWS 				= "Collect for all shows";
 
 	/**
 	 * @return The URL of the project folder.

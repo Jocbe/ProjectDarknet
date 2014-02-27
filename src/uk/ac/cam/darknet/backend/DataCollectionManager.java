@@ -5,8 +5,10 @@ import java.util.Hashtable;
 import java.util.Set;
 import java.lang.Class;
 import java.lang.reflect.Constructor;
+
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.database.*;
+import uk.ac.cam.darknet.gui.DataCollectorGUI;
 /**
  * Handles and coordinates the data collection. Responsible for creating the global attribute table
  * and appropriate database managers. Calls the primary data collectors and then selected secondary
@@ -21,7 +23,7 @@ public class DataCollectionManager {
 	 */
 
   private int threadCount;
-  private ManualPrimaryDataCollector mpdc;
+  private DataCollectorGUI mpdc;
   private PrimaryDatabaseManager pdm;
   private SecondaryDatabaseManager sdm;
   private Hashtable<String, AttributeCategories> globalAttributeTable;
@@ -92,7 +94,7 @@ public class DataCollectionManager {
     Thread guiThread = new Thread() {
       @Override
       public void run() {
-        dcm.mpdc = new ManualPrimaryDataCollector(dcm.pdm);
+        dcm.mpdc = new DataCollectorGUI(dcm.pdm);
         dcm.mpdc.run();
       }
     };

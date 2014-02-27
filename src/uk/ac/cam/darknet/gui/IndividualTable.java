@@ -9,6 +9,7 @@ import javax.swing.table.DefaultTableModel;
 
 import uk.ac.cam.darknet.common.Individual;
 import uk.ac.cam.darknet.common.Strings;
+import uk.ac.cam.darknet.common.Venue;
 
 /**
  * A Swing table extending JTable to store individuals. Provides methods such as
@@ -21,7 +22,7 @@ public class IndividualTable extends JTable {
 	private static final long serialVersionUID = 1L;
 	// Names of the columns in the table
 	private static final String[] columns = { "ID", "First name", "Last name",
-			"Email", "Venue ID", "Show date", "Seat" };
+			"Email", "Venue", "Show date", "Seat" };
 	final static DefaultTableModel model = new DefaultTableModel();
 
 	/**
@@ -56,11 +57,14 @@ public class IndividualTable extends JTable {
 	 * individual per row.
 	 * 
 	 * @param individuals The list of individuals.
+	 * @param venues The list of venues so that individual can be dispalyed
+	 *            nicely
 	 */
-	public void displayIndividuals(final List<Individual> individuals) {
+	public void displayIndividuals(final List<Individual> individuals,
+			final List<Venue> venues) {
 		// Go through all individuals, get their fields and display
 		for (final Individual i : individuals) {
-			displayIndividual(i);
+			displayIndividual(i, venues);
 		}
 	}
 
@@ -69,14 +73,18 @@ public class IndividualTable extends JTable {
 	 * are any data in the table this row is appended.
 	 * 
 	 * @param i The individual to be included in the table.
+	 * @param venues The list of venues so that individual can be dispalyed
+	 *            nicely
 	 */
-	public void displayIndividual(final Individual i) {
+	public void displayIndividual(final Individual i, final List<Venue> venues) {
 		final long ID = i.getId();
 		final String firstName = i.getFirstName();
 		final String lastName = i.getLastName();
 		final String email = i.getEmail();
 		final String eventDate;
-		final String venueID = String.valueOf(i.getEventVenue());
+		final int venueID = i.getEventVenue();
+		final String venueName = getVenueName(venueID, venues);
+
 		// Handle cases with no date specified
 		if (i.getEventDate() != null) {
 			final SimpleDateFormat sdf = new SimpleDateFormat(
@@ -89,7 +97,7 @@ public class IndividualTable extends JTable {
 		final String seat = i.getSeat();
 
 		// Add row to the table
-		model.addRow(new Object[] { ID, firstName, lastName, email, venueID,
+		model.addRow(new Object[] { ID, firstName, lastName, email, venueName,
 				eventDate, seat });
 	}
 
@@ -113,5 +121,17 @@ public class IndividualTable extends JTable {
 			return -1;
 		}
 		return (Long) this.getValueAt(this.getSelectedRow(), 0);
+	}
+
+	/**
+	 * Returns name of the venue with the givemn ID.
+	 */
+	private String getVenueName(final int venueID, final List<Venue> venues) {
+		for (final Venue v : venues) {
+			if (v.getId() == venueID) {
+				return v.getName();
+			}
+		}
+		return null;
 	}
 }

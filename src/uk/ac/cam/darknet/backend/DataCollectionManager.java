@@ -1,13 +1,12 @@
 package uk.ac.cam.darknet.backend;
 
-import java.lang.Thread;
+import java.lang.reflect.Constructor;
 import java.util.Hashtable;
 import java.util.Set;
-import java.lang.Class;
-import java.lang.reflect.Constructor;
 
 import uk.ac.cam.darknet.common.AttributeCategories;
-import uk.ac.cam.darknet.database.*;
+import uk.ac.cam.darknet.database.PrimaryDatabaseManager;
+import uk.ac.cam.darknet.database.SecondaryDatabaseManager;
 import uk.ac.cam.darknet.gui.DataCollectorGUI;
 
 /**
@@ -18,6 +17,11 @@ import uk.ac.cam.darknet.gui.DataCollectorGUI;
  * @author Josh Treon
  */
 public class DataCollectionManager {
+	/**
+	 * 
+	 * @param args
+	 */
+
 	private int threadCount;
 	private DataCollectorGUI mpdc;
 	private PrimaryDatabaseManager pdm;
@@ -98,7 +102,7 @@ public class DataCollectionManager {
 		Thread guiThread = new Thread() {
 			@Override
 			public void run() {
-				dcm.mpdc = new DataCollectorGUI(dcm.pdm);
+				dcm.mpdc = new DataCollectorGUI(dcm.pdm, dcm.sdm);
 				dcm.mpdc.run();
 			}
 		};

@@ -167,7 +167,7 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 		}
 	}
 
-	private void populateShowsCBs() {
+	void populateShowsCBs() {
 		updateShowsList();
 		comboShowsColl.removeAllItems();
 		comboShowsFilter.removeAllItems();

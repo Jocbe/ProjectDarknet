@@ -158,7 +158,7 @@ public class DataCollectorGUIListener implements ActionListener {
 				0, true));
 
 		// Update shows list
-		gui.updateShowsList();
+		gui.populateShowsCBs();
 	}
 
 	/**

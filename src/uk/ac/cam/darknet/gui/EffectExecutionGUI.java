@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -23,10 +24,8 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
-import uk.ac.cam.darknet.backend.SecondaryDataCollector;
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.EffectsAndCollectorsLoader;
 import uk.ac.cam.darknet.common.Show;
@@ -37,8 +36,6 @@ import uk.ac.cam.darknet.database.SecondaryDatabaseManager;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 import uk.ac.cam.darknet.exceptions.InvalidAttributeNameException;
 import uk.ac.cam.darknet.frontend.Effect;
-import javax.swing.ImageIcon;
-import java.awt.Toolkit;
 
 /**
  * The GUI for effect execution. It allows user to select a show and displays

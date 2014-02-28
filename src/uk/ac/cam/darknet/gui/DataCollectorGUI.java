@@ -31,6 +31,8 @@ import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.text.DateFormatter;
 
+import com.itextpdf.text.log.SysoCounter;
+
 import uk.ac.cam.darknet.backend.PrimaryDataCollector;
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.EffectsAndCollectorsLoader;
@@ -42,6 +44,7 @@ import uk.ac.cam.darknet.database.PrimaryDatabaseManager;
 import uk.ac.cam.darknet.database.SecondaryDatabaseManager;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 import uk.ac.cam.darknet.exceptions.InvalidAttributeNameException;
+
 import java.awt.Toolkit;
 
 /**
@@ -134,6 +137,9 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 	 * Updates the field shows with data from the database.
 	 */
 	void updateShowsList() {
+		if (null != shows) {
+			shows.clear();
+		}
 		try {
 			shows = pdbm.getAllShows();
 		}

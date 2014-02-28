@@ -140,8 +140,7 @@ public class DataCollectorGUIListener implements ActionListener {
 				+ " audience members added to the database.");
 
 		// Clear the gui.table and show all individuals. This is used because
-		// user
-		// ID's can't be determined prior to adding them to the DB.
+		// user ID's can't be determined prior to adding them to the DB.
 		gui.table.clearTable();
 		try {
 			gui.table.displayIndividuals(gui.pdbm.getAllIndividuals(),
@@ -248,7 +247,6 @@ public class DataCollectorGUIListener implements ActionListener {
 		}
 	}
 
-
 	/**
 	 * Handle collection of data - execute all collectors in separate threads.
 	 */
@@ -306,7 +304,7 @@ public class DataCollectorGUIListener implements ActionListener {
 	private void handleShowsFilter() {
 		final int selectedIndex = gui.comboShowsFilter.getSelectedIndex();
 		// Don't filter selected
-		if (selectedIndex == 0) {
+		if (selectedIndex <= 0) {
 			handleRefresh();
 			return;
 		}
@@ -375,6 +373,7 @@ public class DataCollectorGUIListener implements ActionListener {
 		// If addition OK - i.e. the venue wasn't in the db before, show it
 		if (venueID != -1) {
 			gui.comboVenues.addItem(newVenue);
+			gui.comboVenues.setSelectedIndex(gui.comboVenues.getItemCount() - 1);
 		}
 	}
 

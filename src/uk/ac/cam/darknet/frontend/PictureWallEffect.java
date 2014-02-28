@@ -5,6 +5,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -32,8 +33,8 @@ import uk.ac.cam.darknet.storage.ImageStorage;
  * An effect for generating a wall of pictures of all the people in the theatre
  * (i.e. all individuals in the database for the given performance).
  * 
- * Setup method should take in a String array with 2 arguments: the "pathname" of
- * the directory the picture should be stored in and the "filename" (without
+ * Setup method should take in a String array with 2 arguments: the "pathname"
+ * of the directory the picture should be stored in and the "filename" (without
  * extension) the picture should be stores as
  * 
  * @author Farah Patel
@@ -45,11 +46,18 @@ public class PictureWallEffect extends Effect {
 	private String filename;
 	private int colSize = 5;
 
+	@Override
+	public List<String> getSetupArgDescriptions() {
+		final List<String> argDescr = new ArrayList<>();
+		argDescr.add("path of the directory the picture should be stored in");
+		argDescr.add("filename (without extension) the picture should be stored as");
+		return argDescr;
+	}
+
 	/**
 	 * Constructs PictureWallEffect
 	 * 
-	 * @param dm
-	 *            appropriate DatabaseManager
+	 * @param dm appropriate DatabaseManager
 	 */
 	public PictureWallEffect(DatabaseManager dm) {
 		super(dm);
@@ -99,27 +107,34 @@ public class PictureWallEffect extends Effect {
 				}
 				// merge columns
 				image = concatenateByWidth(colPhotos);
-			} else {
+			}
+			else {
 				image = concatenateByWidth(photos);
 			}
 
 			ImageIO.write(image, "png", new File(pathname + filename + ".png"));
-		} catch (InvalidReliabilityException e) {
+		}
+		catch (InvalidReliabilityException e) {
 			System.err.println("Invalid Reliability of Photo");
 			return;
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			System.err.println("SQL Error");
 			return;
-		} catch (RequestNotSatisfiableException e) {
+		}
+		catch (RequestNotSatisfiableException e) {
 			System.err.println("DatabaseManager cannot satisfy Request");
 			return;
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			System.err.println("Cannot write image");
 			return;
-		} catch (UnknownAttributeException e) {
+		}
+		catch (UnknownAttributeException e) {
 			e.printStackTrace();
 			return;
-		} catch (InvalidAttributeTypeException e) {
+		}
+		catch (InvalidAttributeTypeException e) {
 			e.printStackTrace();
 			return;
 		}
@@ -188,7 +203,7 @@ public class PictureWallEffect extends Effect {
 		SecondaryDatabaseManager dm = new SecondaryDatabaseManager(
 				globalAttributeTable);
 		PictureWallEffect pwe = new PictureWallEffect(dm);
-		String[] files = {"", "pictureTest"};
+		String[] files = { "", "pictureTest" };
 		pwe.setup(files);
 		Show show = dm.getAllShows().get(2);
 		pwe.execute(show);

@@ -3,8 +3,10 @@ package uk.ac.cam.darknet.backend;
 import java.lang.reflect.Constructor;
 import java.util.Hashtable;
 import java.util.Set;
+import java.util.List;
 
 import uk.ac.cam.darknet.common.AttributeCategories;
+import uk.ac.cam.darknet.common.EffectsAndCollectorsLoader;
 import uk.ac.cam.darknet.database.PrimaryDatabaseManager;
 import uk.ac.cam.darknet.database.SecondaryDatabaseManager;
 import uk.ac.cam.darknet.gui.DataCollectorGUI;
@@ -22,7 +24,6 @@ public class DataCollectionManager {
 	 * @param args
 	 */
 
-	private int threadCount;
 	private DataCollectorGUI mpdc;
 	private PrimaryDatabaseManager pdm;
 	private SecondaryDatabaseManager sdm;
@@ -32,32 +33,6 @@ public class DataCollectionManager {
 		globalAttributeTable = new Hashtable<String, AttributeCategories>();
 		pdm = new PrimaryDatabaseManager(globalAttributeTable);
 		sdm = new SecondaryDatabaseManager(globalAttributeTable);
-		threadCount = 0;
-	}
-
-	// Method to run secondary data collector in new thread.
-	void startCollector(Class<SecondaryDataCollector> sdcObject) {
-		// Obtain the constructor object for the class object supplied.
-		Class[] args = new Class[1];
-		args[0] = sdm.getClass();
-		final Constructor<SecondaryDataCollector> sdcCstr = sdcObject
-				.getConstructor(args);
-		Thread t = new Thread() {
-			@Override
-			public void run() {
-				// Create a new instance of the secondary data collector
-				// corresponding to sdcObject.
-				final SecondaryDataCollector sdc = sdcCstr.newInstance(sdm);
-				// TODO where to get the individuals for setting up??
-				// TODO Setup the collector.
-				// TODO Query - will this run() method interfere with
-				// "public void run()" above?
-				sdc.run();
-			}
-		};
-		t.start();
-		// Update the thread counter.
-		threadCount++;
 	}
 
 	// Update the globalAttributeTable with all attributes found in the
@@ -90,24 +65,25 @@ public class DataCollectionManager {
 		// everything else.
 		final DataCollectionManager dcm = new DataCollectionManager();
 
-		// Populate globalAttributeTable.
-		// More elegant way desired, but so far reflection seems like it will
-		// not work.
-		FacebookDataCollector fdc = new FacebookDataCollector(dcm.sdm);
-		dcm.updateTable(fdc);
-		TwitterDataCollector tdc = new TwitterDataCollector(dcm.sdm);
-		dcm.updateTable(tdc);
+    // Populate globalAttributeTable by retrieving attributes from each
+    // SecondaryDataCollector.
+    List<Class<?>> secondaryCollectors = EffectsAndCollectorsLoader
+        .loadSecondaryCollectors();
+    Constructor<SecondaryDataCollector> sdcCstr; 
 
-		// Create the ManualPrimaryDataCollector in a new thread..
-		Thread guiThread = new Thread() {
-			@Override
-			public void run() {
-				dcm.mpdc = new DataCollectorGUI(dcm.pdm, dcm.sdm);
-				dcm.mpdc.run();
-			}
-		};
-		guiThread.start();
+		// Obtain the constructor object for the class object supplied.
+		Class[] c = new Class[1];
+		c[0] = dcm.sdm.getClass();
+    for (Class<?> sClass : secondaryCollectors) {
+      // Create an instance of the SecondaryDataCollector.
+		  sdcCstr = sClass.getConstructor(c);
+		  SecondaryDataCollector sdc = sdcCstr.newInstance(dcm.sdm);
+      dcm.updateTable(sdc);
+    }
 
-		// TODO action after guiThread is finished.
+		// Create the PrimaryDataCollector.
+    dcm.mpdc = new DataCollectorGUI(dcm.pdm, dcm.sdm);
+    dcm.mpdc.run();
+
 	}
 }

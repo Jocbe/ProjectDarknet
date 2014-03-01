@@ -7,7 +7,9 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -31,8 +33,6 @@ import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.text.DateFormatter;
 
-import com.itextpdf.text.log.SysoCounter;
-
 import uk.ac.cam.darknet.backend.PrimaryDataCollector;
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.EffectsAndCollectorsLoader;
@@ -44,8 +44,7 @@ import uk.ac.cam.darknet.database.PrimaryDatabaseManager;
 import uk.ac.cam.darknet.database.SecondaryDatabaseManager;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 import uk.ac.cam.darknet.exceptions.InvalidAttributeNameException;
-
-import java.awt.Toolkit;
+import javax.swing.JProgressBar;
 
 /**
  * GUI for the primary data collector. Displays the current contents of the
@@ -93,6 +92,7 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 	JPanel panelCSV;
 	JPanel panel;
 	JLabel label;
+	JProgressBar progressBar;
 
 	/**
 	 * Creates new primary data collector. The GUI and everything else is
@@ -118,7 +118,7 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 		frame.setVisible(true);
 		// If the connection to the database was successful, show all
 		// individuals in the table
-		if (this.pdbm == null) {
+		if (this.pdbm == null || this.sdbm == null) {
 			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_CONN_ERR,
 					"Database error", JOptionPane.ERROR_MESSAGE);
 		}
@@ -130,6 +130,7 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 			// Display them in the table
 			table.displayIndividuals(individualsInDB, venues);
 		}
+		// Populate the table with collectors that have been found in the system
 		populateCollectorsTable();
 	}
 
@@ -173,6 +174,9 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 		}
 	}
 
+	/**
+	 * Populates the comboboxes with shows.
+	 */
 	void populateShowsCBs() {
 		updateShowsList();
 		comboShowsColl.removeAllItems();
@@ -578,73 +582,42 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 		gbc_panelSecondary.gridy = 0;
 		gbc_panelSecondary.fill = GridBagConstraints.BOTH;
 		panelMain.add(panelSecondary, gbc_panelSecondary);
+		
+		progressBar = new JProgressBar();
+		progressBar.setStringPainted(true);
 		GroupLayout gl_panelSecondary = new GroupLayout(panelSecondary);
-		gl_panelSecondary
-				.setHorizontalGroup(gl_panelSecondary
-						.createParallelGroup(Alignment.LEADING)
-						.addGroup(
-								gl_panelSecondary
-										.createSequentialGroup()
-										.addContainerGap()
-										.addGroup(
-												gl_panelSecondary
-														.createParallelGroup(
-																Alignment.LEADING)
-														.addGroup(
-																Alignment.TRAILING,
-																gl_panelSecondary
-																		.createSequentialGroup()
-																		.addComponent(
-																				btnCollectData)
-																		.addPreferredGap(
-																				ComponentPlacement.RELATED)
-																		.addComponent(
-																				btnDone,
-																				GroupLayout.PREFERRED_SIZE,
-																				74,
-																				GroupLayout.PREFERRED_SIZE)
-																		.addContainerGap())
-														.addGroup(
-																Alignment.TRAILING,
-																gl_panelSecondary
-																		.createSequentialGroup()
-																		.addComponent(
-																				panelCollectors,
-																				GroupLayout.DEFAULT_SIZE,
-																				456,
-																				Short.MAX_VALUE)
-																		.addContainerGap())
-														.addGroup(
-																gl_panelSecondary
-																		.createSequentialGroup()
-																		.addComponent(
-																				comboShowsColl,
-																				GroupLayout.PREFERRED_SIZE,
-																				262,
-																				GroupLayout.PREFERRED_SIZE)
-																		.addContainerGap(
-																				211,
-																				Short.MAX_VALUE)))));
-		gl_panelSecondary
-				.setVerticalGroup(gl_panelSecondary.createParallelGroup(
-						Alignment.LEADING).addGroup(
-						gl_panelSecondary
-								.createSequentialGroup()
-								.addComponent(comboShowsColl,
-										GroupLayout.PREFERRED_SIZE,
-										GroupLayout.DEFAULT_SIZE,
-										GroupLayout.PREFERRED_SIZE)
-								.addPreferredGap(ComponentPlacement.RELATED)
-								.addComponent(panelCollectors,
-										GroupLayout.PREFERRED_SIZE, 204,
-										GroupLayout.PREFERRED_SIZE)
-								.addGap(7)
-								.addGroup(
-										gl_panelSecondary
-												.createParallelGroup(
-														Alignment.BASELINE)
-												.addComponent(btnDone)
-												.addComponent(btnCollectData))));
+		gl_panelSecondary.setHorizontalGroup(
+			gl_panelSecondary.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panelSecondary.createSequentialGroup()
+					.addContainerGap()
+					.addGroup(gl_panelSecondary.createParallelGroup(Alignment.TRAILING)
+						.addGroup(gl_panelSecondary.createSequentialGroup()
+							.addComponent(progressBar, GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(btnCollectData)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(btnDone, GroupLayout.PREFERRED_SIZE, 74, GroupLayout.PREFERRED_SIZE))
+						.addComponent(panelCollectors, GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)
+						.addComponent(comboShowsColl, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 262, GroupLayout.PREFERRED_SIZE))
+					.addContainerGap())
+		);
+		gl_panelSecondary.setVerticalGroup(
+			gl_panelSecondary.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panelSecondary.createSequentialGroup()
+					.addComponent(comboShowsColl, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(panelCollectors, GroupLayout.PREFERRED_SIZE, 204, GroupLayout.PREFERRED_SIZE)
+					.addGroup(gl_panelSecondary.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_panelSecondary.createSequentialGroup()
+							.addGap(7)
+							.addGroup(gl_panelSecondary.createParallelGroup(Alignment.BASELINE)
+								.addComponent(btnDone)
+								.addComponent(btnCollectData)))
+						.addGroup(gl_panelSecondary.createSequentialGroup()
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(progressBar, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+					.addGap(6))
+		);
 		panelSecondary.setLayout(gl_panelSecondary);
 
 		panelDatabase = new JPanel();
@@ -797,27 +770,48 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 	}
 
 	/**
-	 * Launch the GUI, for testing purposes only.
+	 * This is the main entry of the package DataCollector. It launches the Data
+	 * Collector. This involves: <br>
+	 * 1. Getting all the collectors in the system using reflection.<br>
+	 * 2. Starting the primary and secondary database managers and passing the
+	 * obtained collector attributes to them<br>
+	 * 3. Starting the GUI
 	 * 
-	 * @param args Ignored
+	 * @param args The arguments are ignored
 	 */
-	public static void main(String[] args) {
-		// Start the database manager
-		final Hashtable<String, AttributeCategories> emptyTable = new Hashtable<>();
+	public static void main(final String[] args) {
+		// Get the effects & collectors loader that uses reflection to load them
+		final EffectsAndCollectorsLoader collLoader = new EffectsAndCollectorsLoader();
+
+		// Get the attributes the collector will need in the database
+		Hashtable<String, AttributeCategories> attributes;
+		try {
+			attributes = collLoader.getDatabaseCollectorAttributes();
+		}
+		catch (ClassNotFoundException | InstantiationException
+				| IllegalAccessException | IllegalArgumentException
+				| InvocationTargetException | NoSuchMethodException
+				| SecurityException | IOException e1) {
+			JOptionPane.showMessageDialog(null, Strings.GUI_COLL_ERROR,
+					"Collectors error", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+
+		// Get the database managers using the attributes
 		PrimaryDatabaseManager pdbm;
 		SecondaryDatabaseManager sdbm;
 		try {
-			pdbm = new PrimaryDatabaseManager(emptyTable);
-			sdbm = new SecondaryDatabaseManager(emptyTable);
+			pdbm = new PrimaryDatabaseManager(attributes);
+			sdbm = new SecondaryDatabaseManager(attributes);
 		}
 		catch (ClassNotFoundException | ConfigFileNotFoundException
 				| IOException | SQLException | InvalidAttributeNameException e) {
-			System.out.println("MPDataCollector: Exception in main().");
-			e.printStackTrace();
-			pdbm = null;
-			sdbm = null;
+			JOptionPane.showMessageDialog(null, Strings.GUI_DB_CONN_ERR,
+					"Database error", JOptionPane.ERROR_MESSAGE);
+			return;
 		}
 
+		// Start the GUI
 		final DataCollectorGUI pdcGUI = new DataCollectorGUI(pdbm, sdbm);
 		pdcGUI.run();
 

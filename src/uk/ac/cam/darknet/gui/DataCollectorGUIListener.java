@@ -245,15 +245,13 @@ public class DataCollectorGUIListener implements ActionListener {
 			JOptionPane.showMessageDialog(gui.frame, Strings.GUI_DB_READ_ERR,
 					"Database error", JOptionPane.ERROR_MESSAGE);
 		}
+		gui.populateShowsCBs();
 	}
 
 	/**
 	 * Handle collection of data - execute all collectors in separate threads.
 	 */
 	private void handleDataCollection() {
-		
-		// TODO: This should be done in threads.
-		
 		// Get the selected show. If null, call collect on all data
 		final Show show = gui.getSelectedShow();
 		// Get the indexes of the checked collectors
@@ -267,24 +265,27 @@ public class DataCollectorGUIListener implements ActionListener {
 		if (checkedColl.size() == 0) {
 			JOptionPane.showMessageDialog(gui.frame, Strings.GUI_SELECT_COLL,
 					"No collectors selected", JOptionPane.INFORMATION_MESSAGE);
+			return;
 		}
+		
+		// Notify user that collection has started
+		gui.progressBar.setIndeterminate(true);
 
 		// Go through all collectors and invoke their run() methods
 		for (final Class<?> collClass : checkedColl) {
+			final SecondaryDataCollector collector;
 			try {
-				final SecondaryDataCollector collector = (SecondaryDataCollector) collClass
-						.getConstructor(SecondaryDatabaseManager.class)
-						.newInstance(gui.sdbm);
+				collector = (SecondaryDataCollector) collClass.getConstructor(
+						SecondaryDatabaseManager.class).newInstance(gui.sdbm);
+				// No show selected - collect data on everyone
 				if (show == null) {
 					collector.setup(gui.pdbm.getAllIndividuals());
 				}
+				// Collect data only for the given show
 				else {
 					collector.setup(gui.pdbm.getByShow(show));
 				}
 
-				// Start the collector in a new thread
-				Thread collectorThread = new Thread(collector); 
-				collectorThread.run();
 			}
 			catch (InstantiationException | IllegalAccessException
 					| SQLException | IllegalArgumentException
@@ -293,9 +294,32 @@ public class DataCollectorGUIListener implements ActionListener {
 				JOptionPane.showMessageDialog(gui.frame,
 						Strings.GUI_COLLECTORS_ERR, "Error loading collectors",
 						JOptionPane.ERROR_MESSAGE);
+				// Stop the progress bar
+				gui.progressBar.setIndeterminate(false);
+				return;
 			}
 
+			// Start the collector in a new thread
+			final Thread collectorThread = new Thread(collector);
+			collectorThread.run();
+
+			// Join the thread, so that the application waits for the thread to
+			// exit
+			try {
+				collectorThread.join();
+			}
+			catch (InterruptedException e) {
+				// Stop the progress bar
+				gui.progressBar.setIndeterminate(false);
+				return;
+			}
 		}
+		
+		// Stop the progress bar
+		gui.progressBar.setIndeterminate(false);
+		gui.progressBar.setValue(100);
+		
+
 	}
 
 	/**
@@ -373,7 +397,8 @@ public class DataCollectorGUIListener implements ActionListener {
 		// If addition OK - i.e. the venue wasn't in the db before, show it
 		if (venueID != -1) {
 			gui.comboVenues.addItem(newVenue);
-			gui.comboVenues.setSelectedIndex(gui.comboVenues.getItemCount() - 1);
+			gui.comboVenues
+					.setSelectedIndex(gui.comboVenues.getItemCount() - 1);
 		}
 	}
 

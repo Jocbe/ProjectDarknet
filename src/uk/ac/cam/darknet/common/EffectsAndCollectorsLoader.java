@@ -1,10 +1,13 @@
 package uk.ac.cam.darknet.common;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 
 import uk.ac.cam.darknet.backend.SecondaryDataCollector;
+import uk.ac.cam.darknet.database.SecondaryDatabaseManager;
 import uk.ac.cam.darknet.frontend.Effect;
 
 /**
@@ -68,4 +71,38 @@ public class EffectsAndCollectorsLoader {
 		return effectClasses;
 	}
 
+	/**
+	 * Finds all collectors present in the backend package and returns their
+	 * database attributes.
+	 * 
+	 * @return The database attributes each collector requires.
+	 * @throws ClassNotFoundException
+	 * @throws IOException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
+	 * @throws InvocationTargetException
+	 * @throws NoSuchMethodException
+	 * @throws SecurityException
+	 */
+	public Hashtable<String, AttributeCategories> getDatabaseCollectorAttributes()
+			throws ClassNotFoundException, IOException, InstantiationException,
+			IllegalAccessException, IllegalArgumentException,
+			InvocationTargetException, NoSuchMethodException, SecurityException {
+		final Hashtable<String, AttributeCategories> attributes = new Hashtable<>();
+
+		// Get all the collectors in the system via reflection
+		final List<Class<?>> collectors = loadSecondaryCollectors();
+
+		// Go through all collector
+		for (final Class<?> collClass : collectors) {
+			// Initialize collector with null hashtable
+			final SecondaryDataCollector collector = (SecondaryDataCollector) collClass
+					.getConstructor(SecondaryDatabaseManager.class)
+					.newInstance((Object) null);
+			attributes.putAll(collector.getAttributeTable());
+		}
+
+		return attributes;
+	}
 }

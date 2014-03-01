@@ -59,7 +59,7 @@ public class EffectExecutionGUI {
 	private List<Show> shows;
 
 	/**
-	 * Starts the effect execution GUI.
+	 * Initializes a new Effects DJ.
 	 * 
 	 * @param pdbm The primary database manager.
 	 * @param sdbm The secondary database manager.
@@ -68,6 +68,12 @@ public class EffectExecutionGUI {
 			final SecondaryDatabaseManager sdbm) {
 		this.pdbm = pdbm;
 		this.sdbm = sdbm;
+	}
+
+	/**
+	 * Starts the GUI, populates it with content and sets the frame visible.
+	 */
+	public void run() {
 		initializeGUI();
 		populateEffectsTable();
 		populateShows();
@@ -208,29 +214,49 @@ public class EffectExecutionGUI {
 	}
 
 	/**
-	 * Launch the application, testing only
+	 * Launches the Effects DJ. This involves: <br>
+	 * 1. Getting all the collectors in the system using reflection.<br>
+	 * 2. Starting the primary and secondary database managers and passing the
+	 * obtained collector attributes to them<br>
+	 * 3. Starting the GUI
 	 * 
-	 * @param args Ignored
+	 * @param args The arguments are ignored.
 	 */
 	public static void main(String[] args) {
-		// Start the database manager
-		final Hashtable<String, AttributeCategories> emptyTable = new Hashtable<>();
+		// Get the effects & collectors loader that uses reflection to load them
+		final EffectsAndCollectorsLoader collLoader = new EffectsAndCollectorsLoader();
+
+		// Get the attributes the collector will need in the database
+		Hashtable<String, AttributeCategories> attributes;
+		try {
+			attributes = collLoader.getDatabaseCollectorAttributes();
+		}
+		catch (ClassNotFoundException | InstantiationException
+				| IllegalAccessException | IllegalArgumentException
+				| InvocationTargetException | NoSuchMethodException
+				| SecurityException | IOException e1) {
+			JOptionPane.showMessageDialog(null, Strings.GUI_COLL_ERROR,
+					"Collectors error", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+
+		// Get the database managers
 		PrimaryDatabaseManager pdbm;
 		SecondaryDatabaseManager sdbm;
 		try {
-			pdbm = new PrimaryDatabaseManager(emptyTable);
-			sdbm = new SecondaryDatabaseManager(emptyTable);
+			pdbm = new PrimaryDatabaseManager(attributes);
+			sdbm = new SecondaryDatabaseManager(attributes);
 		}
 		catch (ClassNotFoundException | ConfigFileNotFoundException
 				| IOException | SQLException | InvalidAttributeNameException e) {
-			System.out.println("MPDataCollector: Exception in main().");
-			e.printStackTrace();
-			pdbm = null;
-			sdbm = null;
+			JOptionPane.showMessageDialog(null, Strings.GUI_DB_CONN_ERR,
+					"Database error", JOptionPane.ERROR_MESSAGE);
+			return;
 		}
 
-		EffectExecutionGUI window = new EffectExecutionGUI(pdbm, sdbm);
-
+		// Run the Effects DJ
+		EffectExecutionGUI effectsDJ = new EffectExecutionGUI(pdbm, sdbm);
+		effectsDJ.run();
 	}
 
 	class RunEffectsListener implements ActionListener {

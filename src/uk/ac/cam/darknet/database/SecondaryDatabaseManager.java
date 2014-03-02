@@ -22,7 +22,7 @@ import uk.ac.cam.darknet.exceptions.InvalidAttributeNameException;
  * @author Ibtehaj Nadeem
  */
 public class SecondaryDatabaseManager extends DatabaseManager {
-	private static final String	CREATE_SECONDARY_TABLE	= "CREATE CACHED TABLE %1$s (id BIGINT NOT NULL, attribute OTHER NOT NULL, reliability DOUBLE PRECISION NOT NULL, FOREIGN KEY (id) REFERENCES individuals(id), CHECK (reliability >= 0 AND reliability <= 1))";
+	private static final String	CREATE_SECONDARY_TABLE	= "CREATE CACHED TABLE %1$s (id BIGINT NOT NULL, attribute OTHER NOT NULL, reliability DOUBLE PRECISION NOT NULL, FOREIGN KEY (id) REFERENCES individuals(id) ON DELETE CASCADE, CHECK (reliability >= 0 AND reliability <= 1))";
 	private static final String	INSERT_ATTRIBUTE		= "INSERT INTO %1$s (id, attribute, reliability) VALUES (?, ?, ?)";
 
 	/**

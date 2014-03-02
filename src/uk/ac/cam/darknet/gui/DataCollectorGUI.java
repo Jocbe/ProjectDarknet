@@ -17,6 +17,7 @@ import java.util.Hashtable;
 import java.util.List;
 
 import javax.swing.BoxLayout;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
@@ -26,6 +27,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
@@ -44,7 +46,6 @@ import uk.ac.cam.darknet.database.PrimaryDatabaseManager;
 import uk.ac.cam.darknet.database.SecondaryDatabaseManager;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 import uk.ac.cam.darknet.exceptions.InvalidAttributeNameException;
-import javax.swing.JProgressBar;
 
 /**
  * GUI for the primary data collector. Displays the current contents of the
@@ -74,7 +75,7 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 	JButton btnDelete;
 	JButton btnCollectData;
 	JComboBox<String> comboShowsFilter;
-	JComboBox<String> comboShowsColl;
+	JComboBox<String> comboShowsCollec;
 	JComboBox<String> comboVenues;
 	CollectorsTable tableColl;
 	JScrollPane scrollPane_1;
@@ -126,7 +127,7 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 			// Get all the individuals that are already in the DB
 			final List<Individual> individualsInDB = getDBContent();
 			// Populate the comboboxes
-			populateComboBoxes();
+			updateComboBoxes();
 			// Display them in the table
 			table.displayIndividuals(individualsInDB, venues);
 		}
@@ -138,7 +139,7 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 	 * Updates the field shows with data from the database.
 	 */
 	void updateShowsList() {
-		if (null != shows) {
+		if (shows != null) {
 			shows.clear();
 		}
 		try {
@@ -154,6 +155,9 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 	 * Updates the field venues with data from the database.
 	 */
 	void updateVenuesList() {
+		if (venues != null) {
+			venues.clear();
+		}
 		try {
 			venues = pdbm.getAllVenues();
 		}
@@ -163,7 +167,7 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 		}
 	}
 
-	private void populateVenueCB() {
+	private void updateVenueCB() {
 		updateVenuesList();
 		// Clear first
 		comboVenues.removeAllItems();
@@ -177,24 +181,45 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 	/**
 	 * Populates the comboboxes with shows.
 	 */
-	void populateShowsCBs() {
+	void updateShowsCBs() {
+		// Update the shows list from the DB
 		updateShowsList();
-		comboShowsColl.removeAllItems();
+		// Clear the combo boxes
+		comboShowsCollec.removeAllItems();
 		comboShowsFilter.removeAllItems();
 
 		final SimpleDateFormat sdf = new SimpleDateFormat(
 				Strings.GUI_DATE_FORMAT);
-		// Add don't filter item
-		comboShowsFilter.addItem(Strings.GUI_DONT_FILTER);
-		comboShowsColl.addItem(Strings.GUI_ALL_SHOWS);
+
+		// Create default models to enable addition and deletion
+		final DefaultComboBoxModel<String> showFilterCBM = new DefaultComboBoxModel<>();
+		final DefaultComboBoxModel<String> showCollecCBM = new DefaultComboBoxModel<>();
+		// Add don't filter / collect for all item
+		showFilterCBM.addElement(Strings.GUI_DONT_FILTER);
+		showCollecCBM.addElement(Strings.GUI_ALL_SHOWS);
+		// Add all the shows
 		for (final Show s : shows) {
 			final String show = s.getVenue().getName() + " at "
 					+ sdf.format(s.getDate());
-			comboShowsFilter.addItem(show);
-			comboShowsColl.addItem(show);
+			showFilterCBM.addElement(show);
+			showCollecCBM.addElement(show);
 		}
+
+		// Set the model to the comboboxes
+		comboShowsCollec.setModel(showCollecCBM);
+		comboShowsFilter.setModel(showFilterCBM);
 	}
 
+	/**
+	 * Populates the comboboxes with data from the database.
+	 */
+	private void updateComboBoxes() {
+		// Populate venues
+		updateVenueCB();
+		// Populate shows
+		updateShowsCBs();
+	}
+	
 	/**
 	 * Fill the collectors table with data
 	 */
@@ -213,16 +238,6 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 		for (final Class<?> c : dataCollectors) {
 			tableColl.addCollector(c.getSimpleName());
 		}
-	}
-
-	/**
-	 * Populates the comboboxes with data from the database.
-	 */
-	private void populateComboBoxes() {
-		// Venues
-		populateVenueCB();
-		// Shows
-		populateShowsCBs();
 	}
 
 	/**
@@ -553,8 +568,9 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 				"Collect data for show", TitledBorder.LEADING,
 				TitledBorder.TOP, null, null));
 
-		comboShowsColl = new JComboBox<>();
-		comboShowsColl.setMaximumRowCount(20);
+		comboShowsCollec = new JComboBox<>();
+		comboShowsCollec.setMaximumRowCount(20);
+		comboShowsCollec.addActionListener(listener);
 
 		final JPanel panelCollectors = new JPanel();
 		panelCollectors.setBorder(new TitledBorder(new LineBorder(new Color(
@@ -582,42 +598,94 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 		gbc_panelSecondary.gridy = 0;
 		gbc_panelSecondary.fill = GridBagConstraints.BOTH;
 		panelMain.add(panelSecondary, gbc_panelSecondary);
-		
+
 		progressBar = new JProgressBar();
 		progressBar.setStringPainted(true);
 		GroupLayout gl_panelSecondary = new GroupLayout(panelSecondary);
-		gl_panelSecondary.setHorizontalGroup(
-			gl_panelSecondary.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panelSecondary.createSequentialGroup()
-					.addContainerGap()
-					.addGroup(gl_panelSecondary.createParallelGroup(Alignment.TRAILING)
-						.addGroup(gl_panelSecondary.createSequentialGroup()
-							.addComponent(progressBar, GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(btnCollectData)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(btnDone, GroupLayout.PREFERRED_SIZE, 74, GroupLayout.PREFERRED_SIZE))
-						.addComponent(panelCollectors, GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)
-						.addComponent(comboShowsColl, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 262, GroupLayout.PREFERRED_SIZE))
-					.addContainerGap())
-		);
-		gl_panelSecondary.setVerticalGroup(
-			gl_panelSecondary.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panelSecondary.createSequentialGroup()
-					.addComponent(comboShowsColl, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(panelCollectors, GroupLayout.PREFERRED_SIZE, 204, GroupLayout.PREFERRED_SIZE)
-					.addGroup(gl_panelSecondary.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_panelSecondary.createSequentialGroup()
-							.addGap(7)
-							.addGroup(gl_panelSecondary.createParallelGroup(Alignment.BASELINE)
-								.addComponent(btnDone)
-								.addComponent(btnCollectData)))
-						.addGroup(gl_panelSecondary.createSequentialGroup()
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(progressBar, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-					.addGap(6))
-		);
+		gl_panelSecondary
+				.setHorizontalGroup(gl_panelSecondary
+						.createParallelGroup(Alignment.LEADING)
+						.addGroup(
+								gl_panelSecondary
+										.createSequentialGroup()
+										.addContainerGap()
+										.addGroup(
+												gl_panelSecondary
+														.createParallelGroup(
+																Alignment.TRAILING)
+														.addGroup(
+																gl_panelSecondary
+																		.createSequentialGroup()
+																		.addComponent(
+																				progressBar,
+																				GroupLayout.DEFAULT_SIZE,
+																				222,
+																				Short.MAX_VALUE)
+																		.addPreferredGap(
+																				ComponentPlacement.RELATED)
+																		.addComponent(
+																				btnCollectData)
+																		.addPreferredGap(
+																				ComponentPlacement.RELATED)
+																		.addComponent(
+																				btnDone,
+																				GroupLayout.PREFERRED_SIZE,
+																				74,
+																				GroupLayout.PREFERRED_SIZE))
+														.addComponent(
+																panelCollectors,
+																GroupLayout.DEFAULT_SIZE,
+																461,
+																Short.MAX_VALUE)
+														.addComponent(
+																comboShowsCollec,
+																Alignment.LEADING,
+																GroupLayout.PREFERRED_SIZE,
+																262,
+																GroupLayout.PREFERRED_SIZE))
+										.addContainerGap()));
+		gl_panelSecondary
+				.setVerticalGroup(gl_panelSecondary
+						.createParallelGroup(Alignment.LEADING)
+						.addGroup(
+								gl_panelSecondary
+										.createSequentialGroup()
+										.addComponent(comboShowsCollec,
+												GroupLayout.PREFERRED_SIZE,
+												GroupLayout.DEFAULT_SIZE,
+												GroupLayout.PREFERRED_SIZE)
+										.addPreferredGap(
+												ComponentPlacement.RELATED)
+										.addComponent(panelCollectors,
+												GroupLayout.PREFERRED_SIZE,
+												204, GroupLayout.PREFERRED_SIZE)
+										.addGroup(
+												gl_panelSecondary
+														.createParallelGroup(
+																Alignment.LEADING)
+														.addGroup(
+																gl_panelSecondary
+																		.createSequentialGroup()
+																		.addGap(7)
+																		.addGroup(
+																				gl_panelSecondary
+																						.createParallelGroup(
+																								Alignment.BASELINE)
+																						.addComponent(
+																								btnDone)
+																						.addComponent(
+																								btnCollectData)))
+														.addGroup(
+																gl_panelSecondary
+																		.createSequentialGroup()
+																		.addPreferredGap(
+																				ComponentPlacement.RELATED)
+																		.addComponent(
+																				progressBar,
+																				GroupLayout.DEFAULT_SIZE,
+																				GroupLayout.DEFAULT_SIZE,
+																				Short.MAX_VALUE)))
+										.addGap(6)));
 		panelSecondary.setLayout(gl_panelSecondary);
 
 		panelDatabase = new JPanel();
@@ -632,6 +700,7 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 		scrollPane.setViewportView(table);
 
 		comboShowsFilter = new JComboBox<String>();
+		comboShowsFilter.setModel(new DefaultComboBoxModel<String>());
 		comboShowsFilter.addActionListener(listener);
 		comboShowsFilter.setMaximumRowCount(17);
 
@@ -728,10 +797,10 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 
 	Show getSelectedShow() {
 		// All shows selected
-		if (comboShowsColl.getSelectedIndex() == 0) {
+		if (comboShowsCollec.getSelectedIndex() == 0) {
 			return null;
 		}
-		return shows.get(comboShowsColl.getSelectedIndex() - 1);
+		return shows.get(comboShowsCollec.getSelectedIndex() - 1);
 	}
 
 	/**

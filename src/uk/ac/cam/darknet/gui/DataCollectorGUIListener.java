@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
@@ -34,14 +35,17 @@ public class DataCollectorGUIListener implements ActionListener {
 	private final DataCollectorGUI gui;
 
 	/**
-	 * @param gui The gui that this listener should be listening to.
+	 * @param gui The gui that this listener should be listening to, so that the
+	 *            listener can access it.
 	 */
 	public DataCollectorGUIListener(final DataCollectorGUI gui) {
 		this.gui = gui;
 	}
 
+	
+	@SuppressWarnings("unchecked")
 	@Override
-	public void actionPerformed(ActionEvent e) {
+	public void actionPerformed(final ActionEvent e) {
 		// Get the source
 		final Object source = e.getSource();
 		// The browse button, open File Chooser dialog
@@ -73,8 +77,9 @@ public class DataCollectorGUIListener implements ActionListener {
 			handleNewVenue();
 		}
 		// Shows combo box
-		else if (source == gui.comboShowsFilter) {
-			handleShowsFilter();
+		else if (source == gui.comboShowsFilter
+				|| source == gui.comboShowsCollec) {
+			handleShowsFilter((JComboBox<String>) source);
 		}
 		// Collect secondary data
 		else if (source == gui.btnCollectData) {
@@ -88,7 +93,7 @@ public class DataCollectorGUIListener implements ActionListener {
 	 */
 	private void handleBrowseButton() {
 		final JFileChooser fc = new JFileChooser();
-		// Set up the filter for .csv and.gui.txt files
+		// Set up the filter for .csv and .txt files
 		final FileFilter filter = new FileNameExtensionFilter("CSV file",
 				"csv", "gui.txt");
 		fc.setFileFilter(filter);
@@ -157,7 +162,7 @@ public class DataCollectorGUIListener implements ActionListener {
 				0, true));
 
 		// Update shows list
-		gui.populateShowsCBs();
+		gui.updateShowsCBs();
 	}
 
 	/**
@@ -228,8 +233,8 @@ public class DataCollectorGUIListener implements ActionListener {
 		gui.txtFldEmail.setText("");
 		gui.txtFldSeat.setText("");
 
-		// Update shows
-		gui.updateShowsList();
+		// Update shows comboboxes
+		gui.updateShowsCBs();
 	}
 
 	/**
@@ -245,7 +250,8 @@ public class DataCollectorGUIListener implements ActionListener {
 			JOptionPane.showMessageDialog(gui.frame, Strings.GUI_DB_READ_ERR,
 					"Database error", JOptionPane.ERROR_MESSAGE);
 		}
-		gui.populateShowsCBs();
+		// Update shows comboboxes
+		gui.updateShowsCBs();
 	}
 
 	/**
@@ -267,7 +273,7 @@ public class DataCollectorGUIListener implements ActionListener {
 					"No collectors selected", JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
-		
+
 		// Notify user that collection has started
 		gui.progressBar.setIndeterminate(true);
 
@@ -314,19 +320,18 @@ public class DataCollectorGUIListener implements ActionListener {
 				return;
 			}
 		}
-		
+
 		// Stop the progress bar
 		gui.progressBar.setIndeterminate(false);
 		gui.progressBar.setValue(100);
-		
 
 	}
 
 	/**
 	 * Handle changes of the combobox that filters the database view by shows.
 	 */
-	private void handleShowsFilter() {
-		final int selectedIndex = gui.comboShowsFilter.getSelectedIndex();
+	private void handleShowsFilter(final JComboBox<String> comboBox) {
+		final int selectedIndex = comboBox.getSelectedIndex();
 		// Don't filter selected
 		if (selectedIndex <= 0) {
 			handleRefresh();
@@ -391,7 +396,7 @@ public class DataCollectorGUIListener implements ActionListener {
 		}
 		catch (SQLException e) {
 			JOptionPane.showMessageDialog(gui.frame, Strings.GUI_VENUE_ADD_ERR,
-					"CSV file import error", JOptionPane.ERROR_MESSAGE);
+					"Venue adding error", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 		// If addition OK - i.e. the venue wasn't in the db before, show it

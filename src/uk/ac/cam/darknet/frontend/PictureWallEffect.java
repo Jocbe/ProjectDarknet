@@ -57,7 +57,8 @@ public class PictureWallEffect extends Effect {
 	/**
 	 * Constructs PictureWallEffect
 	 * 
-	 * @param dm appropriate DatabaseManager
+	 * @param dm
+	 *            appropriate DatabaseManager
 	 */
 	public PictureWallEffect(DatabaseManager dm) {
 		super(dm);
@@ -73,11 +74,15 @@ public class PictureWallEffect extends Effect {
 	public void execute(Show show) {
 		IndividualRequirements req = new IndividualRequirements(show);
 		try {
+			// create strict requirements for this effect
 			req.addRequirement(AttributeCategories.PHOTO, 0.0);
+			// get all individuals from the specified show with specified
+			// requirements
 			List<Individual> individuals = this.dm.getSuitableIndividuals(req);
 			ImageStorage imgStore = new ImageStorage();
 
 			List<String> photoids = new LinkedList<String>();
+			// for each individual get all photo ids in the database
 			for (int i = 0; i < individuals.size(); i++) {
 				List<AttributeReliabilityPair> pairs = individuals.get(i)
 						.getProperties().get("fb_photo");
@@ -89,6 +94,7 @@ public class PictureWallEffect extends Effect {
 			// randomize photos
 			Collections.shuffle(photoids);
 
+			// get images from image storage
 			BufferedImage[] photos = new BufferedImage[photoids.size()];
 			for (int i = 0; i < photos.length; i++) {
 				photos[i] = (BufferedImage) imgStore.retreiveImage(photoids
@@ -97,50 +103,47 @@ public class PictureWallEffect extends Effect {
 
 			BufferedImage image;
 			if (photos.length > 5) {
-				// assemble into columns of colSize
+				// assemble photos into columns of colSize
 				int numcols = photos.length / colSize;
-				int[] colwidth = new int[numcols];
 				BufferedImage[] colPhotos = new BufferedImage[numcols];
 				for (int i = 0; i < numcols; i++) {
 					colPhotos[i] = concatenateByHeight(Arrays.copyOfRange(
 							photos, colSize * i, colSize * i + colSize));
 				}
-				// merge columns
+				// merge columns into a single photo
 				image = concatenateByWidth(colPhotos);
-			}
-			else {
+			} else {
 				image = concatenateByWidth(photos);
 			}
 
+			// save image
 			ImageIO.write(image, "png", new File(pathname + filename + ".png"));
-		}
-		catch (InvalidReliabilityException e) {
+		} catch (InvalidReliabilityException e) {
 			System.err.println("Invalid Reliability of Photo");
 			return;
-		}
-		catch (SQLException e) {
+		} catch (SQLException e) {
 			System.err.println("SQL Error");
 			return;
-		}
-		catch (RequestNotSatisfiableException e) {
+		} catch (RequestNotSatisfiableException e) {
 			System.err.println("DatabaseManager cannot satisfy Request");
 			return;
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			System.err.println("Cannot write image");
 			return;
-		}
-		catch (UnknownAttributeException e) {
+		} catch (UnknownAttributeException e) {
 			e.printStackTrace();
 			return;
-		}
-		catch (InvalidAttributeTypeException e) {
+		} catch (InvalidAttributeTypeException e) {
 			e.printStackTrace();
 			return;
 		}
 
 	}
 
+	/**
+	 * Method that takes in a list of images and returns an image of all the
+	 * photos concatenated by width
+	 */
 	private BufferedImage concatenateByWidth(BufferedImage[] photos) {
 		int widthTotal = 0;
 		int height = 0;
@@ -163,6 +166,10 @@ public class PictureWallEffect extends Effect {
 		return image;
 	}
 
+	/**
+	 * Method that takes in a list of images and returns an image of all the
+	 * photos concatenated by height
+	 */
 	private BufferedImage concatenateByHeight(BufferedImage[] photos) {
 		int heightTotal = 0;
 		int width = 0;

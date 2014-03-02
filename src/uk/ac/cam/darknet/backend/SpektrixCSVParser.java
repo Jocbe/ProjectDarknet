@@ -52,7 +52,7 @@ public class SpektrixCSVParser {
 		InputStream csvStream = new FileInputStream(new File(pathname));
 		try (CSVReader reader = new CSVReader(new InputStreamReader(csvStream));) {
 			String[] nextLine;
-			DateFormat df = new SimpleDateFormat("dd/mm/yyyy HH:mm:ss");
+			DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 			Hashtable<String, AttributeCategories> table = new Hashtable<String, AttributeCategories>();
 			reader.readNext(); // get rid of column titles (first line ignored.
 								// assumed to be field names)

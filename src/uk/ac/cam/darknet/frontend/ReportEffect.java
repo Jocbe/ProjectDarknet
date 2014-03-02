@@ -45,7 +45,9 @@ public class ReportEffect extends Effect {
 
 	/**
 	 * Constructs a new ReportEffect.
-	 * @param dm An appropriate database manager.
+	 * 
+	 * @param dm
+	 *            An appropriate database manager.
 	 */
 	public ReportEffect(DatabaseManager dm) {
 		super(dm);
@@ -62,6 +64,7 @@ public class ReportEffect extends Effect {
 	@Override
 	public void execute(Show show) {
 		ArrayList<Individual> individuals;
+		// create requirements object with only a show as a requirement
 		IndividualRequirements requirements = new IndividualRequirements(show);
 		Enumeration<String> attributes;
 		ImageStorage imgStore = new ImageStorage();
@@ -69,12 +72,15 @@ public class ReportEffect extends Effect {
 		Document doc = new Document();
 		String data;
 		try {
+			// get all individuals attending the correct show
 			individuals = (ArrayList<Individual>) dm
 					.getSuitableIndividuals(requirements);
-			PdfWriter.getInstance(doc, new FileOutputStream(pathname + filename
-					+ ".pdf"));
+			@SuppressWarnings("resource")
+			FileOutputStream out = new FileOutputStream(pathname + filename
+					+ ".pdf");
+			PdfWriter.getInstance(doc,out);
 			doc.open();
-			DateFormat df = new SimpleDateFormat("dd/mm/yyyy 'at' HH:mm:ss");
+			DateFormat df = new SimpleDateFormat("dd/MM/yyyy 'at' HH:mm:ss");
 			Date showDate = show.getDate();
 			Venue showVenue = show.getVenue();
 			doc.add(new Paragraph("This is the report for the audience at "
@@ -82,6 +88,7 @@ public class ReportEffect extends Effect {
 					+ df.format(showDate), FontFactory.getFont(
 					FontFactory.COURIER, 25)));
 			doc.newPage();
+			// iterate through audience
 			for (Individual i : individuals) {
 				// display primary information
 				PdfPTable table = new PdfPTable(3);
@@ -113,7 +120,8 @@ public class ReportEffect extends Effect {
 				cell = new PdfPCell(new Phrase("Secondary Data"));
 				cell.setColspan(3);
 				table.addCell(cell);
-				// add Secondary information
+				// add Secondary information by iterating through all attributes
+				// and printing them
 				table.addCell("Attribute");
 				table.addCell("Value");
 				table.addCell("Reliability");
@@ -123,7 +131,8 @@ public class ReportEffect extends Effect {
 					List<AttributeReliabilityPair> arp = i
 							.getAttribute(currentAttribute);
 					AttributeReliabilityPair a = arp.get(0);
-					if (arp.size() > 1 && currentAttribute.contains("photo")) {
+					// in the case of photos also display a recent photo
+					if (arp.size() > 0 && currentAttribute.contains("photo")) {
 						data = "We have " + arp.size()
 								+ " photos stored currently";
 						if (arp.isEmpty()) {
@@ -140,13 +149,12 @@ public class ReportEffect extends Effect {
 							img.scaleToFit(250, 250);
 							table.addCell(img);
 							table.addCell(Double.toString(a.getReliability()));
-						}
-						catch (IOException e) {
+						} catch (IOException e) {
 							System.err.println("Failed to retrieve Image");
 							e.printStackTrace();
 						}
-					}
-					else {
+					} else {
+						// print out attribute value and reliability
 						data = a.getAttribute().toString();
 						if (data == null || data == "") {
 							data = "No Current Data";
@@ -160,41 +168,34 @@ public class ReportEffect extends Effect {
 					}
 				}
 
+				// add the table to the PDF
 				doc.add(table);
 				doc.newPage();
 			}
-		}
-		catch (FileNotFoundException e) {
+		} catch (FileNotFoundException e) {
 			System.err
 					.println("Error in pathname or filename. Check setup method args");
 			return;
-		}
-		catch (SQLException e) {
+		} catch (SQLException e) {
 			System.err.println("SQL Error");
 			return;
-		}
-		catch (RequestNotSatisfiableException e) {
+		} catch (RequestNotSatisfiableException e) {
 			System.err.println("DatabaseManager could not satisfy Request");
 			e.printStackTrace();
 			return;
-		}
-		catch (UnknownAttributeException e) {
+		} catch (UnknownAttributeException e) {
 			System.err.println("Unknown Attribute");
 			return;
-		}
-		catch (InvalidAttributeTypeException e) {
+		} catch (InvalidAttributeTypeException e) {
 			System.err.println("Invalid Attribute Type");
 			return;
-		}
-		catch (InvalidReliabilityException e) {
+		} catch (InvalidReliabilityException e) {
 			System.err.println("Invalid Reliability");
 			return;
-		}
-		catch (DocumentException e) {
+		} catch (DocumentException e) {
 			System.err.println("Error creating document to make PDF");
 			return;
-		}
-		finally {
+		} finally {
 			doc.close();
 		}
 	}

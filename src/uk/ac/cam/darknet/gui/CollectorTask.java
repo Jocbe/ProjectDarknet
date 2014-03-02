@@ -7,7 +7,7 @@ import uk.ac.cam.darknet.backend.SecondaryDataCollector;
 /**
  * A SwingWorker task that runs a Secondary Data Collector. It is used to notify
  * the GUI that the given collector has finished executing its task so that the
- * GUI can display nice progress bar but still be respionsive.
+ * GUI can display nice progress bar but still be responsive.
  * 
  * @author Augustin Zidek
  * 

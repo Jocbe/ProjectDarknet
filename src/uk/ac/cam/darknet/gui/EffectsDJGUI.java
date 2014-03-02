@@ -36,6 +36,7 @@ import uk.ac.cam.darknet.database.SecondaryDatabaseManager;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 import uk.ac.cam.darknet.exceptions.InvalidAttributeNameException;
 import uk.ac.cam.darknet.frontend.Effect;
+import javax.swing.JProgressBar;
 
 /**
  * The GUI for effect execution. It allows user to select a show and displays
@@ -56,6 +57,7 @@ public class EffectsDJGUI {
 	private final PrimaryDatabaseManager pdbm;
 	private final SecondaryDatabaseManager sdbm;
 	private List<Show> shows;
+	JProgressBar progressBar;
 
 	/**
 	 * Initializes a new Effects DJ.
@@ -147,9 +149,9 @@ public class EffectsDJGUI {
 		final JPanel panelMain = new JPanel();
 		frmEffectsDj.getContentPane().add(panelMain, BorderLayout.CENTER);
 		GridBagLayout gbl_panelMain = new GridBagLayout();
-		gbl_panelMain.columnWidths = new int[] { 636 };
+		gbl_panelMain.columnWidths = new int[] { 243, 243 };
 		gbl_panelMain.rowHeights = new int[] { 57, 400, 26 };
-		gbl_panelMain.columnWeights = new double[] { 0.0 };
+		gbl_panelMain.columnWeights = new double[] { 0.0, 0.0, 0.0 };
 		gbl_panelMain.rowWeights = new double[] { 0.0, 0.0, 0.0 };
 		panelMain.setLayout(gbl_panelMain);
 
@@ -165,7 +167,8 @@ public class EffectsDJGUI {
 		comboShows.setBounds(12, 19, 279, 25);
 		panelSelShow.add(comboShows);
 		GridBagConstraints gbc_panelSelShow = new GridBagConstraints();
-		gbc_panelSelShow.insets = new Insets(0, 5, 0, 5);
+		gbc_panelSelShow.gridwidth = 3;
+		gbc_panelSelShow.insets = new Insets(0, 5, 5, 0);
 		gbc_panelSelShow.weightx = 1.0;
 		gbc_panelSelShow.fill = GridBagConstraints.BOTH;
 		gbc_panelSelShow.gridx = 0;
@@ -181,23 +184,36 @@ public class EffectsDJGUI {
 		scrollPane = new JScrollPane();
 
 		table = new EffectsTable();
+		
 		scrollPane.setViewportView(table);
 		panelEffects.setLayout(new BoxLayout(panelEffects, BoxLayout.X_AXIS));
 		panelEffects.add(scrollPane);
 		GridBagConstraints gbc_panelEffects = new GridBagConstraints();
+		gbc_panelEffects.gridwidth = 3;
 		gbc_panelEffects.weightx = 1.0;
 		gbc_panelEffects.fill = GridBagConstraints.BOTH;
-		gbc_panelEffects.insets = new Insets(0, 5, 0, 5);
+		gbc_panelEffects.insets = new Insets(0, 5, 5, 0);
 		gbc_panelEffects.gridx = 0;
 		gbc_panelEffects.gridy = 1;
 		panelMain.add(panelEffects, gbc_panelEffects);
 
+		progressBar = new JProgressBar();
+		progressBar.setValue(0);
+		progressBar.setStringPainted(true);
+		progressBar.setToolTipText("Effect execution progress");
+		GridBagConstraints gbc_progressBar = new GridBagConstraints();
+		gbc_progressBar.fill = GridBagConstraints.BOTH;
+		gbc_progressBar.insets = new Insets(0, 10, 5, 5);
+		gbc_progressBar.gridx = 0;
+		gbc_progressBar.gridy = 2;
+		panelMain.add(progressBar, gbc_progressBar);
+
 		btnRunEffects = new JButton("Run effects");
 		GridBagConstraints gbc_btnRunEffects = new GridBagConstraints();
 		gbc_btnRunEffects.fill = GridBagConstraints.VERTICAL;
-		gbc_btnRunEffects.insets = new Insets(0, 5, 0, 5);
+		gbc_btnRunEffects.insets = new Insets(0, 5, 0, 10);
 		gbc_btnRunEffects.anchor = GridBagConstraints.EAST;
-		gbc_btnRunEffects.gridx = 0;
+		gbc_btnRunEffects.gridx = 1;
 		gbc_btnRunEffects.gridy = 2;
 		panelMain.add(btnRunEffects, gbc_btnRunEffects);
 
@@ -261,8 +277,10 @@ public class EffectsDJGUI {
 	class RunEffectsListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
+			// Get rows that have selected checkboxes
 			final List<Integer> checkedRows = table.getCheckedRows();
 
+			// Nothing checked
 			if (checkedRows.size() == 0) {
 				JOptionPane.showMessageDialog(frmEffectsDj,
 						Strings.GUI_SELECT_EFFECTS, "No effects selected",
@@ -277,7 +295,14 @@ public class EffectsDJGUI {
 			for (final int row : checkedRows) {
 				selectedEffects.add(effectClasses.get(row));
 			}
+			
+			// Get the amount of effects that are going to be executed
+			final int effectCount = selectedEffects.size();
+			progressBar.setMaximum(effectCount);
+			progressBar.setValue(0);
+			progressBar.setStringPainted(true);
 
+			int progress = 0;
 			// Go through all collectors and invoke their run() methods
 			for (final Class<?> effectClass : selectedEffects) {
 				try {
@@ -321,10 +346,10 @@ public class EffectsDJGUI {
 							Strings.GUI_EFFECTS_ERR, "Error loading effects",
 							JOptionPane.ERROR_MESSAGE);
 				}
+				progressBar.setValue(++progress);
 
 			}
 		}
 
 	}
-
 }

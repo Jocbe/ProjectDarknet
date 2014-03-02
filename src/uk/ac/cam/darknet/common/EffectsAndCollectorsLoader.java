@@ -5,6 +5,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Set;
+
+import org.reflections.Reflections;
 
 import uk.ac.cam.darknet.backend.SecondaryDataCollector;
 import uk.ac.cam.darknet.database.SecondaryDatabaseManager;
@@ -30,8 +33,11 @@ public class EffectsAndCollectorsLoader {
 	public List<Class<?>> loadSecondaryCollectors()
 			throws ClassNotFoundException, IOException {
 		// Read all classes that are in the backend package
-		final Class<?>[] backendClasses = AdvancedReflection
-				.getClasses("uk.ac.cam.darknet.backend");
+		
+		final Reflections reflections = new Reflections("uk.ac.cam.darknet.backend");
+
+		final Set<Class<? extends SecondaryDataCollector>> backendClasses = reflections
+				.getSubTypesOf(SecondaryDataCollector.class);
 
 		// Get only the data collectors
 		final List<Class<?>> dataCollectorClasses = new ArrayList<>();
@@ -57,8 +63,10 @@ public class EffectsAndCollectorsLoader {
 	public List<Class<?>> loadEffects() throws ClassNotFoundException,
 			IOException {
 		// Read all classes that are in the frontend package
-		final Class<?>[] frontendClasses = AdvancedReflection
-				.getClasses("uk.ac.cam.darknet.frontend");
+		final Reflections reflections = new Reflections("uk.ac.cam.darknet.frontend");
+
+		final Set<Class<? extends Effect>> frontendClasses = reflections
+				.getSubTypesOf(Effect.class);
 
 		// Get only the effects
 		final List<Class<?>> effectClasses = new ArrayList<>();

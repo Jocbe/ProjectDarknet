@@ -1,7 +1,5 @@
 package uk.ac.cam.darknet.common;
 
-import java.util.LinkedList;
-
 /**
  * The set of attribute categories supported by the system. Each data collector provides a list of
  * attributes it supports, indicating for each one which category it falls into.
@@ -18,7 +16,7 @@ public enum AttributeCategories {
 	 */
 	PHOTO(String.class),
 	/**
-	 * The age of individuals 
+	 * The age of individuals (<code>Byte</code>)
 	 */
 	AGE(Byte.class),
 	/**
@@ -30,19 +28,19 @@ public enum AttributeCategories {
 	 */
 	PHONE_NUMBER(String.class),
 	/**
-	 * Some status (ex. FB status, tweet) (<code>String</code>)
+	 * Some status (e.g. Facebook status, tweet) (<code>String</code>)
 	 */
-	STATUS(String.class), 
+	STATUS(String.class),
 	/**
-	 * Some locale (ex. FB locale (language setting)) (<code>String</code>)
+	 * Some locale (language setting) (e.g. Facebook locale) (<code>String</code>)
 	 */
 	LOCALE(String.class),
 	/**
-	 *  Birthday of individual (<code>String</code>)
+	 * Birthday of individual (<code>String</code>)
 	 */
-	BIRTHDAY(String.class), 
+	BIRTHDAY(String.class),
 	/**
-	 * Guest's relationship status (<code>String</code>)
+	 * Individuals's relationship status (<code>String</code>)
 	 */
 	RELATIONSHIP_STATUS(String.class);
 

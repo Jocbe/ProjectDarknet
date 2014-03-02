@@ -11,7 +11,7 @@ import uk.ac.cam.darknet.exceptions.UnknownAttributeException;
  * A class for storing a person with their data. The common attribute types that are provided by the
  * primary data collectors are available as getters. All the data coming from secondary collectors
  * is stored in a <code>Properties</code> object that belongs to the individual. Note that each
- * attribute type available is prefixed with the unique ID of the corresponding collector to avoid
+ * attribute name available is prefixed with the unique ID of the corresponding collector to avoid
  * name clashes.
  * 
  * @author Ibtehaj Nadeem

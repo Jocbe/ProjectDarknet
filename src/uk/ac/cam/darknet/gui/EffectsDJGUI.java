@@ -45,8 +45,7 @@ import uk.ac.cam.darknet.frontend.Effect;
  * @author Augustin Zidek
  * 
  */
-public class EffectExecutionGUI {
-
+public class EffectsDJGUI {
 	private JFrame frmEffectsDj;
 	private EffectsTable table;
 	private JButton btnRunEffects;
@@ -64,7 +63,7 @@ public class EffectExecutionGUI {
 	 * @param pdbm The primary database manager.
 	 * @param sdbm The secondary database manager.
 	 */
-	public EffectExecutionGUI(final PrimaryDatabaseManager pdbm,
+	public EffectsDJGUI(final PrimaryDatabaseManager pdbm,
 			final SecondaryDatabaseManager sdbm) {
 		this.pdbm = pdbm;
 		this.sdbm = sdbm;
@@ -138,7 +137,7 @@ public class EffectExecutionGUI {
 	private void initializeGUI() {
 		frmEffectsDj = new JFrame();
 		frmEffectsDj.setIconImage(Toolkit.getDefaultToolkit().getImage(
-				EffectExecutionGUI.class
+				EffectsDJGUI.class
 						.getResource("/uk/ac/cam/darknet/gui/icon.png")));
 		frmEffectsDj.setMinimumSize(new Dimension(486, 524));
 		frmEffectsDj.setTitle("Effects DJ");
@@ -255,7 +254,7 @@ public class EffectExecutionGUI {
 		}
 
 		// Run the Effects DJ
-		EffectExecutionGUI effectsDJ = new EffectExecutionGUI(pdbm, sdbm);
+		EffectsDJGUI effectsDJ = new EffectsDJGUI(pdbm, sdbm);
 		effectsDJ.run();
 	}
 

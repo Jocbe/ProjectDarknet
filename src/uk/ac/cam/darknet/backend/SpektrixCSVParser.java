@@ -33,21 +33,21 @@ public class SpektrixCSVParser {
 	/**
 	 * Parses CSV file from Spektrix and produces a list of Individuals
 	 * 
-	 * @param pathname
-	 *            path to Spektrix CSV file, CSV file expected to have the
+	 * @param pathname path to Spektrix CSV file, CSV file expected to have the
 	 *            following format: Customer Id, First Name, Last Name, Email
 	 *            Address, Event Name, Event Date/Time, Seat, Price, Ticket
 	 *            Type, Date Confirmed, Sales Channel. Note ignores first line
 	 *            of CSV file on the assumption that this lays out columns and
 	 *            it not actual data
+	 * @param venue The ID of the venue at which the show is going to take
+	 *            place.
 	 * @return List of Individuals stored in Database
-	 * @throws IOException
-	 *             If CSV file not found or if read is unsuccessful
+	 * @throws IOException If CSV file not found or if read is unsuccessful
 	 * @throws SQLException
 	 * @throws ParseException
 	 */
-	public List<Individual> loadfromCSV(String pathname, int venue) throws IOException,
-			SQLException, ParseException {
+	public List<Individual> loadfromCSV(String pathname, int venue)
+			throws IOException, SQLException, ParseException {
 		List<Individual> audience = new ArrayList<Individual>();
 		InputStream csvStream = new FileInputStream(new File(pathname));
 		try (CSVReader reader = new CSVReader(new InputStreamReader(csvStream));) {
@@ -60,8 +60,8 @@ public class SpektrixCSVParser {
 				if (nextLine != null) {
 					Date eventDate = df.parse(nextLine[5]);
 					Individual ind = Individual.getNewIndividual(nextLine[1],
-							nextLine[2], nextLine[3], eventDate, venue, nextLine[6],
-							table);
+							nextLine[2], nextLine[3], eventDate, venue,
+							nextLine[6], table);
 					audience.add(ind);
 				}
 			}

@@ -1,4 +1,5 @@
-# Default connection to the Project Darknet database.
+# Connection to the database.
+# Edit this file as described in the database documentation.
 prefix=jdbc:hsqldb:hsql:
 host=131.111.131.26
 port=5000

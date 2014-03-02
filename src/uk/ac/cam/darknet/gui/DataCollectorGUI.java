@@ -111,7 +111,7 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 	}
 
 	/**
-	 * Initialize the GUI.
+	 * Initializes the GUI.
 	 */
 	public void run() {
 		// Show the GUI
@@ -152,7 +152,7 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 	}
 
 	/**
-	 * Updates the field venues with data from the database.
+	 * Updates the venues list with data from the database.
 	 */
 	void updateVenuesList() {
 		if (venues != null) {
@@ -167,6 +167,9 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 		}
 	}
 
+	/**
+	 * Updates the combobox containing the venues.
+	 */
 	private void updateVenueCB() {
 		updateVenuesList();
 		// Clear first
@@ -219,7 +222,7 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 		// Populate shows
 		updateShowsCBs();
 	}
-	
+
 	/**
 	 * Fill the collectors table with data
 	 */
@@ -787,6 +790,10 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 		panelDatabase.setLayout(gl_panelDatabase);
 	}
 
+	/**
+	 * @return The venue that is currently selected in the combobox. Returns
+	 *         null if the "no venue" item is selected.
+	 */
 	Venue getSelectedVenue() {
 		// No venue selected
 		if (comboVenues.getSelectedIndex() == 0) {
@@ -795,6 +802,10 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 		return venues.get(comboVenues.getSelectedIndex() - 1);
 	}
 
+	/**
+	 * @return The show that is currently selected in the shows filter combobox.
+	 *         Returns null if the "all shows" item is selected.
+	 */
 	Show getSelectedShow() {
 		// All shows selected
 		if (comboShowsCollec.getSelectedIndex() == 0) {

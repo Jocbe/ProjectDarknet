@@ -46,7 +46,6 @@ import uk.ac.cam.darknet.frontend.Effect;
  * 
  */
 public class EffectsDJGUI {
-
 	private JFrame frmEffectsDj;
 	private EffectsTable table;
 	private JButton btnRunEffects;

@@ -43,6 +43,10 @@ public class ReportEffect extends Effect {
 	private String pathname;
 	private String filename;
 
+	/**
+	 * Constructs a new ReportEffect.
+	 * @param dm An appropriate database manager.
+	 */
 	public ReportEffect(DatabaseManager dm) {
 		super(dm);
 	}

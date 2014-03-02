@@ -40,7 +40,7 @@ import javax.swing.JProgressBar;
 
 /**
  * The GUI for effect execution. It allows user to select a show and displays
- * available effects in the system. The user can select effects thet want to use
+ * available effects in the system. The user can select effects that want to use
  * and then execute them.
  * 
  * @author Augustin Zidek
@@ -184,7 +184,7 @@ public class EffectsDJGUI {
 		scrollPane = new JScrollPane();
 
 		table = new EffectsTable();
-		
+
 		scrollPane.setViewportView(table);
 		panelEffects.setLayout(new BoxLayout(panelEffects, BoxLayout.X_AXIS));
 		panelEffects.add(scrollPane);
@@ -295,7 +295,7 @@ public class EffectsDJGUI {
 			for (final int row : checkedRows) {
 				selectedEffects.add(effectClasses.get(row));
 			}
-			
+
 			// Get the amount of effects that are going to be executed
 			final int effectCount = selectedEffects.size();
 			progressBar.setMaximum(effectCount);
@@ -320,7 +320,8 @@ public class EffectsDJGUI {
 					int cnt = 0;
 					for (final String argDes : argDescriptions) {
 						final String arg = JOptionPane.showInputDialog(
-								frmEffectsDj, "Please type in the " + argDes);
+								frmEffectsDj, Strings.GUI_EFFECT_ARG_PREFIX
+										+ argDes);
 						arguments[cnt++] = arg;
 					}
 
@@ -347,9 +348,10 @@ public class EffectsDJGUI {
 							JOptionPane.ERROR_MESSAGE);
 				}
 				progressBar.setValue(++progress);
-
 			}
-		}
 
+			JOptionPane.showMessageDialog(frmEffectsDj,
+					Strings.GUI_EFFECTS_DONE);
+		}
 	}
 }

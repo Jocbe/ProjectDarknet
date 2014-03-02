@@ -302,8 +302,9 @@ public class DataCollectorGUIListener implements ActionListener {
 					| InvocationTargetException | NoSuchMethodException
 					| SecurityException e) {
 				JOptionPane.showMessageDialog(gui.frame,
-						Strings.GUI_COLLECTORS_ERR, "Error loading collectors",
+						Strings.GUI_COLL_ERROR, "Error loading collectors",
 						JOptionPane.ERROR_MESSAGE);
+				
 				// Stop the progress bar
 				gui.progressBar.setIndeterminate(false);
 				return;
@@ -342,9 +343,7 @@ public class DataCollectorGUIListener implements ActionListener {
 			gui.progressBar.setValue(100);
 
 			// Notify the user that the collection is done
-			JOptionPane.showMessageDialog(gui.frame,
-					Strings.GUI_COLLECTORS_ERR, "Collection done",
-					JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(gui.frame, Strings.GUI_COLL_DONE);
 			gui.progressBar.setString("Collection done");
 		}
 	}

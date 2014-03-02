@@ -33,6 +33,7 @@ import uk.ac.cam.darknet.database.SecondaryDatabaseManager;
  */
 public class DataCollectorGUIListener implements ActionListener {
 	private final DataCollectorGUI gui;
+	private int collectorsStillRunning;
 
 	/**
 	 * @param gui The gui that this listener should be listening to, so that the
@@ -42,7 +43,6 @@ public class DataCollectorGUIListener implements ActionListener {
 		this.gui = gui;
 	}
 
-	
 	@SuppressWarnings("unchecked")
 	@Override
 	public void actionPerformed(final ActionEvent e) {
@@ -268,14 +268,19 @@ public class DataCollectorGUIListener implements ActionListener {
 			checkedColl.add(gui.dataCollectors.get(i));
 		}
 
+		// If no collector selected, complain
 		if (checkedColl.size() == 0) {
 			JOptionPane.showMessageDialog(gui.frame, Strings.GUI_SELECT_COLL,
 					"No collectors selected", JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
 
+		// Set the amount of running collectors to zero
+		collectorsStillRunning = 0;
+
 		// Notify user that collection has started
 		gui.progressBar.setIndeterminate(true);
+		gui.progressBar.setString("Collecting data");
 
 		// Go through all collectors and invoke their run() methods
 		for (final Class<?> collClass : checkedColl) {
@@ -291,7 +296,6 @@ public class DataCollectorGUIListener implements ActionListener {
 				else {
 					collector.setup(gui.pdbm.getByShow(show));
 				}
-
 			}
 			catch (InstantiationException | IllegalAccessException
 					| SQLException | IllegalArgumentException
@@ -305,26 +309,44 @@ public class DataCollectorGUIListener implements ActionListener {
 				return;
 			}
 
-			// Start the collector in a new thread
-			final Thread collectorThread = new Thread(collector);
-			collectorThread.run();
-
-			// Join the thread, so that the application waits for the thread to
-			// exit
-			try {
-				collectorThread.join();
-			}
-			catch (InterruptedException e) {
-				// Stop the progress bar
-				gui.progressBar.setIndeterminate(false);
-				return;
-			}
+			// Start a new thread executing the collector
+			startCollectorThread(collector);
 		}
+	}
 
-		// Stop the progress bar
-		gui.progressBar.setIndeterminate(false);
-		gui.progressBar.setValue(100);
+	/**
+	 * Starts a new thread running the given collector and increases the count
+	 * of running collectors.
+	 */
+	synchronized private void startCollectorThread(
+			final SecondaryDataCollector collector) {
+		// Increase the count of running collectors
+		collectorsStillRunning++;
+		// Run the collector
+		final CollectorTask task = new CollectorTask(collector, this);
+		task.execute();
+	}
 
+	/**
+	 * This method is called by the done() method of the CollectorTasks to
+	 * notify that they have finished their execution. This knows what is the
+	 * amount of running collectors and if the count reaches zero, it updates
+	 * the progress bar to 100%.
+	 */
+	synchronized void notifyCollectorDone() {
+		// Decrease the amount of running collectors
+		collectorsStillRunning--;
+		if (collectorsStillRunning == 0) {
+			// Everything done, stop the progress bar and set to 100%
+			gui.progressBar.setIndeterminate(false);
+			gui.progressBar.setValue(100);
+
+			// Notify the user that the collection is done
+			JOptionPane.showMessageDialog(gui.frame,
+					Strings.GUI_COLLECTORS_ERR, "Collection done",
+					JOptionPane.ERROR_MESSAGE);
+			gui.progressBar.setString("Collection done");
+		}
 	}
 
 	/**
@@ -345,8 +367,7 @@ public class DataCollectorGUIListener implements ActionListener {
 			filteredIndividuals = gui.pdbm.getByShow(selectedShow);
 		}
 		catch (final SQLException e) {
-			JOptionPane.showMessageDialog(gui.frame, Strings.GUI_DB_READ_ERR,
-					"Database error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(gui.frame, Strings.GUI_COLL_DONE);
 			return;
 		}
 		// Refresh the gui.table view

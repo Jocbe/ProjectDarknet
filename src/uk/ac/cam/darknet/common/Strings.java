@@ -52,4 +52,5 @@ public class Strings {
 	public static final String GUI_EFFECTS_ERR 				= "There has been error execting the effects.";
 	public static final String GUI_COLL_ERROR 				= "There was an error loading the collectors.";
 	public static final String GUI_COLLECTION_STARTED 		= "Data collection started. Please be patient, this might take a while.";
+	public static final String GUI_COLL_DONE 				= "Collection done!";
 }

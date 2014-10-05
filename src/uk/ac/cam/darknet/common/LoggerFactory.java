@@ -50,7 +50,7 @@ public class LoggerFactory {
 								.append(r.getLevel().getLocalizedName())
 								.append("] - ").append(r.getSourceMethodName())
 								.append(" (").append(r.getSourceClassName())
-								.append("): ").append(formatMessage(r))
+								.append("): ").append(this.formatMessage(r))
 								.append("\n");
 
 						if (r.getThrown() != null) {

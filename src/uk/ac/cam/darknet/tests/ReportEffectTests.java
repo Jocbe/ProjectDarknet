@@ -11,7 +11,6 @@ import uk.ac.cam.darknet.common.Show;
 import uk.ac.cam.darknet.database.SecondaryDatabaseManager;
 import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 import uk.ac.cam.darknet.exceptions.InvalidAttributeNameException;
-import uk.ac.cam.darknet.frontend.PictureWallEffect;
 import uk.ac.cam.darknet.frontend.ReportEffect;
 
 public class ReportEffectTests {

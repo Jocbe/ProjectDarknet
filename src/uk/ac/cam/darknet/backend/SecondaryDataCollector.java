@@ -63,7 +63,7 @@ public abstract class SecondaryDataCollector implements DataCollector {
 		// 1) Create all the secondary data collectors.
 		// 2) By calling the getAttributeTable() method on each one, add all the
 		// attributes to the global attribute table.
-		return attributeTable;
+		return this.attributeTable;
 	}
 
 	/**

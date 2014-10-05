@@ -60,20 +60,20 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 
 	@Override
 	public void run() {
-		if(targets == null || token == null) {
+		if(this.targets == null || this.token == null) {
 			log.warning("Aborting Facebook data collection as collector was not intialized yet");
 			return;
 		}
 		
 		// TODO: find better authentication method
-		client = new DefaultFacebookClient(token);//,appSecret);
+		this.client = new DefaultFacebookClient(this.token);//,appSecret);
 		Connection<User> c = null;
 		int error;
 		
 		error = 0;
 		do{
 			try{
-				c = client.fetchConnection("me/friends", User.class, Parameter.with("fields", "id,name"));
+				c = this.client.fetchConnection("me/friends", User.class, Parameter.with("fields", "id,name"));
 				error = 0;
 			} catch(Exception e) {
 				error++;
@@ -82,8 +82,8 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 				JOptionPane.showMessageDialog(null, "Invalid user token (try " + error + "/3).", "Invalid Token", JOptionPane.ERROR_MESSAGE);
 				if(error >= 3) return;
 				try{
-					reauthenticate();
-					client = new DefaultFacebookClient(token);//,appSecret);
+					this.reauthenticate();
+					this.client = new DefaultFacebookClient(this.token);//,appSecret);
 				}catch(Exception e2){
 					log.warning("Reauthentication failed due to invalid input");
 				}
@@ -106,7 +106,7 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 			error = 0;
 			do{
 				try{
-					detailedFriend = client.fetchObject(f.getId(), User.class);						
+					detailedFriend = this.client.fetchObject(f.getId(), User.class);						
 					error = 0;
 					friendsDetailed.add(detailedFriend);
 				} catch(Exception e) {
@@ -116,8 +116,8 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 					JOptionPane.showMessageDialog(null, "Invalid user token (try " + error + "/3).", "Invalid Token", JOptionPane.ERROR_MESSAGE);
 					if(error >= 3) return;
 					try{
-						reauthenticate();
-						client = new DefaultFacebookClient(token);//,appSecret);
+						this.reauthenticate();
+						this.client = new DefaultFacebookClient(this.token);//,appSecret);
 					}catch(Exception e2){
 						log.warning("Reauthentication failed due to invalid input");
 					}
@@ -126,7 +126,7 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 		}
 		
 		// Now iterate through targets and check if they are present in friend list of facebook
-		for(Individual target: targets) {
+		for(Individual target: this.targets) {
 			log.info("Looking for: " + target.getFirstName() + " " + target.getLastName());
 			for(User f: friendsDetailed) {
 
@@ -150,7 +150,7 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 					error = 0;
 					do{
 						try{
-							photos = client.fetchConnection(f.getId() + "/photos", Photo.class).getData();
+							photos = this.client.fetchConnection(f.getId() + "/photos", Photo.class).getData();
 							error = 0;
 						} catch(Exception e) {
 							error++;
@@ -159,8 +159,8 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 							JOptionPane.showMessageDialog(null, "Invalid user token (try " + error + "/3).", "Invalid Token", JOptionPane.ERROR_MESSAGE);
 							if(error >= 3) return;
 							try{
-								reauthenticate();
-								client = new DefaultFacebookClient(token);//,appSecret);
+								this.reauthenticate();
+								this.client = new DefaultFacebookClient(this.token);//,appSecret);
 							}catch(Exception e2){
 								log.warning("Reauthentication failed due to invalid input");
 							}
@@ -207,7 +207,7 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 		
 		// Finally, store all the data collected in the database
 		try {
-			databaseManager.storeAttributes(targets);
+			this.databaseManager.storeAttributes(this.targets);
 		} catch (SQLException e) {
 			log.severe("SQLException while trying to store Facebook data on all given targets. Message:" +
 					e.getMessage());
@@ -219,13 +219,13 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 	public void setup(List<Individual> individuals) {
 		// This does 2 things: authenticates and sets up the list of individuals to be targeted
 		try {
-			reauthenticate();
+			this.reauthenticate();
 			
 		} catch (AuthorizationFailedException e) {
 			JOptionPane.showMessageDialog(null, "Invalid user token! Exiting.", "Invalid Token", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		targets = individuals;
+		this.targets = individuals;
 	}
 
 	@Override
@@ -264,7 +264,7 @@ public class FacebookDataCollector extends SecondaryDataCollector {
 			throw new AuthorizationFailedException();
 		}
 		
-		token = manualToken;
+		this.token = manualToken;
 	}
 	
 }

@@ -42,7 +42,7 @@ public class ImageStorage {
 	 * <code>bin/</code> is.
 	 */
 	public ImageStorage() {
-		storagePath = "storage/";
+		this.storagePath = "storage/";
 	}
 
 	/**
@@ -86,11 +86,11 @@ public class ImageStorage {
 		// Read the image from the given URL, throws IOException if error
 		final BufferedImage image = ImageIO.read(imageURL);
 		// Get the format of the image (jpg/png/gif otherwise jpg)
-		final String format = determineFormat(imageURL);
+		final String format = this.determineFormat(imageURL);
 		// Generate unique name for the image and append also the format
 		final String imageUUID = UUID.randomUUID().toString() + "-" + format;
 		// Create the new file that will contain the image
-		final File imageFile = new File(storagePath + imageUUID + "." + format);
+		final File imageFile = new File(this.storagePath + imageUUID + "." + format);
 		// Save the image into the storage
 		ImageIO.write(image, format, imageFile);
 
@@ -108,10 +108,10 @@ public class ImageStorage {
 	 */
 	public Image retreiveImage(final String UUID) throws IOException {
 		// Determine the format
-		final String format = getFormatFromUUID(UUID);
+		final String format = this.getFormatFromUUID(UUID);
 		// Get the image file
-		System.out.println(storagePath + UUID + "." + format);
-		final File imageFile = new File(storagePath + UUID + "." + format);
+		System.out.println(this.storagePath + UUID + "." + format);
+		final File imageFile = new File(this.storagePath + UUID + "." + format);
 		// Load the image from the file
 		final BufferedImage image = ImageIO.read(imageFile);
 

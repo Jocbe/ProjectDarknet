@@ -28,7 +28,7 @@ public class Venue {
 	 * @return The venue ID.
 	 */
 	public int getId() {
-		return id;
+		return this.id;
 	}
 
 	/**
@@ -37,6 +37,6 @@ public class Venue {
 	 * @return The venue name.
 	 */
 	public String getName() {
-		return name;
+		return this.name;
 	}
 }

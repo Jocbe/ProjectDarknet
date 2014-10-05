@@ -57,7 +57,7 @@ public class Properties {
 	 * @throws InvalidReliabilityException
 	 */
 	public synchronized void put(String key, Object value, double reliability) throws UnknownAttributeException, InvalidAttributeTypeException, InvalidReliabilityException {
-		AttributeCategories attributeCategory = globalAttributeTable.get(key);
+		AttributeCategories attributeCategory = this.globalAttributeTable.get(key);
 		// Check if the key is a valid attribute.
 		if (attributeCategory == null)
 			throw new UnknownAttributeException(String.format(Strings.UNKNOWN_ATTR_EXN, key));
@@ -66,12 +66,12 @@ public class Properties {
 			throw new InvalidAttributeTypeException(String.format(Strings.INVALID_TYPE_EXN, key, attributeCategory.getClassName()));
 		// If both checks are passed, add the new key-value pair.
 		AttributeReliabilityPair newAttrRel = new AttributeReliabilityPair(value, reliability);
-		if (hashtable.containsKey(key)) {
-			hashtable.get(key).add(newAttrRel);
+		if (this.hashtable.containsKey(key)) {
+			this.hashtable.get(key).add(newAttrRel);
 		} else {
 			ArrayList<AttributeReliabilityPair> newList = new ArrayList<AttributeReliabilityPair>();
 			newList.add(newAttrRel);
-			hashtable.put(key, newList);
+			this.hashtable.put(key, newList);
 		}
 	}
 
@@ -84,7 +84,7 @@ public class Properties {
 	 *         map contains no mapping for the attribute.
 	 */
 	public synchronized List<AttributeReliabilityPair> get(String key) {
-		return hashtable.get(key);
+		return this.hashtable.get(key);
 	}
 
 	/**
@@ -95,14 +95,14 @@ public class Properties {
 	 *            The key of the key-value pair to remove.
 	 */
 	public synchronized void remove(String key) {
-		hashtable.remove(key);
+		this.hashtable.remove(key);
 	}
 
 	/**
 	 * Clears this <code>Properties</code> object so that it contains no more attributes.
 	 */
 	public synchronized void clear() {
-		hashtable.clear();
+		this.hashtable.clear();
 	}
 
 	/**
@@ -114,7 +114,7 @@ public class Properties {
 	 * @return True if the key is contained, false otherwise.
 	 */
 	public synchronized boolean containsAttribute(String key) {
-		return hashtable.containsKey(key);
+		return this.hashtable.containsKey(key);
 	}
 
 	/**
@@ -123,7 +123,7 @@ public class Properties {
 	 * @return an enumeration of the values in this <code>Properties</code> object.
 	 */
 	public synchronized Enumeration<List<AttributeReliabilityPair>> elements() {
-		return hashtable.elements();
+		return this.hashtable.elements();
 	}
 
 	/**
@@ -132,6 +132,6 @@ public class Properties {
 	 * @return an enumeration of the keys in this <code>Properties</code> object.
 	 */
 	public synchronized Enumeration<String> keys() {
-		return hashtable.keys();
+		return this.hashtable.keys();
 	}
 }

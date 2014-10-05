@@ -64,7 +64,7 @@ public class IndividualTable extends JTable {
 			final List<Venue> venues) {
 		// Go through all individuals, get their fields and display
 		for (final Individual i : individuals) {
-			displayIndividual(i, venues);
+			this.displayIndividual(i, venues);
 		}
 	}
 
@@ -83,7 +83,7 @@ public class IndividualTable extends JTable {
 		final String email = i.getEmail();
 		final String eventDate;
 		final int venueID = i.getEventVenue();
-		final String venueName = getVenueName(venueID, venues);
+		final String venueName = this.getVenueName(venueID, venues);
 
 		// Handle cases with no date specified
 		if (i.getEventDate() != null) {

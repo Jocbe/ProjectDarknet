@@ -73,10 +73,10 @@ public class ReportEffect extends Effect {
 		String data;
 		try {
 			// get all individuals attending the correct show
-			individuals = (ArrayList<Individual>) dm
+			individuals = (ArrayList<Individual>) this.dm
 					.getSuitableIndividuals(requirements);
 			@SuppressWarnings("resource")
-			FileOutputStream out = new FileOutputStream(pathname + filename
+			FileOutputStream out = new FileOutputStream(this.pathname + this.filename
 					+ ".pdf");
 			PdfWriter.getInstance(doc,out);
 			doc.open();
@@ -202,7 +202,7 @@ public class ReportEffect extends Effect {
 
 	@Override
 	public void setup(String[] args) {
-		pathname = args[0];
-		filename = args[1];
+		this.pathname = args[0];
+		this.filename = args[1];
 	}
 }

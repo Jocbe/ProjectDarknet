@@ -26,7 +26,7 @@ public class AttributeReliabilityPair {
 	 * @return The reliability of the attribute stored.
 	 */
 	public double getReliability() {
-		return reliability;
+		return this.reliability;
 	}
 
 	/**
@@ -35,6 +35,6 @@ public class AttributeReliabilityPair {
 	 * @return The attribute stored.
 	 */
 	public Object getAttribute() {
-		return attribute;
+		return this.attribute;
 	}
 }

@@ -33,13 +33,14 @@ public class CollectorTask extends SwingWorker<Void, Void> {
 	@Override
 	protected Void doInBackground() throws Exception {
 		// Start the collector in a new thread
-		final Thread collectorThread = new Thread(collector);
+		final Thread collectorThread = new Thread(this.collector);
 		collectorThread.run();
 
 		return null;
 	}
 
+	@Override
 	protected void done() {
-		guiListener.notifyCollectorDone();
+		this.guiListener.notifyCollectorDone();
 	}
 }

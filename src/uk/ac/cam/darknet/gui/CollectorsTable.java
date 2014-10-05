@@ -52,8 +52,9 @@ public class CollectorsTable extends JTable {
 	}
 
 	// Make checkboxes appear
+	@Override
 	public Class<?> getColumnClass(final int column) {
-		return (getValueAt(0, column).getClass());
+		return (this.getValueAt(0, column).getClass());
 	}
 
 	/**

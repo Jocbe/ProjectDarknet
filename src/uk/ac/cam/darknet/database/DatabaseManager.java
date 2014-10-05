@@ -85,10 +85,10 @@ public class DatabaseManager {
 		} else {
 			this.globalAttributeTable = globalAttributeTable;
 		}
-		connection = connectToDB("res/dbconfig.txt");
+		this.connection = this.connectToDB("res/dbconfig.txt");
 		// Use this line instead for absolute paths.
 		// connection = connectToDB(Strings.getBaseDir() + "/res/dbconfig.txt");
-		connection.setAutoCommit(false);
+		this.connection.setAutoCommit(false);
 	}
 
 	private Connection connectToDB(String pathToConfig) throws SQLException, FileNotFoundException, IOException, ClassNotFoundException {
@@ -132,7 +132,7 @@ public class DatabaseManager {
 	 * @throws SQLException
 	 */
 	public synchronized void closeConnection() throws SQLException {
-		connection.close();
+		this.connection.close();
 	}
 
 	/**
@@ -143,8 +143,8 @@ public class DatabaseManager {
 	 */
 	public synchronized List<Individual> getAllIndividuals() throws SQLException {
 		ArrayList<Individual> toReturn = new ArrayList<Individual>();
-		try (PreparedStatement stmt = connection.prepareStatement(GET_ALL_INDIVIDUALS);) {
-			toReturn = getIndividualQueryResults(stmt);
+		try (PreparedStatement stmt = this.connection.prepareStatement(GET_ALL_INDIVIDUALS);) {
+			toReturn = this.getIndividualQueryResults(stmt);
 		}
 		return toReturn;
 	}
@@ -159,10 +159,10 @@ public class DatabaseManager {
 	 */
 	public synchronized Individual getById(long id) throws SQLException {
 		Individual toReturn;
-		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_ID);) {
+		try (PreparedStatement stmt = this.connection.prepareStatement(GET_BY_ID);) {
 			stmt.setLong(1, id);
 			try (ResultSet result = stmt.executeQuery();) {
-				toReturn = createIndividual(result);
+				toReturn = this.createIndividual(result);
 			}
 		}
 		return toReturn;
@@ -178,9 +178,9 @@ public class DatabaseManager {
 	 */
 	public synchronized List<Individual> getByFirstName(String fname) throws SQLException {
 		ArrayList<Individual> toReturn = new ArrayList<Individual>();
-		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_FNAME);) {
+		try (PreparedStatement stmt = this.connection.prepareStatement(GET_BY_FNAME);) {
 			stmt.setString(1, fname);
-			toReturn = getIndividualQueryResults(stmt);
+			toReturn = this.getIndividualQueryResults(stmt);
 		}
 		return toReturn;
 	}
@@ -195,9 +195,9 @@ public class DatabaseManager {
 	 */
 	public synchronized List<Individual> getByLastName(String lname) throws SQLException {
 		ArrayList<Individual> toReturn = new ArrayList<Individual>();
-		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_LNAME);) {
+		try (PreparedStatement stmt = this.connection.prepareStatement(GET_BY_LNAME);) {
 			stmt.setString(1, lname);
-			toReturn = getIndividualQueryResults(stmt);
+			toReturn = this.getIndividualQueryResults(stmt);
 		}
 		return toReturn;
 	}
@@ -212,9 +212,9 @@ public class DatabaseManager {
 	 */
 	public synchronized List<Individual> getByEmail(String email) throws SQLException {
 		ArrayList<Individual> toReturn = new ArrayList<Individual>();
-		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_EMAIL);) {
+		try (PreparedStatement stmt = this.connection.prepareStatement(GET_BY_EMAIL);) {
 			stmt.setString(1, email);
-			toReturn = getIndividualQueryResults(stmt);
+			toReturn = this.getIndividualQueryResults(stmt);
 		}
 		return toReturn;
 	}
@@ -229,9 +229,9 @@ public class DatabaseManager {
 	 */
 	public synchronized List<Individual> getBySeat(String seat) throws SQLException {
 		ArrayList<Individual> toReturn = new ArrayList<Individual>();
-		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_SEAT);) {
+		try (PreparedStatement stmt = this.connection.prepareStatement(GET_BY_SEAT);) {
 			stmt.setString(1, seat);
-			toReturn = getIndividualQueryResults(stmt);
+			toReturn = this.getIndividualQueryResults(stmt);
 		}
 		return toReturn;
 	}
@@ -248,10 +248,10 @@ public class DatabaseManager {
 	 */
 	public synchronized List<Individual> getByShow(Date eventDate, int eventVenue) throws SQLException {
 		ArrayList<Individual> toReturn = new ArrayList<Individual>();
-		try (PreparedStatement stmt = connection.prepareStatement(GET_BY_SHOW);) {
+		try (PreparedStatement stmt = this.connection.prepareStatement(GET_BY_SHOW);) {
 			stmt.setTimestamp(1, dateToSQLTimestamp(eventDate));
 			stmt.setInt(2, eventVenue);
-			toReturn = getIndividualQueryResults(stmt);
+			toReturn = this.getIndividualQueryResults(stmt);
 		}
 		return toReturn;
 	}
@@ -265,7 +265,7 @@ public class DatabaseManager {
 	 * @throws SQLException
 	 */
 	public synchronized List<Individual> getByShow(Show show) throws SQLException {
-		return getByShow(show.getDate(), show.getVenue().getId());
+		return this.getByShow(show.getDate(), show.getVenue().getId());
 	}
 
 	/**
@@ -277,7 +277,7 @@ public class DatabaseManager {
 	public synchronized List<Show> getAllShows() throws SQLException {
 		ArrayList<Show> toReturn = new ArrayList<Show>();
 		Show next;
-		try (PreparedStatement stmt = connection.prepareStatement(GET_ALL_SHOWS);) {
+		try (PreparedStatement stmt = this.connection.prepareStatement(GET_ALL_SHOWS);) {
 			try (ResultSet resultSet = stmt.executeQuery();) {
 				while (resultSet.next()) {
 					next = new Show(resultSet.getTimestamp(1), new Venue(resultSet.getInt(2), resultSet.getString(3)));
@@ -297,7 +297,7 @@ public class DatabaseManager {
 	public synchronized List<Venue> getAllVenues() throws SQLException {
 		ArrayList<Venue> toReturn = new ArrayList<Venue>();
 		Venue next;
-		try (PreparedStatement stmt = connection.prepareStatement(GET_ALL_VENUES);) {
+		try (PreparedStatement stmt = this.connection.prepareStatement(GET_ALL_VENUES);) {
 			try (ResultSet resultSet = stmt.executeQuery();) {
 				while (resultSet.next()) {
 					next = new Venue(resultSet.getInt(1), resultSet.getString(2));
@@ -320,7 +320,7 @@ public class DatabaseManager {
 	 * @throws UnknownAttributeException
 	 */
 	public void getAllAttributes(List<Individual> individuals) throws SQLException, UnknownAttributeException, InvalidAttributeTypeException, InvalidReliabilityException {
-		Enumeration<String> attributes = globalAttributeTable.keys();
+		Enumeration<String> attributes = this.globalAttributeTable.keys();
 		String currentAttributeName;
 		double currentReliability;
 		Object currentAttribute;
@@ -332,14 +332,14 @@ public class DatabaseManager {
 		// individual, add the information in the database to the individual's properties.
 		while (attributes.hasMoreElements()) {
 			currentAttributeName = attributes.nextElement();
-			try (PreparedStatement stmt = connection.prepareStatement(String.format(GET_ATTRIBUTE, currentAttributeName));) {
+			try (PreparedStatement stmt = this.connection.prepareStatement(String.format(GET_ATTRIBUTE, currentAttributeName));) {
 				for (Individual currentIndividual : individuals) {
 					stmt.setLong(1, currentIndividual.getId());
 					try (ResultSet resultSet = stmt.executeQuery();) {
 						while (resultSet.next()) {
-							currentAttribute = resultSet.getObject(1, globalAttributeTable.get(currentAttributeName).getAttributeType());
+							currentAttribute = resultSet.getObject(1, this.globalAttributeTable.get(currentAttributeName).getAttributeType());
 							currentReliability = resultSet.getDouble(2);
-							currentIndividual.addAttribute(currentAttributeName, globalAttributeTable.get(currentAttributeName).getAttributeType().cast(currentAttribute), currentReliability);
+							currentIndividual.addAttribute(currentAttributeName, this.globalAttributeTable.get(currentAttributeName).getAttributeType().cast(currentAttribute), currentReliability);
 						}
 					}
 				}
@@ -369,22 +369,22 @@ public class DatabaseManager {
 		double currentMinReliability;
 		int tableCounter = 0;
 		String statement = SELECT_FILTERED;
-		try (Statement stmt = connection.createStatement();) {
+		try (Statement stmt = this.connection.createStatement();) {
 			stmt.execute(String.format(CREATE_FILTER_TABLE, formatDate(requirements.getShow().getDate()), requirements.getShow().getVenue().getId()));
 			while (categories.hasMoreElements()) {
 				currentCategory = categories.nextElement();
 				currentMinReliability = requirements.getRequiredCategories().get(currentCategory);
-				filterAttributes(currentCategory, attributes);
+				this.filterAttributes(currentCategory, attributes);
 				if (attributes.isEmpty())
 					throw new RequestNotSatisfiableException(Strings.REQUEST_NOT_SATISFIABLE);
-				createTemporaryTable(attributes, currentMinReliability, tableCounter++);
+				this.createTemporaryTable(attributes, currentMinReliability, tableCounter++);
 			}
 			for (int i = 0; i < tableCounter; i++) {
 				statement += String.format(FILTER_JOIN, i);
 			}
-			toReturn = getIndividualQueryResults(stmt, statement);
+			toReturn = this.getIndividualQueryResults(stmt, statement);
 		} finally {
-			try (Statement stmt = connection.createStatement();) {
+			try (Statement stmt = this.connection.createStatement();) {
 				stmt.execute(DROP_FILTER_TABLE);
 				for (int i = 0; i < tableCounter; i++) {
 					stmt.execute(String.format(DROP_TEMP_TABLE, i));
@@ -393,7 +393,7 @@ public class DatabaseManager {
 		}
 		if (toReturn.size() == 0)
 			throw new RequestNotSatisfiableException(Strings.REQUEST_NOT_SATISFIABLE);
-		getAllAttributes(toReturn);
+		this.getAllAttributes(toReturn);
 		return toReturn;
 	}
 
@@ -409,18 +409,18 @@ public class DatabaseManager {
 			finalSubQuery += " UNION " + subQueries.get(i);
 		}
 		statement = String.format(CREATE_TEMP_TABLE, tableCounter, finalSubQuery);
-		try (Statement stmt = connection.createStatement();) {
+		try (Statement stmt = this.connection.createStatement();) {
 			stmt.execute(statement);
 		}
 	}
 
 	private void filterAttributes(AttributeCategories filter, ArrayList<String> attributes) {
 		attributes.clear();
-		Enumeration<String> allAttributes = globalAttributeTable.keys();
+		Enumeration<String> allAttributes = this.globalAttributeTable.keys();
 		String currentAttribute;
 		while (allAttributes.hasMoreElements()) {
 			currentAttribute = allAttributes.nextElement();
-			if (globalAttributeTable.get(currentAttribute) == filter)
+			if (this.globalAttributeTable.get(currentAttribute) == filter)
 				attributes.add(currentAttribute);
 		}
 	}
@@ -429,10 +429,10 @@ public class DatabaseManager {
 		ArrayList<Individual> toReturn = new ArrayList<Individual>();
 		Individual next;
 		try (ResultSet resultSet = stmt.executeQuery();) {
-			next = createIndividual(resultSet);
+			next = this.createIndividual(resultSet);
 			while (next != null) {
 				toReturn.add(next);
-				next = createIndividual(resultSet);
+				next = this.createIndividual(resultSet);
 			}
 		}
 		return toReturn;
@@ -442,10 +442,10 @@ public class DatabaseManager {
 		ArrayList<Individual> toReturn = new ArrayList<Individual>();
 		Individual next;
 		try (ResultSet resultSet = stmt.executeQuery(query);) {
-			next = createIndividual(resultSet);
+			next = this.createIndividual(resultSet);
 			while (next != null) {
 				toReturn.add(next);
-				next = createIndividual(resultSet);
+				next = this.createIndividual(resultSet);
 			}
 		}
 		return toReturn;
@@ -453,14 +453,14 @@ public class DatabaseManager {
 
 	private Individual createIndividual(ResultSet result) throws SQLException {
 		if (result.next()) {
-			id = result.getLong(1);
-			fname = result.getString(2);
-			lname = result.getString(3);
-			email = result.getString(4);
-			date = (Date) result.getTimestamp(5);
-			venue = result.getInt(6);
-			seat = result.getString(7);
-			return new Individual(id, fname, lname, email, date, venue, seat, globalAttributeTable);
+			this.id = result.getLong(1);
+			this.fname = result.getString(2);
+			this.lname = result.getString(3);
+			this.email = result.getString(4);
+			this.date = result.getTimestamp(5);
+			this.venue = result.getInt(6);
+			this.seat = result.getString(7);
+			return new Individual(this.id, this.fname, this.lname, this.email, this.date, this.venue, this.seat, this.globalAttributeTable);
 		} else {
 			return null;
 		}
@@ -499,7 +499,7 @@ public class DatabaseManager {
 	}
 
 	protected boolean isAttributeNameValid(String attributeName) {
-		if (attributeName == null || attributeName.length() == 0 || (!pattern.matcher(attributeName).matches())) {
+		if (attributeName == null || attributeName.length() == 0 || (!this.pattern.matcher(attributeName).matches())) {
 			return false;
 		} else {
 			return true;

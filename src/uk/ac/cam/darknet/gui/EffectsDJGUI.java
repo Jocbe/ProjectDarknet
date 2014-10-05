@@ -75,10 +75,10 @@ public class EffectsDJGUI {
 	 * Starts the GUI, populates it with content and sets the frame visible.
 	 */
 	public void run() {
-		initializeGUI();
-		populateEffectsTable();
-		populateShows();
-		frmEffectsDj.setVisible(true);
+		this.initializeGUI();
+		this.populateEffectsTable();
+		this.populateShows();
+		this.frmEffectsDj.setVisible(true);
 	}
 
 	/**
@@ -86,10 +86,10 @@ public class EffectsDJGUI {
 	 */
 	void updateShowsList() {
 		try {
-			shows = pdbm.getAllShows();
+			this.shows = this.pdbm.getAllShows();
 		}
 		catch (SQLException e) {
-			JOptionPane.showMessageDialog(frmEffectsDj, Strings.GUI_DB_VEN_ERR,
+			JOptionPane.showMessageDialog(this.frmEffectsDj, Strings.GUI_DB_VEN_ERR,
 					"Database error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
@@ -98,17 +98,17 @@ public class EffectsDJGUI {
 	 * Populate the shows combo box.
 	 */
 	private void populateShows() {
-		updateShowsList();
-		comboShows.removeAllItems();
+		this.updateShowsList();
+		this.comboShows.removeAllItems();
 
 		final SimpleDateFormat sdf = new SimpleDateFormat(
 				Strings.GUI_DATE_FORMAT);
 		// Add don't filter item
-		comboShows.addItem(Strings.GUI_ALL_SHOWS);
-		for (final Show s : shows) {
+		this.comboShows.addItem(Strings.GUI_ALL_SHOWS);
+		for (final Show s : this.shows) {
 			final String show = s.getVenue().getName() + " at "
 					+ sdf.format(s.getDate());
-			comboShows.addItem(show);
+			this.comboShows.addItem(show);
 		}
 	}
 
@@ -119,17 +119,17 @@ public class EffectsDJGUI {
 		// Read all classes that are in the backend package
 		try {
 			final EffectsAndCollectorsLoader loader = new EffectsAndCollectorsLoader();
-			effectClasses = loader.loadEffects();
+			this.effectClasses = loader.loadEffects();
 		}
 		catch (ClassNotFoundException | IOException a) {
-			JOptionPane.showMessageDialog(frmEffectsDj,
+			JOptionPane.showMessageDialog(this.frmEffectsDj,
 					Strings.GUI_NO_COLLECTORS, "No collectors found",
 					JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 		// Add the collectors into the table
-		for (final Class<?> c : effectClasses) {
-			table.addEffect(c.getSimpleName());
+		for (final Class<?> c : this.effectClasses) {
+			this.table.addEffect(c.getSimpleName());
 		}
 	}
 
@@ -137,17 +137,17 @@ public class EffectsDJGUI {
 	 * Initialize the contents of the frame.
 	 */
 	private void initializeGUI() {
-		frmEffectsDj = new JFrame();
-		frmEffectsDj.setIconImage(Toolkit.getDefaultToolkit().getImage(
+		this.frmEffectsDj = new JFrame();
+		this.frmEffectsDj.setIconImage(Toolkit.getDefaultToolkit().getImage(
 				EffectsDJGUI.class
 						.getResource("/uk/ac/cam/darknet/gui/icon.png")));
-		frmEffectsDj.setMinimumSize(new Dimension(486, 524));
-		frmEffectsDj.setTitle("Effects DJ");
-		frmEffectsDj.setBounds(100, 100, 486, 524);
-		frmEffectsDj.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.frmEffectsDj.setMinimumSize(new Dimension(486, 524));
+		this.frmEffectsDj.setTitle("Effects DJ");
+		this.frmEffectsDj.setBounds(100, 100, 486, 524);
+		this.frmEffectsDj.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		final JPanel panelMain = new JPanel();
-		frmEffectsDj.getContentPane().add(panelMain, BorderLayout.CENTER);
+		this.frmEffectsDj.getContentPane().add(panelMain, BorderLayout.CENTER);
 		GridBagLayout gbl_panelMain = new GridBagLayout();
 		gbl_panelMain.columnWidths = new int[] { 243, 243 };
 		gbl_panelMain.rowHeights = new int[] { 57, 400, 26 };
@@ -163,9 +163,9 @@ public class EffectsDJGUI {
 				TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		panelSelShow.setLayout(null);
 
-		comboShows = new JComboBox<>();
-		comboShows.setBounds(12, 19, 279, 25);
-		panelSelShow.add(comboShows);
+		this.comboShows = new JComboBox<>();
+		this.comboShows.setBounds(12, 19, 279, 25);
+		panelSelShow.add(this.comboShows);
 		GridBagConstraints gbc_panelSelShow = new GridBagConstraints();
 		gbc_panelSelShow.gridwidth = 3;
 		gbc_panelSelShow.insets = new Insets(0, 5, 5, 0);
@@ -181,13 +181,13 @@ public class EffectsDJGUI {
 				"Select from the list of available effects",
 				TitledBorder.LEADING, TitledBorder.TOP, null, null));
 
-		scrollPane = new JScrollPane();
+		this.scrollPane = new JScrollPane();
 
-		table = new EffectsTable();
+		this.table = new EffectsTable();
 
-		scrollPane.setViewportView(table);
+		this.scrollPane.setViewportView(this.table);
 		panelEffects.setLayout(new BoxLayout(panelEffects, BoxLayout.X_AXIS));
-		panelEffects.add(scrollPane);
+		panelEffects.add(this.scrollPane);
 		GridBagConstraints gbc_panelEffects = new GridBagConstraints();
 		gbc_panelEffects.gridwidth = 3;
 		gbc_panelEffects.weightx = 1.0;
@@ -197,35 +197,35 @@ public class EffectsDJGUI {
 		gbc_panelEffects.gridy = 1;
 		panelMain.add(panelEffects, gbc_panelEffects);
 
-		progressBar = new JProgressBar();
-		progressBar.setValue(0);
-		progressBar.setStringPainted(true);
-		progressBar.setToolTipText("Effect execution progress");
+		this.progressBar = new JProgressBar();
+		this.progressBar.setValue(0);
+		this.progressBar.setStringPainted(true);
+		this.progressBar.setToolTipText("Effect execution progress");
 		GridBagConstraints gbc_progressBar = new GridBagConstraints();
 		gbc_progressBar.fill = GridBagConstraints.BOTH;
 		gbc_progressBar.insets = new Insets(0, 10, 5, 5);
 		gbc_progressBar.gridx = 0;
 		gbc_progressBar.gridy = 2;
-		panelMain.add(progressBar, gbc_progressBar);
+		panelMain.add(this.progressBar, gbc_progressBar);
 
-		btnRunEffects = new JButton("Run effects");
+		this.btnRunEffects = new JButton("Run effects");
 		GridBagConstraints gbc_btnRunEffects = new GridBagConstraints();
 		gbc_btnRunEffects.fill = GridBagConstraints.VERTICAL;
 		gbc_btnRunEffects.insets = new Insets(0, 5, 0, 10);
 		gbc_btnRunEffects.anchor = GridBagConstraints.EAST;
 		gbc_btnRunEffects.gridx = 1;
 		gbc_btnRunEffects.gridy = 2;
-		panelMain.add(btnRunEffects, gbc_btnRunEffects);
+		panelMain.add(this.btnRunEffects, gbc_btnRunEffects);
 
-		btnRunEffects.addActionListener(new RunEffectsListener());
+		this.btnRunEffects.addActionListener(new RunEffectsListener());
 	}
 
 	private Show getSelectedShow() {
 		// All shows selected
-		if (comboShows.getSelectedIndex() == 0) {
+		if (this.comboShows.getSelectedIndex() == 0) {
 			return null;
 		}
-		return shows.get(comboShows.getSelectedIndex() - 1);
+		return this.shows.get(this.comboShows.getSelectedIndex() - 1);
 	}
 
 	/**
@@ -278,29 +278,29 @@ public class EffectsDJGUI {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			// Get rows that have selected checkboxes
-			final List<Integer> checkedRows = table.getCheckedRows();
+			final List<Integer> checkedRows = EffectsDJGUI.this.table.getCheckedRows();
 
 			// Nothing checked
 			if (checkedRows.size() == 0) {
-				JOptionPane.showMessageDialog(frmEffectsDj,
+				JOptionPane.showMessageDialog(EffectsDJGUI.this.frmEffectsDj,
 						Strings.GUI_SELECT_EFFECTS, "No effects selected",
 						JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}
 
 			// Get the selected show. If null, call collect on all data
-			final Show show = getSelectedShow();
+			final Show show = EffectsDJGUI.this.getSelectedShow();
 			// Select only checked effects
 			final List<Class<?>> selectedEffects = new ArrayList<>();
 			for (final int row : checkedRows) {
-				selectedEffects.add(effectClasses.get(row));
+				selectedEffects.add(EffectsDJGUI.this.effectClasses.get(row));
 			}
 
 			// Get the amount of effects that are going to be executed
 			final int effectCount = selectedEffects.size();
-			progressBar.setMaximum(effectCount);
-			progressBar.setValue(0);
-			progressBar.setStringPainted(true);
+			EffectsDJGUI.this.progressBar.setMaximum(effectCount);
+			EffectsDJGUI.this.progressBar.setValue(0);
+			EffectsDJGUI.this.progressBar.setStringPainted(true);
 
 			int progress = 0;
 			// Go through all collectors and invoke their run() methods
@@ -308,7 +308,7 @@ public class EffectsDJGUI {
 				try {
 					// Get the effect
 					final Effect effect = (Effect) effectClass.getConstructor(
-							DatabaseManager.class).newInstance(sdbm);
+							DatabaseManager.class).newInstance(EffectsDJGUI.this.sdbm);
 
 					// Get the argument descriptions
 					final List<String> argDescriptions = effect
@@ -320,7 +320,7 @@ public class EffectsDJGUI {
 					int cnt = 0;
 					for (final String argDes : argDescriptions) {
 						final String arg = JOptionPane.showInputDialog(
-								frmEffectsDj, Strings.GUI_EFFECT_ARG_PREFIX
+								EffectsDJGUI.this.frmEffectsDj, Strings.GUI_EFFECT_ARG_PREFIX
 										+ argDes);
 						arguments[cnt++] = arg;
 					}
@@ -330,7 +330,7 @@ public class EffectsDJGUI {
 
 					// Handle all shows
 					if (show == null) {
-						for (final Show s : pdbm.getAllShows()) {
+						for (final Show s : EffectsDJGUI.this.pdbm.getAllShows()) {
 							effect.execute(s);
 						}
 					}
@@ -343,14 +343,14 @@ public class EffectsDJGUI {
 						| SQLException | IllegalArgumentException
 						| InvocationTargetException | NoSuchMethodException
 						| SecurityException exn) {
-					JOptionPane.showMessageDialog(frmEffectsDj,
+					JOptionPane.showMessageDialog(EffectsDJGUI.this.frmEffectsDj,
 							Strings.GUI_EFFECTS_ERR, "Error loading effects",
 							JOptionPane.ERROR_MESSAGE);
 				}
-				progressBar.setValue(++progress);
+				EffectsDJGUI.this.progressBar.setValue(++progress);
 			}
 
-			JOptionPane.showMessageDialog(frmEffectsDj,
+			JOptionPane.showMessageDialog(EffectsDJGUI.this.frmEffectsDj,
 					Strings.GUI_EFFECTS_DONE);
 		}
 	}

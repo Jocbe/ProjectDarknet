@@ -57,7 +57,7 @@ public enum AttributeCategories {
 	 * @return The class object for the appropriate datatype of the attribute type.
 	 */
 	public Class<?> getAttributeType() {
-		return attributeType;
+		return this.attributeType;
 	}
 
 	/**
@@ -69,7 +69,7 @@ public enum AttributeCategories {
 	 * @return True if the object is valid, false otherwise.
 	 */
 	public boolean isObjectCompatible(Object toCheck) {
-		return attributeType.isInstance(toCheck);
+		return this.attributeType.isInstance(toCheck);
 	}
 
 	/**
@@ -78,6 +78,6 @@ public enum AttributeCategories {
 	 * @return Name of the class that should be used to represent this attribute category.
 	 */
 	public String getClassName() {
-		return attributeType.getSimpleName();
+		return this.attributeType.getSimpleName();
 	}
 }

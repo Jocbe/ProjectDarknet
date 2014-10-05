@@ -100,7 +100,7 @@ public class EffectsAndCollectorsLoader {
 		final Hashtable<String, AttributeCategories> attributes = new Hashtable<>();
 
 		// Get all the collectors in the system via reflection
-		final List<Class<?>> collectors = loadSecondaryCollectors();
+		final List<Class<?>> collectors = this.loadSecondaryCollectors();
 
 		// Go through all collector
 		for (final Class<?> collClass : collectors) {

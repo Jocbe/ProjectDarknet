@@ -102,7 +102,7 @@ public class Individual {
 	 * @return Returns the unique user ID of the individual.
 	 */
 	public long getId() {
-		return id;
+		return this.id;
 	}
 
 	/**
@@ -111,7 +111,7 @@ public class Individual {
 	 * @return The individual's first name.
 	 */
 	public String getFirstName() {
-		return firstName;
+		return this.firstName;
 	}
 
 	/**
@@ -120,7 +120,7 @@ public class Individual {
 	 * @return The individual's last name.
 	 */
 	public String getLastName() {
-		return lastName;
+		return this.lastName;
 	}
 
 	/**
@@ -129,7 +129,7 @@ public class Individual {
 	 * @return The individual's email address (in the standard form, i.e. user@example.org)
 	 */
 	public String getEmail() {
-		return email;
+		return this.email;
 	}
 
 	/**
@@ -138,7 +138,7 @@ public class Individual {
 	 * @return The date of the event for which this individual is bought a ticket.
 	 */
 	public Date getEventDate() {
-		return date;
+		return this.date;
 	}
 
 	/**
@@ -147,7 +147,7 @@ public class Individual {
 	 * @return The date of the event for which this individual is bought a ticket.
 	 */
 	public int getEventVenue() {
-		return venue;
+		return this.venue;
 	}
 
 	/**
@@ -156,7 +156,7 @@ public class Individual {
 	 * @return The booked seat, if any, as a string. Null otherwise.
 	 */
 	public String getSeat() {
-		return seat;
+		return this.seat;
 	}
 
 	/**
@@ -166,7 +166,7 @@ public class Individual {
 	 * @return The <code>Properties</code> object holding attributes about the individual.
 	 */
 	public Properties getProperties() {
-		return properties;
+		return this.properties;
 	}
 
 	@Override
@@ -206,7 +206,7 @@ public class Individual {
 	 * @throws InvalidReliabilityException
 	 */
 	public void addAttribute(String attributeName, Object attributeValue, double attributeReliability) throws UnknownAttributeException, InvalidAttributeTypeException, InvalidReliabilityException {
-		properties.put(attributeName, attributeValue, attributeReliability);
+		this.properties.put(attributeName, attributeValue, attributeReliability);
 	}
 
 	/**
@@ -219,7 +219,7 @@ public class Individual {
 	 *         map contains no mapping for the attribute.
 	 */
 	public List<AttributeReliabilityPair> getAttribute(String attributeName) {
-		return properties.get(attributeName);
+		return this.properties.get(attributeName);
 	}
 
 	/**
@@ -231,7 +231,7 @@ public class Individual {
 	 *            The key of the key-value pair to remove.
 	 */
 	public void removeAttribute(String attributeName) {
-		properties.remove(attributeName);
+		this.properties.remove(attributeName);
 	}
 
 	/**
@@ -239,7 +239,7 @@ public class Individual {
 	 * attributes.
 	 */
 	public void clearAttributes() {
-		properties.clear();
+		this.properties.clear();
 	}
 
 	/**
@@ -251,6 +251,6 @@ public class Individual {
 	 * @return True if the key is contained, false otherwise.
 	 */
 	public boolean containsAttribute(String attributeName) {
-		return properties.containsAttribute(attributeName);
+		return this.properties.containsAttribute(attributeName);
 	}
 }

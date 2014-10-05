@@ -44,27 +44,27 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 	 */
 	public SecondaryDatabaseManager(Hashtable<String, AttributeCategories> globalAttributeTable) throws ConfigFileNotFoundException, IOException, ClassNotFoundException, SQLException, InvalidAttributeNameException {
 		super(globalAttributeTable);
-		createTables();
+		this.createTables();
 	}
 
 	private void createTables() throws SQLException, InvalidAttributeNameException {
-		Enumeration<String> attributeNames = globalAttributeTable.keys();
+		Enumeration<String> attributeNames = this.globalAttributeTable.keys();
 		String currentAttributeName;
 		while (attributeNames.hasMoreElements()) {
 			currentAttributeName = attributeNames.nextElement();
-			if (isAttributeNameValid(currentAttributeName)) {
-				try (Statement stmt = connection.createStatement();) {
+			if (this.isAttributeNameValid(currentAttributeName)) {
+				try (Statement stmt = this.connection.createStatement();) {
 					stmt.execute(String.format(CREATE_SECONDARY_TABLE, currentAttributeName));
 				} catch (SQLException e) {
 					// Table already exists.
 					LoggerFactory.getLogger().info(e.getMessage());
 				}
 			} else {
-				connection.rollback();
+				this.connection.rollback();
 				throw new InvalidAttributeNameException(String.format(Strings.INVALID_ATTRIBUTE_NAME_EXN, currentAttributeName));
 			}
 		}
-		connection.commit();
+		this.connection.commit();
 	}
 
 	/**
@@ -77,7 +77,7 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 	 * @throws SQLException
 	 */
 	public synchronized void storeAttributes(List<Individual> individuals) throws SQLException {
-		Enumeration<String> attributeNames = globalAttributeTable.keys();
+		Enumeration<String> attributeNames = this.globalAttributeTable.keys();
 		Iterator<Individual> iterator;
 		String currentAttributeName;
 		Individual currentIndividual;
@@ -86,7 +86,7 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 		// over attribute names first rather than individuals to exploit prepared statements.
 		while (attributeNames.hasMoreElements()) {
 			currentAttributeName = attributeNames.nextElement();
-			try (PreparedStatement stmt = connection.prepareStatement(String.format(INSERT_ATTRIBUTE, currentAttributeName));) {
+			try (PreparedStatement stmt = this.connection.prepareStatement(String.format(INSERT_ATTRIBUTE, currentAttributeName));) {
 				iterator = individuals.iterator();
 				while (iterator.hasNext()) {
 					currentIndividual = iterator.next();
@@ -105,10 +105,10 @@ public class SecondaryDatabaseManager extends DatabaseManager {
 					}
 				}
 			} catch (SQLException e) {
-				connection.rollback();
+				this.connection.rollback();
 				throw e;
 			}
 		}
-		connection.commit();
+		this.connection.commit();
 	}
 }

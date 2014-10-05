@@ -58,11 +58,11 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 	 */
 	public PrimaryDatabaseManager(Hashtable<String, AttributeCategories> globalAttributeTable) throws ConfigFileNotFoundException, IOException, ClassNotFoundException, SQLException {
 		super(globalAttributeTable);
-		createTable();
+		this.createTable();
 	}
 
 	private void createTable() throws SQLException {
-		try (Statement stmt = connection.createStatement();) {
+		try (Statement stmt = this.connection.createStatement();) {
 			try {
 				stmt.execute(CREATE_VENUES_TABLE);
 			} catch (SQLException e) {
@@ -82,10 +82,10 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 				LoggerFactory.getLogger().info(e.getMessage());
 			}
 		} catch (SQLException e) {
-			connection.rollback();
+			this.connection.rollback();
 			throw e;
 		}
-		connection.commit();
+		this.connection.commit();
 	}
 
 	/**
@@ -106,13 +106,13 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 		Iterator<Individual> iterator = list.iterator();
 		Individual current;
 		int numOfIndividualsInserted = 0;
-		try (PreparedStatement stmt = connection.prepareStatement(INSERT_INDIVIDUAL);) {
+		try (PreparedStatement stmt = this.connection.prepareStatement(INSERT_INDIVIDUAL);) {
 			while (iterator.hasNext()) {
 				current = iterator.next();
-				setupLocalFieldParameters(current);
+				this.setupLocalFieldParameters(current);
 				try {
-					createShowIfNotExists(current.getEventDate(), current.getEventVenue());
-					executeIndividualUpdateStatement(stmt);
+					this.createShowIfNotExists(current.getEventDate(), current.getEventVenue());
+					this.executeIndividualUpdateStatement(stmt);
 					numOfIndividualsInserted++;
 				} catch (SQLException e) {
 					// Do not increment numOfIndividualsInserted.
@@ -120,10 +120,10 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 				}
 			}
 		} catch (SQLException e) {
-			connection.rollback();
+			this.connection.rollback();
 			throw e;
 		}
-		connection.commit();
+		this.connection.commit();
 		return numOfIndividualsInserted;
 	}
 
@@ -142,12 +142,12 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 	 */
 	public synchronized long storeIndividual(Individual individual) throws SQLException {
 		long individualId = -1;
-		try (PreparedStatement stmt = connection.prepareStatement(INSERT_INDIVIDUAL);) {
-			setupLocalFieldParameters(individual);
+		try (PreparedStatement stmt = this.connection.prepareStatement(INSERT_INDIVIDUAL);) {
+			this.setupLocalFieldParameters(individual);
 			try {
-				createShowIfNotExists(individual.getEventDate(), individual.getEventVenue());
-				executeIndividualUpdateStatement(stmt);
-				try (Statement getId = connection.createStatement()) {
+				this.createShowIfNotExists(individual.getEventDate(), individual.getEventVenue());
+				this.executeIndividualUpdateStatement(stmt);
+				try (Statement getId = this.connection.createStatement()) {
 					try (ResultSet result = getId.executeQuery(GET_NEW_INDIVIDUAL_ID);) {
 						if (result.next())
 							individualId = result.getLong(1);
@@ -158,10 +158,10 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 				LoggerFactory.getLogger().info(e.getMessage());
 			}
 		} catch (SQLException e) {
-			connection.rollback();
+			this.connection.rollback();
 			throw e;
 		}
-		connection.commit();
+		this.connection.commit();
 		return individualId;
 	}
 
@@ -175,7 +175,7 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 	 */
 	public synchronized boolean deleteIndividual(long id) throws SQLException {
 		boolean individualDeleted = true;
-		try (PreparedStatement stmt = connection.prepareStatement(DELETE_INDIVIDUAL);) {
+		try (PreparedStatement stmt = this.connection.prepareStatement(DELETE_INDIVIDUAL);) {
 			stmt.setLong(1, id);
 			try {
 				stmt.execute();
@@ -184,10 +184,10 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 				LoggerFactory.getLogger().info(e.getMessage());
 			}
 		} catch (SQLException e) {
-			connection.rollback();
+			this.connection.rollback();
 			throw e;
 		}
-		connection.commit();
+		this.connection.commit();
 		return individualDeleted;
 	}
 
@@ -209,20 +209,20 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 	 */
 	public synchronized boolean updateIndividual(long id, Individual newData) throws SQLException {
 		boolean individualValid = true;
-		try (PreparedStatement stmt = connection.prepareStatement(UPDATE_INDIVIDUAL);) {
+		try (PreparedStatement stmt = this.connection.prepareStatement(UPDATE_INDIVIDUAL);) {
 			stmt.setLong(7, id);
-			setupLocalFieldParameters(newData);
+			this.setupLocalFieldParameters(newData);
 			try {
-				executeIndividualUpdateStatement(stmt);
+				this.executeIndividualUpdateStatement(stmt);
 			} catch (SQLException e) {
 				individualValid = false;
 				LoggerFactory.getLogger().info(e.getMessage());
 			}
 		} catch (SQLException e) {
-			connection.rollback();
+			this.connection.rollback();
 			throw e;
 		}
-		connection.commit();
+		this.connection.commit();
 		return individualValid;
 	}
 
@@ -236,11 +236,11 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 	 */
 	public synchronized int createVenue(String name) throws SQLException {
 		int venueId = -1;
-		try (PreparedStatement stmt = connection.prepareStatement(INSERT_VENUE);) {
+		try (PreparedStatement stmt = this.connection.prepareStatement(INSERT_VENUE);) {
 			stmt.setString(1, name);
 			try {
 				stmt.execute();
-				try (Statement getId = connection.createStatement()) {
+				try (Statement getId = this.connection.createStatement()) {
 					try (ResultSet result = getId.executeQuery(GET_NEW_VENUE_ID);) {
 						if (result.next())
 							venueId = result.getInt(1);
@@ -250,15 +250,15 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 				LoggerFactory.getLogger().info(e.getMessage());
 			}
 		} catch (SQLException e) {
-			connection.rollback();
+			this.connection.rollback();
 			throw e;
 		}
-		connection.commit();
+		this.connection.commit();
 		return venueId;
 	}
 
 	private void createShowIfNotExists(Date date, int venue) throws SQLException {
-		try (PreparedStatement stmt = connection.prepareStatement(CHECK_SHOW_EXISTS)) {
+		try (PreparedStatement stmt = this.connection.prepareStatement(CHECK_SHOW_EXISTS)) {
 			stmt.setTimestamp(1, dateToSQLTimestamp(date));
 			stmt.setInt(2, venue);
 			try (ResultSet resultSet = stmt.executeQuery();) {
@@ -266,7 +266,7 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 					if (resultSet.getInt(1) == 1) {
 						return;
 					} else {
-						createShow(date, venue);
+						this.createShow(date, venue);
 					}
 				}
 			}
@@ -274,7 +274,7 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 	}
 
 	private void createShow(Date date, int venue) throws SQLException {
-		try (PreparedStatement stmt = connection.prepareStatement(INSERT_SHOW);) {
+		try (PreparedStatement stmt = this.connection.prepareStatement(INSERT_SHOW);) {
 			stmt.setTimestamp(1, dateToSQLTimestamp(date));
 			stmt.setInt(2, venue);
 			stmt.execute();
@@ -282,43 +282,43 @@ public class PrimaryDatabaseManager extends DatabaseManager {
 	}
 
 	private void setupPreparedStatementParameters(PreparedStatement stmt) throws SQLException {
-		stmt.setString(1, fname);
-		stmt.setString(2, lname);
-		stmt.setString(3, email);
-		stmt.setTimestamp(4, date);
-		stmt.setInt(5, venue);
-		stmt.setString(6, seat);
+		stmt.setString(1, this.fname);
+		stmt.setString(2, this.lname);
+		stmt.setString(3, this.email);
+		stmt.setTimestamp(4, this.date);
+		stmt.setInt(5, this.venue);
+		stmt.setString(6, this.seat);
 	}
 
 	// This method does not catch SQL exceptions. Thus, if it is called from within a loop then all
 	// changes will be rolled back if only one statement execution fails.
 	private void executeIndividualUpdateStatement(PreparedStatement stmt) throws SQLException {
-		setupPreparedStatementParameters(stmt);
+		this.setupPreparedStatementParameters(stmt);
 		stmt.executeUpdate();
 	}
 
 	private void setupLocalFieldParameters(Individual toStore) {
 		if (toStore.getFirstName() == null) {
-			fname = null;
+			this.fname = null;
 		} else {
-			fname = toStore.getFirstName().trim().equals("") ? null : toStore.getFirstName().trim();
+			this.fname = toStore.getFirstName().trim().equals("") ? null : toStore.getFirstName().trim();
 		}
 		if (toStore.getLastName() == null) {
-			lname = null;
+			this.lname = null;
 		} else {
-			lname = toStore.getLastName().trim().equals("") ? null : toStore.getLastName().trim();
+			this.lname = toStore.getLastName().trim().equals("") ? null : toStore.getLastName().trim();
 		}
 		if (toStore.getEmail() == null) {
-			email = null;
+			this.email = null;
 		} else {
-			email = toStore.getEmail().trim().equals("") ? null : toStore.getEmail().trim().toLowerCase();
+			this.email = toStore.getEmail().trim().equals("") ? null : toStore.getEmail().trim().toLowerCase();
 		}
 		if (toStore.getSeat() == null) {
-			seat = null;
+			this.seat = null;
 		} else {
-			seat = toStore.getSeat().trim().equals("") ? null : toStore.getSeat().trim();
+			this.seat = toStore.getSeat().trim().equals("") ? null : toStore.getSeat().trim();
 		}
-		date = dateToSQLTimestamp(toStore.getEventDate());
-		venue = toStore.getEventVenue();
+		this.date = dateToSQLTimestamp(toStore.getEventDate());
+		this.venue = toStore.getEventVenue();
 	}
 }

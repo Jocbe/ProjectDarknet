@@ -1,7 +1,5 @@
 package uk.ac.cam.darknet.tests;
 
-import static org.junit.Assert.*;
-
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Hashtable;

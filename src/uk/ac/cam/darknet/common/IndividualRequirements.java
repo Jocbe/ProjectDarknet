@@ -42,7 +42,7 @@ public class IndividualRequirements {
 	public void addRequirement(AttributeCategories category, double minimumReliability) throws InvalidReliabilityException {
 		if (minimumReliability < 0 || minimumReliability > 1)
 			throw new InvalidReliabilityException(Strings.INVALID_RELIABILITY_EXN);
-		requiredCategories.put(category, minimumReliability);
+		this.requiredCategories.put(category, minimumReliability);
 	}
 
 	/**
@@ -51,7 +51,7 @@ public class IndividualRequirements {
 	 * @return The show associated with these requirements.
 	 */
 	public Show getShow() {
-		return show;
+		return this.show;
 	}
 	
 	/**
@@ -60,6 +60,6 @@ public class IndividualRequirements {
 	 * @return The underlying hashtable of required categories
 	 */
 	public Hashtable<AttributeCategories, Double> getRequiredCategories() {
-		return requiredCategories;
+		return this.requiredCategories;
 	}
 }

@@ -113,40 +113,41 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 	/**
 	 * Initializes the GUI.
 	 */
+	@Override
 	public void run() {
 		// Show the GUI
-		initializeGUI();
-		frame.setVisible(true);
+		this.initializeGUI();
+		this.frame.setVisible(true);
 		// If the connection to the database was successful, show all
 		// individuals in the table
 		if (this.pdbm == null || this.sdbm == null) {
-			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_CONN_ERR,
+			JOptionPane.showMessageDialog(this.frame, Strings.GUI_DB_CONN_ERR,
 					"Database error", JOptionPane.ERROR_MESSAGE);
 		}
 		else {
 			// Get all the individuals that are already in the DB
-			final List<Individual> individualsInDB = getDBContent();
+			final List<Individual> individualsInDB = this.getDBContent();
 			// Populate the comboboxes
-			updateComboBoxes();
+			this.updateComboBoxes();
 			// Display them in the table
-			table.displayIndividuals(individualsInDB, venues);
+			this.table.displayIndividuals(individualsInDB, this.venues);
 		}
 		// Populate the table with collectors that have been found in the system
-		populateCollectorsTable();
+		this.populateCollectorsTable();
 	}
 
 	/**
 	 * Updates the field shows with data from the database.
 	 */
 	void updateShowsList() {
-		if (shows != null) {
-			shows.clear();
+		if (this.shows != null) {
+			this.shows.clear();
 		}
 		try {
-			shows = pdbm.getAllShows();
+			this.shows = this.pdbm.getAllShows();
 		}
 		catch (SQLException e) {
-			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_VEN_ERR,
+			JOptionPane.showMessageDialog(this.frame, Strings.GUI_DB_VEN_ERR,
 					"Database error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
@@ -155,14 +156,14 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 	 * Updates the venues list with data from the database.
 	 */
 	void updateVenuesList() {
-		if (venues != null) {
-			venues.clear();
+		if (this.venues != null) {
+			this.venues.clear();
 		}
 		try {
-			venues = pdbm.getAllVenues();
+			this.venues = this.pdbm.getAllVenues();
 		}
 		catch (SQLException e) {
-			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_VEN_ERR,
+			JOptionPane.showMessageDialog(this.frame, Strings.GUI_DB_VEN_ERR,
 					"Database error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
@@ -171,13 +172,13 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 	 * Updates the combobox containing the venues.
 	 */
 	private void updateVenueCB() {
-		updateVenuesList();
+		this.updateVenuesList();
 		// Clear first
-		comboVenues.removeAllItems();
+		this.comboVenues.removeAllItems();
 		// Add blank no venue selected item
-		comboVenues.addItem(Strings.GUI_NO_VENUE_SEL);
-		for (final Venue v : venues) {
-			comboVenues.addItem(v.getName());
+		this.comboVenues.addItem(Strings.GUI_NO_VENUE_SEL);
+		for (final Venue v : this.venues) {
+			this.comboVenues.addItem(v.getName());
 		}
 	}
 
@@ -186,10 +187,10 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 	 */
 	void updateShowsCBs() {
 		// Update the shows list from the DB
-		updateShowsList();
+		this.updateShowsList();
 		// Clear the combo boxes
-		comboShowsCollec.removeAllItems();
-		comboShowsFilter.removeAllItems();
+		this.comboShowsCollec.removeAllItems();
+		this.comboShowsFilter.removeAllItems();
 
 		final SimpleDateFormat sdf = new SimpleDateFormat(
 				Strings.GUI_DATE_FORMAT);
@@ -201,7 +202,7 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 		showFilterCBM.addElement(Strings.GUI_DONT_FILTER);
 		showCollecCBM.addElement(Strings.GUI_ALL_SHOWS);
 		// Add all the shows
-		for (final Show s : shows) {
+		for (final Show s : this.shows) {
 			final String show = s.getVenue().getName() + " at "
 					+ sdf.format(s.getDate());
 			showFilterCBM.addElement(show);
@@ -209,8 +210,8 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 		}
 
 		// Set the model to the comboboxes
-		comboShowsCollec.setModel(showCollecCBM);
-		comboShowsFilter.setModel(showFilterCBM);
+		this.comboShowsCollec.setModel(showCollecCBM);
+		this.comboShowsFilter.setModel(showFilterCBM);
 	}
 
 	/**
@@ -218,9 +219,9 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 	 */
 	private void updateComboBoxes() {
 		// Populate venues
-		updateVenueCB();
+		this.updateVenueCB();
 		// Populate shows
-		updateShowsCBs();
+		this.updateShowsCBs();
 	}
 
 	/**
@@ -230,16 +231,16 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 		// Read all classes that are in the backend package
 		try {
 			final EffectsAndCollectorsLoader loader = new EffectsAndCollectorsLoader();
-			dataCollectors = loader.loadSecondaryCollectors();
+			this.dataCollectors = loader.loadSecondaryCollectors();
 		}
 		catch (ClassNotFoundException | IOException a) {
-			JOptionPane.showMessageDialog(frame, Strings.GUI_NO_COLLECTORS,
+			JOptionPane.showMessageDialog(this.frame, Strings.GUI_NO_COLLECTORS,
 					"No collectors found", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 		// Add the collectors into the table
-		for (final Class<?> c : dataCollectors) {
-			tableColl.addCollector(c.getSimpleName());
+		for (final Class<?> c : this.dataCollectors) {
+			this.tableColl.addCollector(c.getSimpleName());
 		}
 	}
 
@@ -251,27 +252,27 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 		final DateFormatter formatter = new DateFormatter(new SimpleDateFormat(
 				"yyyy-MM-dd HH:mm"));
 
-		frame = new JFrame();
-		frame.setIconImage(Toolkit.getDefaultToolkit().getImage(
+		this.frame = new JFrame();
+		this.frame.setIconImage(Toolkit.getDefaultToolkit().getImage(
 				DataCollectorGUI.class
 						.getResource("/uk/ac/cam/darknet/gui/icon.png")));
-		frame.setTitle("Primary Data Collector");
-		frame.setBounds(100, 100, 1020, 624);
-		frame.setMinimumSize(new Dimension(1020, 624));
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.frame.setTitle("Primary Data Collector");
+		this.frame.setBounds(100, 100, 1020, 624);
+		this.frame.setMinimumSize(new Dimension(1020, 624));
+		this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		panelMain = new JPanel();
-		frame.getContentPane().add(panelMain, BorderLayout.CENTER);
+		this.panelMain = new JPanel();
+		this.frame.getContentPane().add(this.panelMain, BorderLayout.CENTER);
 
 		GridBagLayout gbl_panel = new GridBagLayout();
 		gbl_panel.columnWidths = new int[] { 510, 510 };
 		gbl_panel.rowHeights = new int[] { 300, 300 };
 		gbl_panel.columnWeights = new double[] { 0.0, 0.0 };
 		gbl_panel.rowWeights = new double[] { 0.0, 0.0 };
-		panelMain.setLayout(gbl_panel);
+		this.panelMain.setLayout(gbl_panel);
 
-		panelPrimary = new JPanel();
-		panelPrimary.setBorder(new TitledBorder(null,
+		this.panelPrimary = new JPanel();
+		this.panelPrimary.setBorder(new TitledBorder(null,
 				"Load the audience members", TitledBorder.LEADING,
 				TitledBorder.TOP, null, null));
 		GridBagConstraints gbc_panelPrimary = new GridBagConstraints();
@@ -280,23 +281,23 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 		gbc_panelPrimary.insets = new Insets(5, 5, 5, 5);
 		gbc_panelPrimary.gridx = 0;
 		gbc_panelPrimary.gridy = 0;
-		panelMain.add(panelPrimary, gbc_panelPrimary);
+		this.panelMain.add(this.panelPrimary, gbc_panelPrimary);
 
-		panelShow = new JPanel();
-		panelShow.setBorder(new TitledBorder(null, "Set the show",
+		this.panelShow = new JPanel();
+		this.panelShow.setBorder(new TitledBorder(null, "Set the show",
 				TitledBorder.LEADING, TitledBorder.TOP, null, null));
 
-		panelCSV = new JPanel();
-		panelCSV.setBorder(new TitledBorder(null, "Import from CSV file",
+		this.panelCSV = new JPanel();
+		this.panelCSV.setBorder(new TitledBorder(null, "Import from CSV file",
 				TitledBorder.LEADING, TitledBorder.TOP, null, null));
 
-		panel = new JPanel();
-		panel.setBorder(new TitledBorder(null, "Manually add audience members",
+		this.panel = new JPanel();
+		this.panel.setBorder(new TitledBorder(null, "Manually add audience members",
 				TitledBorder.LEADING, TitledBorder.TOP, null, null));
 
-		label = new JLabel("* Fields marked with asterisk are compulsory");
-		label.setFont(new Font("Tahoma", Font.PLAIN, 10));
-		GroupLayout gl_panelPrimary = new GroupLayout(panelPrimary);
+		this.label = new JLabel("* Fields marked with asterisk are compulsory");
+		this.label.setFont(new Font("Tahoma", Font.PLAIN, 10));
+		GroupLayout gl_panelPrimary = new GroupLayout(this.panelPrimary);
 		gl_panelPrimary
 				.setHorizontalGroup(gl_panelPrimary
 						.createParallelGroup(Alignment.LEADING)
@@ -313,22 +314,22 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 																		.createParallelGroup(
 																				Alignment.LEADING)
 																		.addComponent(
-																				panelShow,
+																				this.panelShow,
 																				GroupLayout.PREFERRED_SIZE,
 																				0,
 																				Short.MAX_VALUE)
 																		.addComponent(
-																				panelCSV,
+																				this.panelCSV,
 																				0,
 																				0,
 																				Short.MAX_VALUE)
 																		.addComponent(
-																				panel,
+																				this.panel,
 																				GroupLayout.DEFAULT_SIZE,
 																				460,
 																				Short.MAX_VALUE))
 														.addComponent(
-																label,
+																this.label,
 																GroupLayout.PREFERRED_SIZE,
 																202,
 																GroupLayout.PREFERRED_SIZE))
@@ -337,16 +338,16 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 				Alignment.LEADING).addGroup(
 				gl_panelPrimary
 						.createSequentialGroup()
-						.addComponent(panelShow, GroupLayout.PREFERRED_SIZE,
+						.addComponent(this.panelShow, GroupLayout.PREFERRED_SIZE,
 								86, GroupLayout.PREFERRED_SIZE)
 						.addPreferredGap(ComponentPlacement.RELATED)
-						.addComponent(panelCSV, GroupLayout.PREFERRED_SIZE, 54,
+						.addComponent(this.panelCSV, GroupLayout.PREFERRED_SIZE, 54,
 								GroupLayout.PREFERRED_SIZE)
 						.addPreferredGap(ComponentPlacement.RELATED)
-						.addComponent(panel, GroupLayout.PREFERRED_SIZE, 91,
+						.addComponent(this.panel, GroupLayout.PREFERRED_SIZE, 91,
 								GroupLayout.PREFERRED_SIZE)
 						.addPreferredGap(ComponentPlacement.RELATED)
-						.addComponent(label, GroupLayout.PREFERRED_SIZE, 13,
+						.addComponent(this.label, GroupLayout.PREFERRED_SIZE, 13,
 								GroupLayout.PREFERRED_SIZE)
 						.addContainerGap(GroupLayout.DEFAULT_SIZE,
 								Short.MAX_VALUE)));
@@ -355,7 +356,7 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 		gbl_panel2.rowHeights = new int[] { 20, 26, 0 };
 		gbl_panel2.columnWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0 };
 		gbl_panel2.rowWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
-		panel.setLayout(gbl_panel2);
+		this.panel.setLayout(gbl_panel2);
 
 		final JLabel lblName = new JLabel("Name*:");
 		GridBagConstraints gbc_lblName = new GridBagConstraints();
@@ -363,17 +364,17 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 		gbc_lblName.insets = new Insets(0, 0, 5, 5);
 		gbc_lblName.gridx = 0;
 		gbc_lblName.gridy = 0;
-		panel.add(lblName, gbc_lblName);
+		this.panel.add(lblName, gbc_lblName);
 
-		txtFldFirstName = new JTextField();
+		this.txtFldFirstName = new JTextField();
 		GridBagConstraints gbc_txtFldFirstName = new GridBagConstraints();
 		gbc_txtFldFirstName.fill = GridBagConstraints.HORIZONTAL;
 		gbc_txtFldFirstName.anchor = GridBagConstraints.NORTH;
 		gbc_txtFldFirstName.insets = new Insets(0, 0, 5, 5);
 		gbc_txtFldFirstName.gridx = 1;
 		gbc_txtFldFirstName.gridy = 0;
-		panel.add(txtFldFirstName, gbc_txtFldFirstName);
-		txtFldFirstName.setColumns(10);
+		this.panel.add(this.txtFldFirstName, gbc_txtFldFirstName);
+		this.txtFldFirstName.setColumns(10);
 
 		final JLabel lblSecondName = new JLabel("Surname*:");
 		GridBagConstraints gbc_lblSecondName = new GridBagConstraints();
@@ -381,17 +382,17 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 		gbc_lblSecondName.insets = new Insets(0, 0, 5, 5);
 		gbc_lblSecondName.gridx = 2;
 		gbc_lblSecondName.gridy = 0;
-		panel.add(lblSecondName, gbc_lblSecondName);
+		this.panel.add(lblSecondName, gbc_lblSecondName);
 
-		txtFldSecondName = new JTextField();
+		this.txtFldSecondName = new JTextField();
 		GridBagConstraints gbc_txtFldSecondName = new GridBagConstraints();
 		gbc_txtFldSecondName.gridwidth = 2;
 		gbc_txtFldSecondName.fill = GridBagConstraints.HORIZONTAL;
 		gbc_txtFldSecondName.anchor = GridBagConstraints.NORTH;
 		gbc_txtFldSecondName.gridx = 3;
 		gbc_txtFldSecondName.gridy = 0;
-		panel.add(txtFldSecondName, gbc_txtFldSecondName);
-		txtFldSecondName.setColumns(10);
+		this.panel.add(this.txtFldSecondName, gbc_txtFldSecondName);
+		this.txtFldSecondName.setColumns(10);
 
 		final JLabel lblEmail = new JLabel("Email*:");
 		GridBagConstraints gbc_lblEmail = new GridBagConstraints();
@@ -399,16 +400,16 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 		gbc_lblEmail.insets = new Insets(0, 0, 0, 5);
 		gbc_lblEmail.gridx = 0;
 		gbc_lblEmail.gridy = 1;
-		panel.add(lblEmail, gbc_lblEmail);
+		this.panel.add(lblEmail, gbc_lblEmail);
 
-		txtFldEmail = new JTextField();
+		this.txtFldEmail = new JTextField();
 		GridBagConstraints gbc_txtFldEmail = new GridBagConstraints();
 		gbc_txtFldEmail.fill = GridBagConstraints.HORIZONTAL;
 		gbc_txtFldEmail.insets = new Insets(0, 0, 0, 5);
 		gbc_txtFldEmail.gridx = 1;
 		gbc_txtFldEmail.gridy = 1;
-		panel.add(txtFldEmail, gbc_txtFldEmail);
-		txtFldEmail.setColumns(10);
+		this.panel.add(this.txtFldEmail, gbc_txtFldEmail);
+		this.txtFldEmail.setColumns(10);
 
 		final JLabel lblSeat = new JLabel("Seat:");
 		GridBagConstraints gbc_lblSeat = new GridBagConstraints();
@@ -416,45 +417,45 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 		gbc_lblSeat.insets = new Insets(0, 0, 0, 5);
 		gbc_lblSeat.gridx = 2;
 		gbc_lblSeat.gridy = 1;
-		panel.add(lblSeat, gbc_lblSeat);
+		this.panel.add(lblSeat, gbc_lblSeat);
 
-		txtFldSeat = new JTextField();
+		this.txtFldSeat = new JTextField();
 		GridBagConstraints gbc_txtFldSeat = new GridBagConstraints();
 		gbc_txtFldSeat.fill = GridBagConstraints.HORIZONTAL;
 		gbc_txtFldSeat.insets = new Insets(0, 0, 0, 5);
 		gbc_txtFldSeat.gridx = 3;
 		gbc_txtFldSeat.gridy = 1;
-		panel.add(txtFldSeat, gbc_txtFldSeat);
-		txtFldSeat.setColumns(10);
+		this.panel.add(this.txtFldSeat, gbc_txtFldSeat);
+		this.txtFldSeat.setColumns(10);
 
-		btnAddPerson = new JButton("Add person");
+		this.btnAddPerson = new JButton("Add person");
 		GridBagConstraints gbc_btnAddPerson = new GridBagConstraints();
 		gbc_btnAddPerson.anchor = GridBagConstraints.NORTHWEST;
 		gbc_btnAddPerson.gridx = 4;
 		gbc_btnAddPerson.gridy = 1;
-		panel.add(btnAddPerson, gbc_btnAddPerson);
-		btnAddPerson.addActionListener(listener);
+		this.panel.add(this.btnAddPerson, gbc_btnAddPerson);
+		this.btnAddPerson.addActionListener(this.listener);
 
-		txtFldCSVFilePath = new JTextField();
-		txtFldCSVFilePath.setColumns(10);
+		this.txtFldCSVFilePath = new JTextField();
+		this.txtFldCSVFilePath.setColumns(10);
 
-		btnBrowse = new JButton("Browse");
-		btnBrowse.addActionListener(listener);
+		this.btnBrowse = new JButton("Browse");
+		this.btnBrowse.addActionListener(this.listener);
 
-		btnLoadAudience = new JButton("Load audience");
-		GroupLayout gl_panelCSV = new GroupLayout(panelCSV);
+		this.btnLoadAudience = new JButton("Load audience");
+		GroupLayout gl_panelCSV = new GroupLayout(this.panelCSV);
 		gl_panelCSV.setHorizontalGroup(gl_panelCSV.createParallelGroup(
 				Alignment.LEADING).addGroup(
 				Alignment.TRAILING,
 				gl_panelCSV
 						.createSequentialGroup()
 						.addContainerGap()
-						.addComponent(txtFldCSVFilePath,
+						.addComponent(this.txtFldCSVFilePath,
 								GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
 						.addPreferredGap(ComponentPlacement.RELATED)
-						.addComponent(btnBrowse)
+						.addComponent(this.btnBrowse)
 						.addPreferredGap(ComponentPlacement.RELATED)
-						.addComponent(btnLoadAudience)));
+						.addComponent(this.btnLoadAudience)));
 		gl_panelCSV
 				.setVerticalGroup(gl_panelCSV
 						.createParallelGroup(Alignment.LEADING)
@@ -466,33 +467,33 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 														.createParallelGroup(
 																Alignment.BASELINE)
 														.addComponent(
-																btnLoadAudience)
-														.addComponent(btnBrowse)
+																this.btnLoadAudience)
+														.addComponent(this.btnBrowse)
 														.addComponent(
-																txtFldCSVFilePath,
+																this.txtFldCSVFilePath,
 																GroupLayout.PREFERRED_SIZE,
 																GroupLayout.DEFAULT_SIZE,
 																GroupLayout.PREFERRED_SIZE))
 										.addContainerGap(
 												GroupLayout.DEFAULT_SIZE,
 												Short.MAX_VALUE)));
-		panelCSV.setLayout(gl_panelCSV);
-		btnLoadAudience.addActionListener(listener);
+		this.panelCSV.setLayout(gl_panelCSV);
+		this.btnLoadAudience.addActionListener(this.listener);
 
 		final JLabel lblVenue = new JLabel("Venue*:");
 
-		comboVenues = new JComboBox<>();
+		this.comboVenues = new JComboBox<>();
 
 		final JLabel lblDate = new JLabel("Show date*:");
-		txtFldVenueDate = new JFormattedTextField(formatter);
-		txtFldVenueDate.setColumns(10);
-		txtFldVenueDate.setValue(new Date());
-		txtFldVenueDate
+		this.txtFldVenueDate = new JFormattedTextField(formatter);
+		this.txtFldVenueDate.setColumns(10);
+		this.txtFldVenueDate.setValue(new Date());
+		this.txtFldVenueDate
 				.setToolTipText("Enter date in the format yyyy-MM-dd HH:mm.");
 
-		btnNewVenue = new JButton("Add new venue");
-		btnNewVenue.addActionListener(listener);
-		GroupLayout gl_panelShow = new GroupLayout(panelShow);
+		this.btnNewVenue = new JButton("Add new venue");
+		this.btnNewVenue.addActionListener(this.listener);
+		GroupLayout gl_panelShow = new GroupLayout(this.panelShow);
 		gl_panelShow
 				.setHorizontalGroup(gl_panelShow
 						.createParallelGroup(Alignment.LEADING)
@@ -516,16 +517,16 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 																gl_panelShow
 																		.createSequentialGroup()
 																		.addComponent(
-																				comboVenues,
+																				this.comboVenues,
 																				GroupLayout.PREFERRED_SIZE,
 																				194,
 																				GroupLayout.PREFERRED_SIZE)
 																		.addPreferredGap(
 																				ComponentPlacement.RELATED)
 																		.addComponent(
-																				btnNewVenue))
+																				this.btnNewVenue))
 														.addComponent(
-																txtFldVenueDate,
+																this.txtFldVenueDate,
 																GroupLayout.PREFERRED_SIZE,
 																105,
 																GroupLayout.PREFERRED_SIZE))
@@ -542,12 +543,12 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 																Alignment.BASELINE)
 														.addComponent(lblVenue)
 														.addComponent(
-																comboVenues,
+																this.comboVenues,
 																GroupLayout.PREFERRED_SIZE,
 																GroupLayout.DEFAULT_SIZE,
 																GroupLayout.PREFERRED_SIZE)
 														.addComponent(
-																btnNewVenue))
+																this.btnNewVenue))
 										.addPreferredGap(
 												ComponentPlacement.RELATED)
 										.addGroup(
@@ -555,7 +556,7 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 														.createParallelGroup(
 																Alignment.BASELINE)
 														.addComponent(
-																txtFldVenueDate,
+																this.txtFldVenueDate,
 																GroupLayout.PREFERRED_SIZE,
 																GroupLayout.DEFAULT_SIZE,
 																GroupLayout.PREFERRED_SIZE)
@@ -563,36 +564,36 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 										.addContainerGap(
 												GroupLayout.DEFAULT_SIZE,
 												Short.MAX_VALUE)));
-		panelShow.setLayout(gl_panelShow);
-		panelPrimary.setLayout(gl_panelPrimary);
+		this.panelShow.setLayout(gl_panelShow);
+		this.panelPrimary.setLayout(gl_panelPrimary);
 
 		final JPanel panelSecondary = new JPanel();
 		panelSecondary.setBorder(new TitledBorder(null,
 				"Collect data for show", TitledBorder.LEADING,
 				TitledBorder.TOP, null, null));
 
-		comboShowsCollec = new JComboBox<>();
-		comboShowsCollec.setMaximumRowCount(20);
-		comboShowsCollec.addActionListener(listener);
+		this.comboShowsCollec = new JComboBox<>();
+		this.comboShowsCollec.setMaximumRowCount(20);
+		this.comboShowsCollec.addActionListener(this.listener);
 
 		final JPanel panelCollectors = new JPanel();
 		panelCollectors.setBorder(new TitledBorder(new LineBorder(new Color(
 				184, 207, 229)), "Available collectors", TitledBorder.LEADING,
 				TitledBorder.TOP, null, null));
 
-		btnCollectData = new JButton("Collect selected data");
-		btnCollectData.addActionListener(listener);
+		this.btnCollectData = new JButton("Collect selected data");
+		this.btnCollectData.addActionListener(this.listener);
 
-		btnDone = new JButton("Exit");
-		btnDone.addActionListener(listener);
+		this.btnDone = new JButton("Exit");
+		this.btnDone.addActionListener(this.listener);
 		panelCollectors.setLayout(new BoxLayout(panelCollectors,
 				BoxLayout.X_AXIS));
 
-		scrollPane_1 = new JScrollPane();
-		panelCollectors.add(scrollPane_1);
+		this.scrollPane_1 = new JScrollPane();
+		panelCollectors.add(this.scrollPane_1);
 
-		tableColl = new CollectorsTable();
-		scrollPane_1.setViewportView(tableColl);
+		this.tableColl = new CollectorsTable();
+		this.scrollPane_1.setViewportView(this.tableColl);
 
 		GridBagConstraints gbc_panelSecondary = new GridBagConstraints();
 		gbc_panelSecondary.weightx = 0.5;
@@ -600,10 +601,10 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 		gbc_panelSecondary.gridx = 1;
 		gbc_panelSecondary.gridy = 0;
 		gbc_panelSecondary.fill = GridBagConstraints.BOTH;
-		panelMain.add(panelSecondary, gbc_panelSecondary);
+		this.panelMain.add(panelSecondary, gbc_panelSecondary);
 
-		progressBar = new JProgressBar();
-		progressBar.setStringPainted(true);
+		this.progressBar = new JProgressBar();
+		this.progressBar.setStringPainted(true);
 		GroupLayout gl_panelSecondary = new GroupLayout(panelSecondary);
 		gl_panelSecondary
 				.setHorizontalGroup(gl_panelSecondary
@@ -620,18 +621,18 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 																gl_panelSecondary
 																		.createSequentialGroup()
 																		.addComponent(
-																				progressBar,
+																				this.progressBar,
 																				GroupLayout.DEFAULT_SIZE,
 																				222,
 																				Short.MAX_VALUE)
 																		.addPreferredGap(
 																				ComponentPlacement.RELATED)
 																		.addComponent(
-																				btnCollectData)
+																				this.btnCollectData)
 																		.addPreferredGap(
 																				ComponentPlacement.RELATED)
 																		.addComponent(
-																				btnDone,
+																				this.btnDone,
 																				GroupLayout.PREFERRED_SIZE,
 																				74,
 																				GroupLayout.PREFERRED_SIZE))
@@ -641,7 +642,7 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 																461,
 																Short.MAX_VALUE)
 														.addComponent(
-																comboShowsCollec,
+																this.comboShowsCollec,
 																Alignment.LEADING,
 																GroupLayout.PREFERRED_SIZE,
 																262,
@@ -653,7 +654,7 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 						.addGroup(
 								gl_panelSecondary
 										.createSequentialGroup()
-										.addComponent(comboShowsCollec,
+										.addComponent(this.comboShowsCollec,
 												GroupLayout.PREFERRED_SIZE,
 												GroupLayout.DEFAULT_SIZE,
 												GroupLayout.PREFERRED_SIZE)
@@ -675,45 +676,45 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 																						.createParallelGroup(
 																								Alignment.BASELINE)
 																						.addComponent(
-																								btnDone)
+																								this.btnDone)
 																						.addComponent(
-																								btnCollectData)))
+																								this.btnCollectData)))
 														.addGroup(
 																gl_panelSecondary
 																		.createSequentialGroup()
 																		.addPreferredGap(
 																				ComponentPlacement.RELATED)
 																		.addComponent(
-																				progressBar,
+																				this.progressBar,
 																				GroupLayout.DEFAULT_SIZE,
 																				GroupLayout.DEFAULT_SIZE,
 																				Short.MAX_VALUE)))
 										.addGap(6)));
 		panelSecondary.setLayout(gl_panelSecondary);
 
-		panelDatabase = new JPanel();
-		panelDatabase.setBorder(new TitledBorder(null,
+		this.panelDatabase = new JPanel();
+		this.panelDatabase.setBorder(new TitledBorder(null,
 				"People currently in the database", TitledBorder.LEADING,
 				TitledBorder.TOP, null, null));
 
 		final JScrollPane scrollPane = new JScrollPane();
 
 		// The table of individuals
-		table = new IndividualTable();
-		scrollPane.setViewportView(table);
+		this.table = new IndividualTable();
+		scrollPane.setViewportView(this.table);
 
-		comboShowsFilter = new JComboBox<String>();
-		comboShowsFilter.setModel(new DefaultComboBoxModel<String>());
-		comboShowsFilter.addActionListener(listener);
-		comboShowsFilter.setMaximumRowCount(17);
+		this.comboShowsFilter = new JComboBox<String>();
+		this.comboShowsFilter.setModel(new DefaultComboBoxModel<String>());
+		this.comboShowsFilter.addActionListener(this.listener);
+		this.comboShowsFilter.setMaximumRowCount(17);
 
 		final JLabel lblFilterByShow = new JLabel("Filter by show");
 
-		btnRefresh = new JButton("Refresh");
+		this.btnRefresh = new JButton("Refresh");
 
-		btnDelete = new JButton("Delete individual");
-		btnDelete.addActionListener(listener);
-		btnRefresh.addActionListener(listener);
+		this.btnDelete = new JButton("Delete individual");
+		this.btnDelete.addActionListener(this.listener);
+		this.btnRefresh.addActionListener(this.listener);
 
 		GridBagConstraints gbc_panelDatabase = new GridBagConstraints();
 		gbc_panelDatabase.weighty = 1.0;
@@ -723,8 +724,8 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 		gbc_panelDatabase.fill = GridBagConstraints.BOTH;
 		gbc_panelDatabase.gridx = 0;
 		gbc_panelDatabase.gridy = 1;
-		panelMain.add(panelDatabase, gbc_panelDatabase);
-		GroupLayout gl_panelDatabase = new GroupLayout(panelDatabase);
+		this.panelMain.add(this.panelDatabase, gbc_panelDatabase);
+		GroupLayout gl_panelDatabase = new GroupLayout(this.panelDatabase);
 		gl_panelDatabase
 				.setHorizontalGroup(gl_panelDatabase
 						.createParallelGroup(Alignment.LEADING)
@@ -749,17 +750,17 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 																		.addPreferredGap(
 																				ComponentPlacement.RELATED)
 																		.addComponent(
-																				comboShowsFilter,
+																				this.comboShowsFilter,
 																				GroupLayout.PREFERRED_SIZE,
 																				281,
 																				GroupLayout.PREFERRED_SIZE)
 																		.addGap(35)
 																		.addComponent(
-																				btnDelete)
+																				this.btnDelete)
 																		.addPreferredGap(
 																				ComponentPlacement.RELATED)
 																		.addComponent(
-																				btnRefresh)))
+																				this.btnRefresh)))
 										.addContainerGap()));
 		gl_panelDatabase
 				.setVerticalGroup(gl_panelDatabase
@@ -774,10 +775,10 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 														.addComponent(
 																lblFilterByShow)
 														.addComponent(
-																btnRefresh)
-														.addComponent(btnDelete)
+																this.btnRefresh)
+														.addComponent(this.btnDelete)
 														.addComponent(
-																comboShowsFilter,
+																this.comboShowsFilter,
 																GroupLayout.PREFERRED_SIZE,
 																GroupLayout.DEFAULT_SIZE,
 																GroupLayout.PREFERRED_SIZE))
@@ -787,7 +788,7 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 												GroupLayout.DEFAULT_SIZE, 215,
 												Short.MAX_VALUE)
 										.addContainerGap()));
-		panelDatabase.setLayout(gl_panelDatabase);
+		this.panelDatabase.setLayout(gl_panelDatabase);
 	}
 
 	/**
@@ -796,10 +797,10 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 	 */
 	Venue getSelectedVenue() {
 		// No venue selected
-		if (comboVenues.getSelectedIndex() == 0) {
+		if (this.comboVenues.getSelectedIndex() == 0) {
 			return null;
 		}
-		return venues.get(comboVenues.getSelectedIndex() - 1);
+		return this.venues.get(this.comboVenues.getSelectedIndex() - 1);
 	}
 
 	/**
@@ -808,10 +809,10 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 	 */
 	Show getSelectedShow() {
 		// All shows selected
-		if (comboShowsCollec.getSelectedIndex() == 0) {
+		if (this.comboShowsCollec.getSelectedIndex() == 0) {
 			return null;
 		}
-		return shows.get(comboShowsCollec.getSelectedIndex() - 1);
+		return this.shows.get(this.comboShowsCollec.getSelectedIndex() - 1);
 	}
 
 	/**
@@ -821,10 +822,10 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 	 */
 	private List<Individual> getDBContent() {
 		try {
-			return pdbm.getAllIndividuals();
+			return this.pdbm.getAllIndividuals();
 		}
 		catch (SQLException e) {
-			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_READ_ERR,
+			JOptionPane.showMessageDialog(this.frame, Strings.GUI_DB_READ_ERR,
 					"Database error", JOptionPane.ERROR_MESSAGE);
 			return null;
 		}
@@ -839,10 +840,10 @@ public class DataCollectorGUI extends PrimaryDataCollector {
 	long saveIndividual(final Individual i) {
 		final long status;
 		try {
-			status = pdbm.storeIndividual(i);
+			status = this.pdbm.storeIndividual(i);
 		}
 		catch (SQLException e1) {
-			JOptionPane.showMessageDialog(frame, Strings.GUI_DB_ADD_ERR,
+			JOptionPane.showMessageDialog(this.frame, Strings.GUI_DB_ADD_ERR,
 					"Database error", JOptionPane.ERROR_MESSAGE);
 			return -1;
 		}

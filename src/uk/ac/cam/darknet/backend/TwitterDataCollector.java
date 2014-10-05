@@ -91,11 +91,11 @@ public class TwitterDataCollector extends SecondaryDataCollector {
 	@Override
 	public Hashtable<String, AttributeCategories> getAttributeTable() {
 		
-		if(attributeTable == null) {
-			attributeTable = new Hashtable<String, AttributeCategories>();
-			attributeTable.put("tweet", AttributeCategories.STATUS);
+		if(this.attributeTable == null) {
+			this.attributeTable = new Hashtable<String, AttributeCategories>();
+			this.attributeTable.put("tweet", AttributeCategories.STATUS);
 		}
 		
-		return attributeTable;
+		return this.attributeTable;
 	}
 }

@@ -30,7 +30,7 @@ public class Show {
 	 * @return The show date.
 	 */
 	public Date getDate() {
-		return date;
+		return this.date;
 	}
 
 	/**
@@ -39,6 +39,6 @@ public class Show {
 	 * @return The show venue.
 	 */
 	public Venue getVenue() {
-		return venue;
+		return this.venue;
 	}
 }

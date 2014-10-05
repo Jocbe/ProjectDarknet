@@ -49,41 +49,41 @@ public class DataCollectorGUIListener implements ActionListener {
 		// Get the source
 		final Object source = e.getSource();
 		// The browse button, open File Chooser dialog
-		if (source == gui.btnBrowse) {
-			handleBrowseButton();
+		if (source == this.gui.btnBrowse) {
+			this.handleBrowseButton();
 		}
 		// The load audience button, load the given CSV file
-		else if (source == gui.btnLoadAudience) {
-			handleLoadAudience();
+		else if (source == this.gui.btnLoadAudience) {
+			this.handleLoadAudience();
 		}
 		// The add single person button, add them to the DB
-		else if (source == gui.btnAddPerson) {
-			handleAddPerson();
+		else if (source == this.gui.btnAddPerson) {
+			this.handleAddPerson();
 		}
 		// Done button, close the window
-		else if (source == gui.btnDone) {
-			gui.frame.dispose();
+		else if (source == this.gui.btnDone) {
+			this.gui.frame.dispose();
 		}
 		// Refresh button, refresh the DB view
-		else if (source == gui.btnRefresh) {
-			handleRefresh();
+		else if (source == this.gui.btnRefresh) {
+			this.handleRefresh();
 		}
 		// Delete individual button
-		else if (source == gui.btnDelete) {
-			handleIndividualDelete();
+		else if (source == this.gui.btnDelete) {
+			this.handleIndividualDelete();
 		}
 		// New venue button
-		else if (source == gui.btnNewVenue) {
-			handleNewVenue();
+		else if (source == this.gui.btnNewVenue) {
+			this.handleNewVenue();
 		}
 		// Shows combo box
-		else if (source == gui.comboShowsFilter
-				|| source == gui.comboShowsCollec) {
-			handleShowsFilter((JComboBox<String>) source);
+		else if (source == this.gui.comboShowsFilter
+				|| source == this.gui.comboShowsCollec) {
+			this.handleShowsFilter((JComboBox<String>) source);
 		}
 		// Collect secondary data
-		else if (source == gui.btnCollectData) {
-			handleDataCollection();
+		else if (source == this.gui.btnCollectData) {
+			this.handleDataCollection();
 		}
 	}
 
@@ -99,11 +99,11 @@ public class DataCollectorGUIListener implements ActionListener {
 		fc.setFileFilter(filter);
 
 		// Return value from the file chooser (tells if a file was selected)
-		int returnVal = fc.showOpenDialog(gui.panelMain);
+		int returnVal = fc.showOpenDialog(this.gui.panelMain);
 
 		// If file selected, set the text field'c contents to the path of it
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
-			gui.txtFldCSVFilePath.setText(fc.getSelectedFile().toString());
+			this.gui.txtFldCSVFilePath.setText(fc.getSelectedFile().toString());
 		}
 	}
 
@@ -112,14 +112,14 @@ public class DataCollectorGUIListener implements ActionListener {
 	 */
 	private void handleLoadAudience() {
 		// Get the venue
-		final Venue venue = gui.getSelectedVenue();
+		final Venue venue = this.gui.getSelectedVenue();
 		if (venue == null) {
-			JOptionPane.showMessageDialog(gui.frame, Strings.GUI_NO_VENUE_SEL,
+			JOptionPane.showMessageDialog(this.gui.frame, Strings.GUI_NO_VENUE_SEL,
 					"No venue selected", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 		// Get the path to the csv file
-		final String csvFileURL = gui.txtFldCSVFilePath.getText();
+		final String csvFileURL = this.gui.txtFldCSVFilePath.getText();
 		// Load the list of individuals from the csv file
 		final List<Individual> csvIndividuals;
 		final SpektrixCSVParser csvParser = new SpektrixCSVParser();
@@ -127,7 +127,7 @@ public class DataCollectorGUIListener implements ActionListener {
 			csvIndividuals = csvParser.loadfromCSV(csvFileURL, venue.getId());
 		}
 		catch (IOException | SQLException | ParseException e) {
-			JOptionPane.showMessageDialog(gui.frame, Strings.GUI_CSV_ADD_ERR,
+			JOptionPane.showMessageDialog(this.gui.frame, Strings.GUI_CSV_ADD_ERR,
 					"CSV file import error", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
@@ -135,34 +135,34 @@ public class DataCollectorGUIListener implements ActionListener {
 		// Add the individuals to the database
 		final int audienceCount;
 		try {
-			audienceCount = gui.pdbm.storeIndividual(csvIndividuals);
+			audienceCount = this.gui.pdbm.storeIndividual(csvIndividuals);
 		}
 		catch (SQLException e) {
 			return;
 		}
 		// Show confirmation dialog
-		JOptionPane.showMessageDialog(gui.frame, audienceCount
+		JOptionPane.showMessageDialog(this.gui.frame, audienceCount
 				+ " audience members added to the database.");
 
 		// Clear the gui.table and show all individuals. This is used because
 		// user ID's can't be determined prior to adding them to the DB.
-		gui.table.clearTable();
+		this.gui.table.clearTable();
 		try {
-			gui.table.displayIndividuals(gui.pdbm.getAllIndividuals(),
-					gui.venues);
+			this.gui.table.displayIndividuals(this.gui.pdbm.getAllIndividuals(),
+					this.gui.venues);
 		}
 		catch (SQLException e) {
-			JOptionPane.showMessageDialog(gui.frame, Strings.GUI_DB_READ_ERR,
+			JOptionPane.showMessageDialog(this.gui.frame, Strings.GUI_DB_READ_ERR,
 					"Database error", JOptionPane.ERROR_MESSAGE);
 		}
 
 		// Jump to the last added individual
-		final int lastIndividualRow = gui.table.getRowCount() - 1;
-		gui.table.scrollRectToVisible(gui.table.getCellRect(lastIndividualRow,
+		final int lastIndividualRow = this.gui.table.getRowCount() - 1;
+		this.gui.table.scrollRectToVisible(this.gui.table.getCellRect(lastIndividualRow,
 				0, true));
 
 		// Update shows list
-		gui.updateShowsCBs();
+		this.gui.updateShowsCBs();
 	}
 
 	/**
@@ -172,33 +172,33 @@ public class DataCollectorGUIListener implements ActionListener {
 	 */
 	private void handleAddPerson() {
 		// Get values from the text fields
-		final String firstName = gui.txtFldFirstName.getText();
-		final String lastName = gui.txtFldSecondName.getText();
-		final String email = gui.txtFldEmail.getText();
-		final String seat = gui.txtFldSeat.getText();
+		final String firstName = this.gui.txtFldFirstName.getText();
+		final String lastName = this.gui.txtFldSecondName.getText();
+		final String email = this.gui.txtFldEmail.getText();
+		final String seat = this.gui.txtFldSeat.getText();
 
 		// Get the date
 		final SimpleDateFormat dateFormatter = new SimpleDateFormat(
 				"yyyy-MM-dd HH:mm");
 		final Date eventDate;
 		try {
-			eventDate = dateFormatter.parse(gui.txtFldVenueDate.getText());
+			eventDate = dateFormatter.parse(this.gui.txtFldVenueDate.getText());
 		}
 		catch (ParseException e1) {
-			JOptionPane.showMessageDialog(gui.frame,
+			JOptionPane.showMessageDialog(this.gui.frame,
 					Strings.GUI_DATE_FORMAT_ERR);
 			return;
 		}
 
 		// Ensure that name and email are filled in, if not, shout
 		if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty()) {
-			JOptionPane.showMessageDialog(gui.frame, Strings.GUI_COMPUL_FLDS);
+			JOptionPane.showMessageDialog(this.gui.frame, Strings.GUI_COMPUL_FLDS);
 			return;
 		}
 
-		final Venue venue = gui.getSelectedVenue();
+		final Venue venue = this.gui.getSelectedVenue();
 		if (venue == null) {
-			JOptionPane.showMessageDialog(gui.frame, Strings.GUI_NO_VENUE_SEL,
+			JOptionPane.showMessageDialog(this.gui.frame, Strings.GUI_NO_VENUE_SEL,
 					"No venue selected", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
@@ -206,52 +206,52 @@ public class DataCollectorGUIListener implements ActionListener {
 		// Save the individual
 		final Individual newIndividual = Individual.getNewIndividual(firstName,
 				lastName, email, eventDate, venue.getId(), seat, null);
-		final long ID = gui.saveIndividual(newIndividual);
+		final long ID = this.gui.saveIndividual(newIndividual);
 
 		// If there was an error
 		if (ID == -1) {
-			JOptionPane.showMessageDialog(gui.frame, Strings.GUI_DB_ADD_ERR,
+			JOptionPane.showMessageDialog(this.gui.frame, Strings.GUI_DB_ADD_ERR,
 					"Database error", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 
 		// Update the gui.table
 		try {
-			gui.table.displayIndividual(gui.pdbm.getById(ID), gui.venues);
+			this.gui.table.displayIndividual(this.gui.pdbm.getById(ID), this.gui.venues);
 		}
 		catch (SQLException e) {
-			JOptionPane.showMessageDialog(gui.frame, Strings.GUI_DB_CONN_ERR,
+			JOptionPane.showMessageDialog(this.gui.frame, Strings.GUI_DB_CONN_ERR,
 					"Database error", JOptionPane.ERROR_MESSAGE);
 		}
 		// Jump to the added line
-		gui.table.scrollRectToVisible(gui.table.getCellRect(
-				gui.table.getRowCount() - 1, 0, true));
+		this.gui.table.scrollRectToVisible(this.gui.table.getCellRect(
+				this.gui.table.getRowCount() - 1, 0, true));
 
 		// Reset the text fields
-		gui.txtFldFirstName.setText("");
-		gui.txtFldSecondName.setText("");
-		gui.txtFldEmail.setText("");
-		gui.txtFldSeat.setText("");
+		this.gui.txtFldFirstName.setText("");
+		this.gui.txtFldSecondName.setText("");
+		this.gui.txtFldEmail.setText("");
+		this.gui.txtFldSeat.setText("");
 
 		// Update shows comboboxes
-		gui.updateShowsCBs();
+		this.gui.updateShowsCBs();
 	}
 
 	/**
 	 * Handle refresh of the gui.table - i.e. reload its contents from the DB.
 	 */
 	private void handleRefresh() {
-		gui.table.clearTable();
+		this.gui.table.clearTable();
 		try {
-			gui.table.displayIndividuals(gui.pdbm.getAllIndividuals(),
-					gui.venues);
+			this.gui.table.displayIndividuals(this.gui.pdbm.getAllIndividuals(),
+					this.gui.venues);
 		}
 		catch (SQLException e1) {
-			JOptionPane.showMessageDialog(gui.frame, Strings.GUI_DB_READ_ERR,
+			JOptionPane.showMessageDialog(this.gui.frame, Strings.GUI_DB_READ_ERR,
 					"Database error", JOptionPane.ERROR_MESSAGE);
 		}
 		// Update shows comboboxes
-		gui.updateShowsCBs();
+		this.gui.updateShowsCBs();
 	}
 
 	/**
@@ -259,59 +259,59 @@ public class DataCollectorGUIListener implements ActionListener {
 	 */
 	private void handleDataCollection() {
 		// Get the selected show. If null, call collect on all data
-		final Show show = gui.getSelectedShow();
+		final Show show = this.gui.getSelectedShow();
 		// Get the indexes of the checked collectors
-		final List<Integer> checked = gui.tableColl.getCheckedRows();
+		final List<Integer> checked = this.gui.tableColl.getCheckedRows();
 		// Select only checked collectors.
 		final List<Class<?>> checkedColl = new ArrayList<>();
 		for (final int i : checked) {
-			checkedColl.add(gui.dataCollectors.get(i));
+			checkedColl.add(this.gui.dataCollectors.get(i));
 		}
 
 		// If no collector selected, complain
 		if (checkedColl.size() == 0) {
-			JOptionPane.showMessageDialog(gui.frame, Strings.GUI_SELECT_COLL,
+			JOptionPane.showMessageDialog(this.gui.frame, Strings.GUI_SELECT_COLL,
 					"No collectors selected", JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
 
 		// Set the amount of running collectors to zero
-		collectorsStillRunning = 0;
+		this.collectorsStillRunning = 0;
 
 		// Notify user that collection has started
-		gui.progressBar.setIndeterminate(true);
-		gui.progressBar.setString("Collecting data");
+		this.gui.progressBar.setIndeterminate(true);
+		this.gui.progressBar.setString("Collecting data");
 
 		// Go through all collectors and invoke their run() methods
 		for (final Class<?> collClass : checkedColl) {
 			final SecondaryDataCollector collector;
 			try {
 				collector = (SecondaryDataCollector) collClass.getConstructor(
-						SecondaryDatabaseManager.class).newInstance(gui.sdbm);
+						SecondaryDatabaseManager.class).newInstance(this.gui.sdbm);
 				// No show selected - collect data on everyone
 				if (show == null) {
-					collector.setup(gui.pdbm.getAllIndividuals());
+					collector.setup(this.gui.pdbm.getAllIndividuals());
 				}
 				// Collect data only for the given show
 				else {
-					collector.setup(gui.pdbm.getByShow(show));
+					collector.setup(this.gui.pdbm.getByShow(show));
 				}
 			}
 			catch (InstantiationException | IllegalAccessException
 					| SQLException | IllegalArgumentException
 					| InvocationTargetException | NoSuchMethodException
 					| SecurityException e) {
-				JOptionPane.showMessageDialog(gui.frame,
+				JOptionPane.showMessageDialog(this.gui.frame,
 						Strings.GUI_COLL_ERROR, "Error loading collectors",
 						JOptionPane.ERROR_MESSAGE);
 				
 				// Stop the progress bar
-				gui.progressBar.setIndeterminate(false);
+				this.gui.progressBar.setIndeterminate(false);
 				return;
 			}
 
 			// Start a new thread executing the collector
-			startCollectorThread(collector);
+			this.startCollectorThread(collector);
 		}
 	}
 
@@ -322,7 +322,7 @@ public class DataCollectorGUIListener implements ActionListener {
 	synchronized private void startCollectorThread(
 			final SecondaryDataCollector collector) {
 		// Increase the count of running collectors
-		collectorsStillRunning++;
+		this.collectorsStillRunning++;
 		// Run the collector
 		final CollectorTask task = new CollectorTask(collector, this);
 		task.execute();
@@ -336,15 +336,15 @@ public class DataCollectorGUIListener implements ActionListener {
 	 */
 	synchronized void notifyCollectorDone() {
 		// Decrease the amount of running collectors
-		collectorsStillRunning--;
-		if (collectorsStillRunning == 0) {
+		this.collectorsStillRunning--;
+		if (this.collectorsStillRunning == 0) {
 			// Everything done, stop the progress bar and set to 100%
-			gui.progressBar.setIndeterminate(false);
-			gui.progressBar.setValue(100);
+			this.gui.progressBar.setIndeterminate(false);
+			this.gui.progressBar.setValue(100);
 
 			// Notify the user that the collection is done
-			JOptionPane.showMessageDialog(gui.frame, Strings.GUI_COLL_DONE);
-			gui.progressBar.setString("Collection done");
+			JOptionPane.showMessageDialog(this.gui.frame, Strings.GUI_COLL_DONE);
+			this.gui.progressBar.setString("Collection done");
 		}
 	}
 
@@ -355,23 +355,23 @@ public class DataCollectorGUIListener implements ActionListener {
 		final int selectedIndex = comboBox.getSelectedIndex();
 		// Don't filter selected
 		if (selectedIndex <= 0) {
-			handleRefresh();
+			this.handleRefresh();
 			return;
 		}
 		// Get the show that is selected
-		final Show selectedShow = gui.shows.get(selectedIndex - 1);
+		final Show selectedShow = this.gui.shows.get(selectedIndex - 1);
 		// Get all individuals that are attending this show
 		final List<Individual> filteredIndividuals;
 		try {
-			filteredIndividuals = gui.pdbm.getByShow(selectedShow);
+			filteredIndividuals = this.gui.pdbm.getByShow(selectedShow);
 		}
 		catch (final SQLException e) {
-			JOptionPane.showMessageDialog(gui.frame, Strings.GUI_COLL_DONE);
+			JOptionPane.showMessageDialog(this.gui.frame, Strings.GUI_COLL_DONE);
 			return;
 		}
 		// Refresh the gui.table view
-		gui.table.clearTable();
-		gui.table.displayIndividuals(filteredIndividuals, gui.venues);
+		this.gui.table.clearTable();
+		this.gui.table.displayIndividuals(filteredIndividuals, this.gui.venues);
 	}
 
 	/**
@@ -379,22 +379,22 @@ public class DataCollectorGUIListener implements ActionListener {
 	 */
 	private void handleIndividualDelete() {
 		// Get ID of the selected individual
-		final long selIndividualID = gui.table.getSelectedIndividualID();
+		final long selIndividualID = this.gui.table.getSelectedIndividualID();
 		// No row selected
 		if (selIndividualID == -1) {
 			return;
 		}
 		// Delete the individual
 		try {
-			gui.pdbm.deleteIndividual(selIndividualID);
+			this.gui.pdbm.deleteIndividual(selIndividualID);
 		}
 		catch (SQLException e) {
-			JOptionPane.showMessageDialog(gui.frame,
+			JOptionPane.showMessageDialog(this.gui.frame,
 					Strings.GUI_DB_DEL_IND_ERR, "Database error",
 					JOptionPane.ERROR_MESSAGE);
 		}
 		// Refresh the view
-		handleRefresh();
+		this.handleRefresh();
 	}
 
 	/**
@@ -402,7 +402,7 @@ public class DataCollectorGUIListener implements ActionListener {
 	 */
 	private void handleNewVenue() {
 		// Get the input from the user
-		final String newVenue = JOptionPane.showInputDialog(gui.frame,
+		final String newVenue = JOptionPane.showInputDialog(this.gui.frame,
 				Strings.GUI_SET_NEW_VENUE);
 		// Cancel was pressed or empty string
 		if (null == newVenue || newVenue.isEmpty()) {
@@ -411,19 +411,19 @@ public class DataCollectorGUIListener implements ActionListener {
 		// Create new venue in the database
 		final int venueID;
 		try {
-			venueID = gui.pdbm.createVenue(newVenue);
-			gui.updateVenuesList();
+			venueID = this.gui.pdbm.createVenue(newVenue);
+			this.gui.updateVenuesList();
 		}
 		catch (SQLException e) {
-			JOptionPane.showMessageDialog(gui.frame, Strings.GUI_VENUE_ADD_ERR,
+			JOptionPane.showMessageDialog(this.gui.frame, Strings.GUI_VENUE_ADD_ERR,
 					"Venue adding error", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 		// If addition OK - i.e. the venue wasn't in the db before, show it
 		if (venueID != -1) {
-			gui.comboVenues.addItem(newVenue);
-			gui.comboVenues
-					.setSelectedIndex(gui.comboVenues.getItemCount() - 1);
+			this.gui.comboVenues.addItem(newVenue);
+			this.gui.comboVenues
+					.setSelectedIndex(this.gui.comboVenues.getItemCount() - 1);
 		}
 	}
 

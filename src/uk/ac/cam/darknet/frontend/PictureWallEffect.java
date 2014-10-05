@@ -104,20 +104,20 @@ public class PictureWallEffect extends Effect {
 			BufferedImage image;
 			if (photos.length > 5) {
 				// assemble photos into columns of colSize
-				int numcols = photos.length / colSize;
+				int numcols = photos.length / this.colSize;
 				BufferedImage[] colPhotos = new BufferedImage[numcols];
 				for (int i = 0; i < numcols; i++) {
-					colPhotos[i] = concatenateByHeight(Arrays.copyOfRange(
-							photos, colSize * i, colSize * i + colSize));
+					colPhotos[i] = this.concatenateByHeight(Arrays.copyOfRange(
+							photos, this.colSize * i, this.colSize * i + this.colSize));
 				}
 				// merge columns into a single photo
-				image = concatenateByWidth(colPhotos);
+				image = this.concatenateByWidth(colPhotos);
 			} else {
-				image = concatenateByWidth(photos);
+				image = this.concatenateByWidth(photos);
 			}
 
 			// save image
-			ImageIO.write(image, "png", new File(pathname + filename + ".png"));
+			ImageIO.write(image, "png", new File(this.pathname + this.filename + ".png"));
 		} catch (InvalidReliabilityException e) {
 			System.err.println("Invalid Reliability of Photo");
 			return;

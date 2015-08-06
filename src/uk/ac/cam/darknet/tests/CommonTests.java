@@ -1,7 +1,9 @@
 package uk.ac.cam.darknet.tests;
 
 import java.util.logging.Logger;
+
 import org.junit.Test;
+
 import uk.ac.cam.darknet.common.LoggerFactory;
 
 /**
@@ -9,6 +11,7 @@ import uk.ac.cam.darknet.common.LoggerFactory;
  *
  */
 public class CommonTests {
+	@SuppressWarnings("javadoc")
 	@Test
 	public void LoggerTest() {
 		final Logger l = LoggerFactory.getLogger();
@@ -22,6 +25,7 @@ public class CommonTests {
 
 	}
 
+	@SuppressWarnings("javadoc")
 	@Test
 	public void LoggerTest2() {
 		final Logger l = LoggerFactory.getLogger();

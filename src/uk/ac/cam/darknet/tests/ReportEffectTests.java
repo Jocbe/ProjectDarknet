@@ -13,7 +13,11 @@ import uk.ac.cam.darknet.exceptions.ConfigFileNotFoundException;
 import uk.ac.cam.darknet.exceptions.InvalidAttributeNameException;
 import uk.ac.cam.darknet.frontend.ReportEffect;
 
+/**
+ *
+ */
 public class ReportEffectTests {
+	@SuppressWarnings("javadoc")
 	@Test
 	public void testReportEffect() throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException, InvalidAttributeNameException {
 		Hashtable<String, AttributeCategories> globalAttributeTable = new Hashtable<String, AttributeCategories>();
@@ -31,6 +35,7 @@ public class ReportEffectTests {
 		effect.execute(show);
 		
 	}
+	@SuppressWarnings("javadoc")
 	@Test
 	public void testReportEffect2() throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException, InvalidAttributeNameException {
 		Hashtable<String, AttributeCategories> globalAttributeTable = new Hashtable<String, AttributeCategories>();
@@ -48,6 +53,7 @@ public class ReportEffectTests {
 		effect.execute(show);
 		
 	}
+	@SuppressWarnings("javadoc")
 	@Test
 	public void testReportEffect3() throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException, InvalidAttributeNameException {
 		Hashtable<String, AttributeCategories> globalAttributeTable = new Hashtable<String, AttributeCategories>();

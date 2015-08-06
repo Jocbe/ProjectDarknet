@@ -8,13 +8,18 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
+
 import org.junit.Test;
 
 import uk.ac.cam.darknet.backend.SpektrixCSVParser;
 import uk.ac.cam.darknet.common.Individual;
 
+/**
+ * 
+ */
 public class CSVParserTests {
 
+	@SuppressWarnings("javadoc")
 	@Test
 	public void testmember0() throws IOException, SQLException, ParseException {
 		SpektrixCSVParser parser = new SpektrixCSVParser();
@@ -28,6 +33,7 @@ public class CSVParserTests {
 		assertEquals(i.getSeat(), "C26");
 	}
 	
+	@SuppressWarnings("javadoc")
 	@Test
 	public void testmember522() throws IOException, SQLException, ParseException {
 		SpektrixCSVParser parser = new SpektrixCSVParser();

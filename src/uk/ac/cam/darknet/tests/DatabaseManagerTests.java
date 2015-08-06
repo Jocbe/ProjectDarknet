@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.GregorianCalendar;
 import java.util.Hashtable;
+
 import org.junit.Test;
+
 import uk.ac.cam.darknet.common.AttributeCategories;
 import uk.ac.cam.darknet.common.Individual;
 import uk.ac.cam.darknet.common.IndividualRequirements;
@@ -18,8 +21,12 @@ import uk.ac.cam.darknet.exceptions.InvalidReliabilityException;
 import uk.ac.cam.darknet.exceptions.RequestNotSatisfiableException;
 import uk.ac.cam.darknet.exceptions.UnknownAttributeException;
 
+/**
+ *
+ */
 public class DatabaseManagerTests {
 
+	@SuppressWarnings("javadoc")
 	@Test
 	public void TestDBM() throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException, InvalidReliabilityException, RequestNotSatisfiableException, UnknownAttributeException, InvalidAttributeTypeException {
 		Hashtable<String, AttributeCategories> globalAttributeTable = new Hashtable<String, AttributeCategories>();
@@ -48,13 +55,14 @@ public class DatabaseManagerTests {
 		instance.closeConnection();
 	}
 
+	@SuppressWarnings("javadoc")
 	@Test
 	public void TestPrimaryDBM() throws ClassNotFoundException, ConfigFileNotFoundException, IOException, SQLException {
 		Hashtable<String, AttributeCategories> globalAttributeTable = new Hashtable<String, AttributeCategories>();
 		globalAttributeTable.put("fb_gender", AttributeCategories.GENDER);
 		globalAttributeTable.put("fb_birthday", AttributeCategories.BIRTHDAY);
 		PrimaryDatabaseManager instance = new PrimaryDatabaseManager(globalAttributeTable);
-		java.util.Date date = new java.util.Date(2014, 0, 0);
+		java.util.Date date = new GregorianCalendar(2014, 0, 0).getTime();
 		ArrayList<Individual> individuals = new ArrayList<Individual>();
 		String[] fnames = {"Claire", "Denise", "Richard", "Travis", "Sheila"};
 		String[] lnames = {"Manzella", "Salazar", "Connally", "Briggs", "Brewer"};
